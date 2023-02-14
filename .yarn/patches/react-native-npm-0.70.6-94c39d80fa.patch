@@ -1,0 +1,24 @@
+diff --git a/React/Fabric/Mounting/ComponentViews/RCTFabricComponentsPlugins.h b/React/Fabric/Mounting/ComponentViews/RCTFabricComponentsPlugins.h
+index a2cc0aa7567e90d08ed5c55a4c3d24ade6c7f61d..0cc6b210ba14c8c45f7b9fdac2a28adfbe3153d6 100644
+--- a/React/Fabric/Mounting/ComponentViews/RCTFabricComponentsPlugins.h
++++ b/React/Fabric/Mounting/ComponentViews/RCTFabricComponentsPlugins.h
+@@ -42,6 +42,7 @@ Class<RCTComponentViewProtocol> RCTTextInputCls(void) __attribute__((used));
+ Class<RCTComponentViewProtocol> RCTInputAccessoryCls(void) __attribute__((used));
+ Class<RCTComponentViewProtocol> RCTViewCls(void) __attribute__((used));
+ Class<RCTComponentViewProtocol> RCTImageCls(void) __attribute__((used));
++Class<RCTComponentViewProtocol> RCTModalHostViewCls(void) __attribute__((used));
+ 
+ #ifdef __cplusplus
+ }
+diff --git a/React/Fabric/Mounting/ComponentViews/RCTFabricComponentsPlugins.mm b/React/Fabric/Mounting/ComponentViews/RCTFabricComponentsPlugins.mm
+index 84cbe8d55b3a208693e50743847d74bc0312e2ab..6318933170134f2fc0ec1cb29be5280b5c1047bf 100644
+--- a/React/Fabric/Mounting/ComponentViews/RCTFabricComponentsPlugins.mm
++++ b/React/Fabric/Mounting/ComponentViews/RCTFabricComponentsPlugins.mm
+@@ -30,6 +30,7 @@ Class<RCTComponentViewProtocol> RCTFabricComponentsProvider(const char *name) {
+     {"InputAccessoryView", RCTInputAccessoryCls},
+     {"View", RCTViewCls},
+     {"Image", RCTImageCls},
++    {"ModalHostView", RCTModalHostViewCls},
+   };
+ 
+   auto p = sFabricComponentsClassMap.find(name);
