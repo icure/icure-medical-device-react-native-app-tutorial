@@ -9,13 +9,13 @@
  */
 
 import React from 'react';
-import {SafeAreaView, ScrollView, StatusBar, Text, useColorScheme} from 'react-native';
+import {ScrollView, StatusBar, Text, useColorScheme} from 'react-native';
 
-import {Colors} from 'react-native/Libraries/NewAppScreen';
 import {Router} from './navigation/Router';
 import {Provider} from 'react-redux';
 import {persistor, store} from './redux/store';
 import {PersistGate} from 'redux-persist/integration/react';
+import 'react-native-get-random-values';
 
 Buffer = require('@craftzdog/react-native-buffer').Buffer;
 
@@ -27,6 +27,9 @@ const App = () => {
     backgroundColor: '#FFFDFE',
     flex: 1,
   };
+
+  console.log('store');
+  console.log(store);
 
   return (
     <Provider store={store}>

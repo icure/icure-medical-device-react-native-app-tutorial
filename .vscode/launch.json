@@ -1,0 +1,19 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Android Attach to Hermes application - Experimental",
+      "request": "attach",
+      "type": "reactnativedirect",
+      "cwd": "${workspaceFolder}",
+      "platform": "android"
+    },
+    {
+      "name": "Debug iOS Hermes - Experimental",
+      "cwd": "${workspaceFolder}",
+      "type": "reactnativedirect",
+      "request": "launch",
+      "platform": "ios"
+    }
+  ]
+}

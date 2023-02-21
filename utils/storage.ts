@@ -1,18 +1,16 @@
 import {StorageFacade} from '@icure/medical-device-sdk';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import {MMKV} from 'react-native-mmkv';
 export class AsyncStorageImpl implements StorageFacade<string> {
-  async getItem(key: string): Promise<string | undefined> {
-    return (await AsyncStorage.getItem(key)) ?? undefined;
-  }
-
-  async setItem(key: string, value: string): Promise<void> {
-    return await AsyncStorage.setItem(key, value);
-  }
-
-  async removeItem(key: string): Promise<void> {
-    return await AsyncStorage.removeItem(key);
-  }
+  storage = new MMKV();
+  setItem = (key: string, value: string) => {
+    return new Promise(resolve => resolve(this.storage.set(key, value))) as Promise<void>;
+  };
+  getItem = (key: string) => {
+    return new Promise(resolve => resolve(this.storage.getString(key))) as Promise<string | undefined>;
+  };
+  removeItem = (key: string) => {
+    return new Promise(resolve => resolve(this.storage.delete(key))) as Promise<void>;
+  };
 }
 
 export default new AsyncStorageImpl();

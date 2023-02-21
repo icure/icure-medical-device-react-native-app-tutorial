@@ -12,6 +12,7 @@ const HEIGHT_MODAL = Dimensions.get('window').height;
 
 export const Home = () => {
   const {data: patient} = useCurrentPatientQuery();
+  console.log('Home screen');
 
   return (
     <ScrollView contentContainerStyle={styles.homeScreen}>

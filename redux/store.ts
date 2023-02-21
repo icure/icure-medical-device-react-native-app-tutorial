@@ -3,14 +3,11 @@ import {persistedReducer} from './reducer';
 import {persistStore} from 'redux-persist';
 import thunk from 'redux-thunk';
 import {patientApiRtk} from '../services/patientApi';
+import {userApiRtk} from '../services/userApi';
 
 export const store = configureStore({
   reducer: persistedReducer,
-  middleware: getDefaultMiddleware =>
-    getDefaultMiddleware({serializableCheck: false, immutableCheck: false}).concat(
-      thunk,
-      patientApiRtk.middleware,
-    ),
+  middleware: getDefaultMiddleware => getDefaultMiddleware({serializableCheck: false, immutableCheck: false}).concat(thunk, patientApiRtk.middleware, userApiRtk.middleware),
 });
 export const persistor = persistStore(store);
 
