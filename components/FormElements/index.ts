@@ -8,6 +8,7 @@ import {SquareInput} from './SquareInput';
 import {SquareButton} from './SquareButton';
 import {SearchSquareInput} from './SearchSquareInput';
 import {IconButton} from './IconButton';
+import {DatePickerModal} from './DatePickerModal';
 import {FakeSquareInput} from './FakeSquareInput';
 
-export {RoundedInput, RoundedButton, TextHelper, ErrorMessage, RadioButton, CheckBox, SquareInput, SquareButton, FakeSquareInput, SearchSquareInput, IconButton};
+export {RoundedInput, RoundedButton, TextHelper, ErrorMessage, RadioButton, CheckBox, SquareInput, SquareButton, DatePickerModal, FakeSquareInput, SearchSquareInput, IconButton};

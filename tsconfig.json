@@ -12,5 +12,6 @@
     "noImplicitThis": true,
     "allowSyntheticDefaultImports": true,
     "preserveConstEnums": true
-  }
+  },
+  
 }

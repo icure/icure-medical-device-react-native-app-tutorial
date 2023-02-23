@@ -1,12 +1,14 @@
 import React, {useState} from 'react';
-import {View, Image, Text, StyleSheet, TouchableOpacity} from 'react-native';
+import {View, Image, Text, StyleSheet, Modal, TouchableOpacity} from 'react-native';
+
+import {EditUserDataModal} from '../EditUserDataModal';
 
 export type Props = {
   userName: string;
 };
 
 export const Header: React.FC<Props> = ({userName}) => {
-  const [_, setEditUserDataModalVisible] = useState(false);
+  const [editUserDataModalVisible, setEditUserDataModalVisible] = useState(false);
 
   return (
     <>
@@ -16,6 +18,20 @@ export const Header: React.FC<Props> = ({userName}) => {
           <Image style={styles.userAvatar} source={require('../../assets/images/user-avatar.png')} />
         </TouchableOpacity>
       </View>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={editUserDataModalVisible}
+        onRequestClose={() => {
+          setEditUserDataModalVisible(!editUserDataModalVisible);
+        }}>
+        <EditUserDataModal
+          onCancel={() => setEditUserDataModalVisible(!editUserDataModalVisible)}
+          onSave={() => setEditUserDataModalVisible(!editUserDataModalVisible)}
+          onShareWithDoctor={() => setEditUserDataModalVisible(!editUserDataModalVisible)}
+          onEditDoctor={() => setEditUserDataModalVisible(!editUserDataModalVisible)}
+        />
+      </Modal>
     </>
   );
 };
