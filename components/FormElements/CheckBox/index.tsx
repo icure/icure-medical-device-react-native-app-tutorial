@@ -44,11 +44,10 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   label: {
-    fontWeight: '400',
     fontSize: 12,
     color: '#151B5D',
     marginLeft: 8,
-    fontFamily: 'Nunito',
+    fontFamily: 'Nunito-Regular',
   },
   checkBox: {
     width: 15,

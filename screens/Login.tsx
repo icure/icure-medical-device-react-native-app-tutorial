@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 32,
     marginTop: 24,
-    fontFamily: 'Nunito',
+    fontFamily: 'Nunito-Regular',
   },
   contentHolder: {
     alignItems: 'center',

@@ -45,10 +45,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   userName: {
-    fontWeight: '700',
     fontSize: 20,
     color: '#151B5D',
-    fontFamily: 'Nunito',
+    fontFamily: 'Nunito-Bold',
   },
   userAvatar: {
     width: 32,

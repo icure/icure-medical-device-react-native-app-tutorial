@@ -31,9 +31,8 @@ const styles = StyleSheet.create({
   label: {
     marginBottom: 8,
     fontSize: 14,
-    fontWeight: '400',
     color: '#151B5D',
-    fontFamily: 'Nunito',
+    fontFamily: 'Nunito-Regular',
   },
   star: {
     color: '#EB3437',
@@ -49,7 +48,7 @@ const styles = StyleSheet.create({
   },
   input: {
     fontSize: 13,
-    fontFamily: 'Nunito',
+    fontFamily: 'Nunito-Regular',
   },
   inputPlaceholder: {
     color: '#A2A4BE',

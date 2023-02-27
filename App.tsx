@@ -23,13 +23,9 @@ const App = () => {
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
-    // backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
     backgroundColor: '#FFFDFE',
     flex: 1,
   };
-
-  console.log('store');
-  console.log(store);
 
   return (
     <Provider store={store}>

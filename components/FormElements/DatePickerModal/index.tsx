@@ -55,8 +55,8 @@ export const DatePickerModal: React.FC<DatePickerModalProps> = ({onClose, patien
             current={getDateFormat(date)}
             options={{
               mainColor: '#D06676',
-              defaultFont: 'Nunito',
-              headerFont: 'Nunito',
+              defaultFont: 'Nunito-Regular',
+              headerFont: 'Nunito-Regular',
             }}
           />
 

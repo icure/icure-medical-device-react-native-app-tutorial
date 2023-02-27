@@ -3,9 +3,8 @@ import {StyleSheet} from 'react-native';
 export const globalStyles = StyleSheet.create({
   baseText: {
     fontSize: 14,
-    fontWeight: '400',
     color: '#151B5D',
-    fontFamily: 'Nunito',
+    fontFamily: 'Nunito-Regular',
   },
   mt2: {
     marginTop: 2,

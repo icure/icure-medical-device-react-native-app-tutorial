@@ -150,15 +150,14 @@ const confirmationWindowStyles = StyleSheet.create({
     textAlign: 'center',
     color: '#151B5D',
     fontSize: 18,
-    fontWeight: '700',
     marginBottom: 12,
-    fontFamily: 'Nunito',
+    fontFamily: 'Nunito-Bold',
   },
   subtitle: {
     textAlign: 'center',
     color: '#151B5D',
     fontSize: 14,
-    fontFamily: 'Nunito',
+    fontFamily: 'Nunito-Regular',
   },
   buttonsGroup: {
     flexDirection: 'row',

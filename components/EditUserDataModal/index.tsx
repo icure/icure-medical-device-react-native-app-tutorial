@@ -326,9 +326,8 @@ const styles = StyleSheet.create({
     paddingRight: 8,
   },
   title: {
-    fontWeight: '500',
     fontSize: 20,
-    fontFamily: 'Nunito',
+    fontFamily: 'Nunito-Medium',
     color: '#151B5D',
   },
   closeIcnContainer: {
@@ -361,11 +360,10 @@ const styles = StyleSheet.create({
   tabTitle: {
     paddingVertical: 8,
     fontSize: 13,
-    fontFamily: 'Nunito',
+    fontFamily: 'Nunito-Regular',
   },
   activeTab: {
     color: '#D06676',
-    fontWeight: '700',
     borderBottomColor: '#D06676',
     borderBottomWidth: 2,
   },
@@ -378,15 +376,13 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   description: {
-    fontWeight: '400',
     fontSize: 10,
-    fontFamily: 'Nunito',
+    fontFamily: 'Nunito-Regular',
     color: '#151B5D',
   },
   doctorsListHeading: {
     fontSize: 12,
-    fontFamily: 'Nunito',
-    fontWeight: '700',
+    fontFamily: 'Nunito-Bold',
     color: '#151B5D',
     marginBottom: 12,
   },
@@ -406,9 +402,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   noSearchResultText: {
-    fontWeight: '400',
     fontSize: 10,
-    fontFamily: 'Nunito',
+    fontFamily: 'Nunito-Regular',
     textAlign: 'center',
     color: '#151B5D',
   },
