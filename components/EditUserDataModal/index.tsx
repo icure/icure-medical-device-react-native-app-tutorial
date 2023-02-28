@@ -382,13 +382,15 @@ const styles = StyleSheet.create({
   },
   tabTitle: {
     paddingVertical: 8,
-    fontSize: 13,
+    fontSize: 14,
     fontFamily: 'Nunito-Regular',
+    paddingHorizontal: 4,
   },
   activeTab: {
     color: '#D06676',
     borderBottomColor: '#D06676',
     borderBottomWidth: 2,
+    fontFamily: 'Nunito-Bold',
   },
   buttonsGroup: {
     flexDirection: 'row',
