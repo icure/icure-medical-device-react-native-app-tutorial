@@ -3,13 +3,16 @@ import {ScrollView, StyleSheet, View, Dimensions, Text, Image, TouchableOpacity,
 import {Patient, Address, Telecom} from '@icure/medical-device-sdk';
 import {useForm, Controller} from 'react-hook-form';
 import {format, parse} from 'date-fns';
+import {useNavigate} from 'react-router-native';
 
 import {globalStyles} from '../../styles/GlobalStyles';
 import {SquareInput, SquareButton, ErrorMessage, DatePickerModal, FakeSquareInput, SearchSquareInput} from '../FormElements';
 import {useCreateOrUpdatePatientMutation, useCurrentPatientQuery} from '../../services/patientApi';
-import {useAppSelector} from '../../redux/hooks';
+import {useAppSelector, useAppDispatch} from '../../redux/hooks';
+import {logout} from '../../services/api';
 import {useFilterHealthcareProfessionalsQuery} from '../../services/healthcareProfessionalApi';
 import {DoctorCardRemove, DoctorCardAdd} from '../DoctorCard';
+import {routes} from '../../navigation/Router';
 
 const WIDTH_MODAL = Dimensions.get('window').width;
 const HEIGHT_MODAL = Dimensions.get('window').height;
@@ -104,6 +107,15 @@ export const EditUserDataModal: React.FC<EditUserDataModalProps> = ({onCancel, o
   // if doctor already has access to the user's medical data, we should not show him in this list
   const filteredHcpList = hcpListSearchResult?.filter(item => !user?.sharingDataWith?.medicalInformation || ![...user?.sharingDataWith?.medicalInformation].includes(item.id));
 
+  // Logout tab
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    // dispatch(logout());
+    // navigate(routes.login);
+  };
+
   return (
     <>
       <View style={styles.container}>
@@ -117,19 +129,18 @@ export const EditUserDataModal: React.FC<EditUserDataModalProps> = ({onCancel, o
           </View>
           {/* Tabs */}
           <ScrollView contentContainerStyle={styles.scrollableContainer}>
-            <View style={[styles.tabsHeader, globalStyles.ph16]}>
-              <View
-                style={[
-                  styles.tabsInnerContainer,
-                  {
-                    transform: [{translateX: 50}],
-                  },
-                ]}>
-                <TouchableOpacity style={styles.leftTab} onPress={() => setActiveTab('my-information')}>
-                  <Text style={[globalStyles.baseText, styles.tabTitle, activeTab === 'my-information' && styles.activeTab]}>My information</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => setActiveTab('my-doctors')}>
-                  <Text style={[globalStyles.baseText, styles.tabTitle, activeTab === 'my-doctors' && styles.activeTab]}>My doctors</Text>
+            <View style={[styles.tabsHeader]}>
+              <View style={styles.tabsInnerContainer}>
+                <View style={styles.leftTabs}>
+                  <TouchableOpacity onPress={() => setActiveTab('my-information')}>
+                    <Text style={[globalStyles.baseText, styles.tabTitle, activeTab === 'my-information' && styles.activeTab]}>My information</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.centerTab} onPress={() => setActiveTab('my-doctors')}>
+                    <Text style={[globalStyles.baseText, styles.tabTitle, activeTab === 'my-doctors' && styles.activeTab]}>My doctors</Text>
+                  </TouchableOpacity>
+                </View>
+                <TouchableOpacity onPress={() => setActiveTab('logout')}>
+                  <Text style={[globalStyles.baseText, styles.tabTitle, activeTab === 'logout' && styles.activeTab]}>Logout</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -140,7 +151,7 @@ export const EditUserDataModal: React.FC<EditUserDataModalProps> = ({onCancel, o
               </View>
             )}
             {activeTab === 'my-information' && !isFetching && (
-              <View style={[globalStyles.mt24, globalStyles.ph16]}>
+              <View style={[globalStyles.mt16, globalStyles.ph16]}>
                 <Controller
                   control={control}
                   rules={{
@@ -277,6 +288,15 @@ export const EditUserDataModal: React.FC<EditUserDataModalProps> = ({onCancel, o
                 </View>
               </View>
             )}
+            {activeTab === 'logout' && (
+              <View style={[styles.logoutTab, globalStyles.mt24]}>
+                <Text style={[styles.description, globalStyles.ph16]}>If you are absolutely sure that you want to logout, please click the button below:</Text>
+                <TouchableOpacity onPress={handleLogout} style={iconButton.container}>
+                  <Image style={iconButton.icon} source={require('../../assets/images/logout-pink.png')} />
+                  <Text style={iconButton.text}>Logout</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </ScrollView>
         </View>
       </View>
@@ -288,7 +308,7 @@ export const EditUserDataModal: React.FC<EditUserDataModalProps> = ({onCancel, o
           setShowDatePicker(!showDatePicker);
         }}>
         <DatePickerModal
-          patientBirthDay={patient.dateOfBirth}
+          patientBirthDay={patient?.dateOfBirth}
           onClose={() => setShowDatePicker(!showDatePicker)}
           onSave={selectedDate => {
             setPatientBirthDay(selectedDate);
@@ -315,7 +335,6 @@ const styles = StyleSheet.create({
     paddingVertical: 32,
   },
   scrollableContainer: {
-    // paddingHorizontal: 16,
     paddingBottom: 40,
   },
   titleContainer: {
@@ -343,7 +362,6 @@ const styles = StyleSheet.create({
   tabsHeader: {
     width: '100%',
     height: 32,
-    justifyContent: 'center',
     marginTop: 32,
     borderBottomColor: '#A2A4BE',
     borderBottomWidth: 1,
@@ -352,10 +370,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     position: 'absolute',
     bottom: -1,
-    left: '10%',
+    paddingHorizontal: 16,
+    justifyContent: 'space-between',
+    width: '100%',
   },
-  leftTab: {
-    marginRight: 24,
+  leftTabs: {
+    flexDirection: 'row',
+  },
+  centerTab: {
+    marginHorizontal: 24,
   },
   tabTitle: {
     paddingVertical: 8,
@@ -376,7 +399,8 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   description: {
-    fontSize: 10,
+    width: '100%',
+    fontSize: 12,
     fontFamily: 'Nunito-Regular',
     color: '#151B5D',
   },
@@ -402,7 +426,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   noSearchResultText: {
-    fontSize: 10,
+    fontSize: 12,
     fontFamily: 'Nunito-Regular',
     textAlign: 'center',
     color: '#151B5D',
@@ -414,5 +438,32 @@ const styles = StyleSheet.create({
     top: 0,
     zIndex: 100,
     backgroundColor: 'rgba(255, 255, 255, 0.5)',
+  },
+  logoutTab: {
+    alignItems: 'flex-start',
+  },
+});
+
+const iconButton = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    alignContent: 'center',
+    gap: 8,
+    marginHorizontal: 16,
+    marginTop: 24,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: '#D06676',
+  },
+  icon: {
+    width: 18,
+    height: 18,
+  },
+  text: {
+    color: '#D06676',
+    fontSize: 14,
+    fontFamily: 'Nunito-Regular',
   },
 });

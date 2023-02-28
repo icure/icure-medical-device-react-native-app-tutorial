@@ -21,6 +21,9 @@ export const globalStyles = StyleSheet.create({
   mt12: {
     marginTop: 12,
   },
+  mt16: {
+    marginTop: 16,
+  },
   mt18: {
     marginTop: 18,
   },

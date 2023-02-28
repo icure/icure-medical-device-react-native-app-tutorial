@@ -183,7 +183,6 @@ export const login = createAsyncThunk('medTechApi/login', async (_, {getState}) 
     .withUserName(email)
     .withPassword(token)
     .build();
-
   const userKeyPair = await api.initUserCrypto();
   const user = await api.userApi.getLoggedUser();
   await api.addKeyPair(api.dataOwnerApi.getDataOwnerIdOf(user), userKeyPair[0]);
@@ -191,6 +190,11 @@ export const login = createAsyncThunk('medTechApi/login', async (_, {getState}) 
   apiCache[`${user.groupId}/${user.id}`] = api;
 
   return user?.marshal();
+});
+
+export const logout = createAsyncThunk('medTechApi/logout', async (payload, {getState, dispatch}) => {
+  dispatch(setSavedCredentials(undefined));
+  dispatch(resetCredentials());
 });
 
 export const api = createSlice({
@@ -215,6 +219,21 @@ export const api = createSlice({
       state.firstName = firstName;
       state.lastName = lastName;
       state.email = email;
+    },
+    resetCredentials(state) {
+      state.online = false;
+      state.invalidToken = false;
+      state.invalidEmail = false;
+
+      delete state.firstName;
+      delete state.lastName;
+      delete state.email;
+      delete state.user;
+      delete state.token;
+      delete state.keyPair;
+      delete state.dateOfBirth;
+      delete state.mobilePhone;
+      delete state.authProcess;
     },
   },
   extraReducers: builder => {
@@ -242,4 +261,4 @@ export const api = createSlice({
   },
 });
 
-export const {setEmail, setToken, setAuthProcess, setUser, setRegistrationInformation} = api.actions;
+export const {setEmail, setToken, setAuthProcess, setUser, setRegistrationInformation, resetCredentials} = api.actions;

@@ -1,11 +1,11 @@
 import React, {useEffect, useState} from 'react';
 import {View, Image, Text, StyleSheet} from 'react-native';
 import {useForm, Controller} from 'react-hook-form';
+import {useNavigate} from 'react-router-native';
 
 import {RoundedInput, RoundedButton, TextHelper, ErrorMessage} from '../components/FormElements';
 import {completeAuthentication, login, setEmail, setToken, startAuthentication} from '../services/api';
 import {useAppDispatch, useAppSelector} from '../redux/hooks';
-import {useNavigate} from 'react-router-native';
 import {routes} from '../navigation/Router';
 
 export const Login = () => {
