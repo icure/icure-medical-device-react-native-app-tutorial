@@ -26,7 +26,6 @@ export const petra = createSlice({
       state.savedCredentials = savedCredentials;
     },
     revertAll() {
-      console.log('revertAll');
       return initialState;
     },
   },
