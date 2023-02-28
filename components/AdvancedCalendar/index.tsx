@@ -344,14 +344,15 @@ const dayOfTheMonthStyles = StyleSheet.create({
     borderRadius: 50,
   },
   disabledDaysTitle: {
-    color: '#background: rgba(21, 27, 93, 0.6)',
+    color: 'rgba(21, 27, 93, 0.6)',
+    fontFamily: 'Nunito-Regular',
   },
   isToday: {
     borderColor: '#6273D9',
     borderWidth: 2,
   },
   disabledDay: {
-    backgroundColor: 'rgba(242, 243, 254, 0.55)',
+    backgroundColor: 'rgba(242, 243, 254, 0.6)',
   },
   periodDaysTitle: {
     backgroundColor: '#D06676',
@@ -360,7 +361,7 @@ const dayOfTheMonthStyles = StyleSheet.create({
   predictedPeriodDaysTitle: {
     color: 'white',
     fontSize: 14,
-    fontFamily: 'Nunito',
+    fontFamily: 'Nunito-Bold',
   },
   predictedPeriodBg: {
     width: 31,
