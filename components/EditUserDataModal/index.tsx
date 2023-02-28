@@ -112,8 +112,8 @@ export const EditUserDataModal: React.FC<EditUserDataModalProps> = ({onCancel, o
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // dispatch(logout());
-    // navigate(routes.login);
+    dispatch(logout());
+    navigate(routes.login);
   };
 
   return (

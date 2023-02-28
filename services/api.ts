@@ -2,7 +2,7 @@ import {AnonymousMedTechApi, AnonymousMedTechApiBuilder, ICURE_CLOUD_URL, MedTec
 import crypto from '@icure/icure-react-native-crypto';
 import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {AuthenticationProcess} from '@icure/medical-device-sdk/src/models/AuthenticationProcess';
-import {setSavedCredentials} from '../config/PetraState';
+import {revertAll, setSavedCredentials} from '../config/PetraState';
 import Config from 'react-native-config';
 import {FetchBaseQueryError} from '@reduxjs/toolkit/query';
 import storage from '../utils/storage';
@@ -55,9 +55,6 @@ export const guard = async <T>(guardedInputs: unknown[], lambda: () => Promise<T
   }
   try {
     const res = await lambda();
-    // const curate = (result: T): T => {
-    //   return (result === null || result === undefined ? null : Array.isArray(result) ? result.map(curate) : typeof result === 'object' ? (result as any).marshal() : result) as T;
-    // };
     const curate = (result: T): T => {
       return (
         result === null || result === undefined
@@ -193,7 +190,7 @@ export const login = createAsyncThunk('medTechApi/login', async (_, {getState}) 
 });
 
 export const logout = createAsyncThunk('medTechApi/logout', async (payload, {getState, dispatch}) => {
-  dispatch(setSavedCredentials(undefined));
+  dispatch(revertAll());
   dispatch(resetCredentials());
 });
 
@@ -222,18 +219,6 @@ export const api = createSlice({
     },
     resetCredentials(state) {
       state.online = false;
-      state.invalidToken = false;
-      state.invalidEmail = false;
-
-      delete state.firstName;
-      delete state.lastName;
-      delete state.email;
-      delete state.user;
-      delete state.token;
-      delete state.keyPair;
-      delete state.dateOfBirth;
-      delete state.mobilePhone;
-      delete state.authProcess;
     },
   },
   extraReducers: builder => {
