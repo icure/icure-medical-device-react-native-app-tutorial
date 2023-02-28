@@ -25,6 +25,9 @@ export const petra = createSlice({
     setSavedCredentials(state, {payload: savedCredentials}: PayloadAction<{login: string; token: string; tokenTimestamp: number} | undefined>) {
       state.savedCredentials = savedCredentials;
     },
+    revertAll(state) {
+      return initialState;
+    }
   },
 });
 
