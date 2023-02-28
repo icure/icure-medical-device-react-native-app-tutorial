@@ -74,9 +74,7 @@ export const AdvancedCalendar: React.FC = () => {
       <>
         <TouchableOpacity onPress={handlePress} style={[dayOfTheMonthStyles.day, getDaysStyle()]}>
           {isPredictedPeriod ? (
-            <ImageBackground
-              source={require('../../assets/images/striped-bg.png')}
-              style={[dayOfTheMonthStyles.predictedPeriodBg, state === 'disabled' && dayOfTheMonthStyles.predictedPeriodBgDisabled]}>
+            <ImageBackground source={require('../../assets/images/striped-bg.png')} style={dayOfTheMonthStyles.predictedPeriodBg}>
               <Text style={dayOfTheMonthStyles.predictedPeriodDaysTitle}>{day}</Text>
             </ImageBackground>
           ) : (
@@ -346,14 +344,14 @@ const dayOfTheMonthStyles = StyleSheet.create({
     borderRadius: 50,
   },
   disabledDaysTitle: {
-    color: '#A2A4BE',
+    color: '#background: rgba(21, 27, 93, 0.6)',
   },
   isToday: {
     borderColor: '#6273D9',
     borderWidth: 2,
   },
   disabledDay: {
-    backgroundColor: 'rgba(242, 243, 254, 0.5)',
+    backgroundColor: 'rgba(242, 243, 254, 0.55)',
   },
   periodDaysTitle: {
     backgroundColor: '#D06676',
@@ -369,9 +367,6 @@ const dayOfTheMonthStyles = StyleSheet.create({
     height: 31,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  predictedPeriodBgDisabled: {
-    opacity: 0.5,
   },
   merkersContainer: {
     flexDirection: 'row',
