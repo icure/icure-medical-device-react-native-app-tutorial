@@ -1,9 +1,9 @@
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import storage from '../utils/storage';
 
 export const persistConfig = {
   key: 'petra',
-  storage: AsyncStorage,
+  storage: storage,
   whitelist: ['petra'],
 };
 
@@ -27,7 +27,7 @@ export const petra = createSlice({
     },
     revertAll() {
       return initialState;
-    }
+    },
   },
 });
 

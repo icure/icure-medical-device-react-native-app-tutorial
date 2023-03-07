@@ -46,9 +46,8 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   option: {
-    fontWeight: '400',
     fontSize: 12,
-    fontFamily: 'Nunito',
+    fontFamily: 'Nunito-Regular',
     color: '#151B5D',
     marginLeft: 8,
     marginRight: 4,

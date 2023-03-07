@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import {StyleSheet, View, Dimensions} from 'react-native';
-import DatePicker from '@react-native-community/datetimepicker';
+import DatePicker from 'react-native-modern-datepicker';
+import {format} from 'date-fns';
 
 import {globalStyles} from '../../../styles/GlobalStyles';
 import {SquareButton} from '../index';
@@ -10,14 +11,14 @@ const HEIGHT_MODAL = Dimensions.get('window').height;
 
 type DatePickerModalProps = {
   onClose: () => void;
-  onSave: (date: Date) => void;
-  patientBirthDay: Date;
+  onSave: (date: number) => void;
+  patientBirthDay: number;
 };
 
 export const DatePickerModal: React.FC<DatePickerModalProps> = ({onClose, patientBirthDay, onSave}) => {
-  const [date, setDate] = useState(patientBirthDay ?? new Date());
+  const [date, setDate] = useState(patientBirthDay ?? +format(new Date(), 'yyyyMMdd'));
 
-  const onDateChange = (_, selectedDate: Date) => {
+  const onDateChange = (selectedDate: number) => {
     setDate(selectedDate);
   };
 
@@ -30,11 +31,34 @@ export const DatePickerModal: React.FC<DatePickerModalProps> = ({onClose, patien
     onClose();
   };
 
+  const getDateFormat = (value: number) => {
+    if (!value) {
+      return undefined;
+    }
+    const year = Math.floor(value / 10000);
+    const month = Math.floor(value / 100) % 100;
+    const day = value % 100;
+
+    return `${year}/${month}/${day}`;
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.popup}>
         <View style={styles.scrollableContainer}>
-          <DatePicker value={date} mode="date" display="spinner" onChange={onDateChange} />
+          <DatePicker
+            onSelectedChange={(newData: string) => {
+              onDateChange(+newData.replace(/[/]/g, ''));
+            }}
+            selected={getDateFormat(date)}
+            mode="calendar"
+            current={getDateFormat(date)}
+            options={{
+              mainColor: '#D06676',
+              defaultFont: 'Nunito-Regular',
+              headerFont: 'Nunito-Regular',
+            }}
+          />
 
           {/* ButtonsGroup */}
           <View style={[globalStyles.mt24, styles.buttonsGroup]}>
@@ -54,11 +78,11 @@ const styles = StyleSheet.create({
     width: WIDTH_MODAL,
     height: HEIGHT_MODAL,
     backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    justifyContent: 'flex-end',
   },
   popup: {
     width: '100%',
-    marginTop: HEIGHT_MODAL * 0.6,
-    height: HEIGHT_MODAL,
+    height: 'auto',
     backgroundColor: '#FFFDFE',
     borderTopRightRadius: 15,
     borderTopLeftRadius: 15,

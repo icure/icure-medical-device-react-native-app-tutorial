@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
   },
   smallText: {
     fontSize: 12,
-    fontFamily: 'Nunito',
+    fontFamily: 'Nunito-Regular',
   },
   smallContainer: {
     paddingHorizontal: 12,

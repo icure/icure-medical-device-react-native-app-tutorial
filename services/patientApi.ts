@@ -9,6 +9,15 @@ export const patientApiRtk = createApi({
     baseUrl: '/rest/v1/patient',
   }),
   endpoints: builder => ({
+    getPatient: builder.query<Patient, string>({
+      async queryFn(id, {getState}) {
+        const {patientApi} = await medTechApi(getState);
+        return guard([patientApi], () => {
+          return patientApi.getPatient(id);
+        });
+      },
+      providesTags: ({id}) => [{type: 'Patient', id}],
+    }),
     currentPatient: builder.query<Patient, void>({
       async queryFn(_, {getState}) {
         const {patientApi, dataOwnerApi} = await medTechApi(getState);
@@ -20,7 +29,16 @@ export const patientApiRtk = createApi({
       },
       providesTags: ({id}) => [{type: 'Patient', id}],
     }),
+    createOrUpdatePatient: builder.mutation<Patient, Patient>({
+      async queryFn(patient, {getState}) {
+        const {patientApi} = await medTechApi(getState);
+        return guard([patientApi], () => {
+          return patientApi.createOrModifyPatient(patient);
+        });
+      },
+      invalidatesTags: ({id}) => [{type: 'Patient', id}],
+    }),
   }),
 });
 
-export const {useCurrentPatientQuery} = patientApiRtk;
+export const {useGetPatientQuery, useCurrentPatientQuery, useCreateOrUpdatePatientMutation} = patientApiRtk;

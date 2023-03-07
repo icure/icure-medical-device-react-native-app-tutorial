@@ -1,8 +1,8 @@
-import {AnonymousMedTechApi, AnonymousMedTechApiBuilder, ICURE_CLOUD_URL, MedTechApi, MedTechApiBuilder, MSG_GW_CLOUD_URL, User} from '@icure/medical-device-sdk';
+import {AnonymousMedTechApi, AnonymousMedTechApiBuilder, ICURE_CLOUD_URL, MedTechApi, MedTechApiBuilder, MSG_GW_CLOUD_URL, User, ua2b64} from '@icure/medical-device-sdk';
 import crypto from '@icure/icure-react-native-crypto';
 import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {AuthenticationProcess} from '@icure/medical-device-sdk/src/models/AuthenticationProcess';
-import {setSavedCredentials} from '../config/PetraState';
+import {revertAll, setSavedCredentials} from '../config/PetraState';
 import Config from 'react-native-config';
 import {FetchBaseQueryError} from '@reduxjs/toolkit/query';
 import storage from '../utils/storage';
@@ -13,7 +13,7 @@ export interface MedTechApiState {
   email?: string;
   token?: string;
   user?: User;
-  keiPair?: {publicKey: string; privateKey: string};
+  keyPair?: {publicKey: string; privateKey: string};
   authProcess?: AuthenticationProcess;
   online: boolean;
   invalidEmail: boolean;
@@ -28,7 +28,7 @@ const initialState: MedTechApiState = {
   email: undefined,
   token: undefined,
   user: undefined,
-  keiPair: undefined,
+  keyPair: undefined,
   authProcess: undefined,
   online: false,
   invalidEmail: false,
@@ -56,7 +56,17 @@ export const guard = async <T>(guardedInputs: unknown[], lambda: () => Promise<T
   try {
     const res = await lambda();
     const curate = (result: T): T => {
-      return (result === null || result === undefined ? null : Array.isArray(result) ? result.map(curate) : typeof result === 'object' ? (result as any).marshal() : result) as T;
+      return (
+        result === null || result === undefined
+          ? null
+          : res instanceof ArrayBuffer
+          ? ua2b64(res)
+          : Array.isArray(result)
+          ? result.map(curate)
+          : typeof result === 'object'
+          ? (result as any).marshal()
+          : result
+      ) as T;
     };
     return {data: curate(res)};
   } catch (e) {
@@ -136,8 +146,6 @@ export const completeAuthentication = createAsyncThunk('medTechApi/completeAuthe
   const api = result.medTechApi;
   const user = await api.userApi.getLoggedUser();
 
-  await api.initUserCrypto();
-
   apiCache[`${result.groupId}/${result.userId}`] = api;
   delete apiCache[`${authProcess.login}/${authProcess.requestId}`];
 
@@ -172,13 +180,18 @@ export const login = createAsyncThunk('medTechApi/login', async (_, {getState}) 
     .withUserName(email)
     .withPassword(token)
     .build();
-
-  await api.initUserCrypto();
+  const userKeyPair = await api.initUserCrypto();
   const user = await api.userApi.getLoggedUser();
+  await api.addKeyPair(api.dataOwnerApi.getDataOwnerIdOf(user), userKeyPair[0]);
 
   apiCache[`${user.groupId}/${user.id}`] = api;
 
   return user?.marshal();
+});
+
+export const logout = createAsyncThunk('medTechApi/logout', async (payload, {getState, dispatch}) => {
+  dispatch(revertAll());
+  dispatch(resetCredentials());
 });
 
 export const api = createSlice({
@@ -203,6 +216,9 @@ export const api = createSlice({
       state.firstName = firstName;
       state.lastName = lastName;
       state.email = email;
+    },
+    resetCredentials(state) {
+      state.online = false;
     },
   },
   extraReducers: builder => {
@@ -230,4 +246,4 @@ export const api = createSlice({
   },
 });
 
-export const {setEmail, setToken, setAuthProcess, setUser, setRegistrationInformation} = api.actions;
+export const {setEmail, setToken, setAuthProcess, setUser, setRegistrationInformation, resetCredentials} = api.actions;

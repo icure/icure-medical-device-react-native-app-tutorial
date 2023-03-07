@@ -1,24 +1,40 @@
-import React from 'react';
-import {ScrollView, StyleSheet, Image, View, Dimensions} from 'react-native';
+import React, {useState} from 'react';
+import {ScrollView, StyleSheet, Image, View, Dimensions, Modal, TouchableOpacity} from 'react-native';
 
 import {Header} from '../components/Header';
+import {AdvancedCalendar} from '../components/AdvancedCalendar';
+import {SymbolsExplanationModal} from '../components/SymbolsExplanationModal';
 import {useCurrentPatientQuery} from '../services/patientApi';
-
-/* List Calendar is additional pop up for adding periods for previous months */
-// import {ListCalendar} from '../components/ListCalendar';
+import {CyclesHistory} from '../components/CyclesHistory';
 
 const WIDTH_MODAL = Dimensions.get('window').width;
 const HEIGHT_MODAL = Dimensions.get('window').height;
 
 export const Home = () => {
+  const [symbolsExplanationmodalVisible, setSymbolsExplanationModalVisible] = useState(false);
+
   const {data: patient} = useCurrentPatientQuery();
 
   return (
     <ScrollView contentContainerStyle={styles.homeScreen}>
       <View style={styles.contentTopBlock}>
-        <Header userName={patient ? `${patient.firstName} ${patient.lastName}` : 'User'} />
+        <Header userName={patient?.firstName || patient?.lastName ? `${patient.firstName} ${patient.lastName}` : 'Dear User'} />
         <Image style={styles.logo} source={require('../assets/images/logo-with-pod.png')} />
+        <TouchableOpacity style={styles.infoIcnContainer} onPress={() => setSymbolsExplanationModalVisible(true)}>
+          <Image style={styles.infoIcn} source={require('../assets/images/info.png')} />
+        </TouchableOpacity>
       </View>
+      <AdvancedCalendar />
+      <CyclesHistory />
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={symbolsExplanationmodalVisible}
+        onRequestClose={() => {
+          setSymbolsExplanationModalVisible(!symbolsExplanationmodalVisible);
+        }}>
+        <SymbolsExplanationModal onClose={() => setSymbolsExplanationModalVisible(!symbolsExplanationmodalVisible)} />
+      </Modal>
     </ScrollView>
   );
 };

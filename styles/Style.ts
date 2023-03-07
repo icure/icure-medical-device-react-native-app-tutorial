@@ -7,7 +7,7 @@ export const styles = StyleSheet.create({
   },
   header: {
     fontSize: 20,
-    fontFamily: 'Nunito',
+    fontFamily: 'Nunito-Regular',
   },
   nav: {
     flexDirection: 'row',
@@ -24,6 +24,6 @@ export const styles = StyleSheet.create({
   topic: {
     textAlign: 'center',
     fontSize: 15,
-    fontFamily: 'Nunito',
+    fontFamily: 'Nunito-Regular',
   },
 });

@@ -9,13 +9,13 @@
  */
 
 import React from 'react';
-import {SafeAreaView, ScrollView, StatusBar, Text, useColorScheme} from 'react-native';
+import {ScrollView, StatusBar, Text, useColorScheme} from 'react-native';
 
-import {Colors} from 'react-native/Libraries/NewAppScreen';
 import {Router} from './navigation/Router';
 import {Provider} from 'react-redux';
 import {persistor, store} from './redux/store';
 import {PersistGate} from 'redux-persist/integration/react';
+import 'react-native-get-random-values';
 
 Buffer = require('@craftzdog/react-native-buffer').Buffer;
 
@@ -23,7 +23,6 @@ const App = () => {
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
-    // backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
     backgroundColor: '#FFFDFE',
     flex: 1,
   };
