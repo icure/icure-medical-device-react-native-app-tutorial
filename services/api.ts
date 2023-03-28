@@ -51,7 +51,7 @@ export const currentUser = (getState: () => unknown) => {
   return state.medTechApi.user;
 };
 
-export const guard = async <T>(guardedInputs: unknown[], lambda: () => Promise<T>): Promise<{error: FetchBaseQueryError} | {data: T}> => {
+export const guard = async <T>(guardedInputs: unknown[], lambda: () => Promise<T>): Promise<{error: FetchBaseQueryError} | {data: T|undefined}> => {
   if (guardedInputs.some(x => !x)) {
     return {data: undefined};
   }
@@ -106,8 +106,6 @@ export const startAuthentication = createAsyncThunk('medTechApi/startAuthenticat
     throw new Error('No email provided');
   }
 
-  console.log('startAuthentication', email);
-
   const anonymousApi = await new AnonymousMedTechApiBuilder()
     .withCrypto(crypto)
     .withICureBaseUrl(`${ICURE_CLOUD_URL}/rest/v1`)
@@ -156,7 +154,7 @@ export const completeAuthentication = createAsyncThunk('medTechApi/completeAuthe
   }
 
   const anonymousApi = apiCache[`${authProcess.login}/${authProcess.requestId}`] as AnonymousMedTechApi;
-  const result = await anonymousApi.authenticationApi.completeAuthentication(authProcess, token, () => anonymousApi.generateRSAKeypair());
+  const result = await anonymousApi.authenticationApi.completeAuthentication(authProcess, token);
   const api = result.medTechApi;
   const user = await api.userApi.getLoggedUser();
 

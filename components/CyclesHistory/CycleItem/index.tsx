@@ -1,11 +1,12 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {StyleSheet, Image, Text, View, TouchableOpacity} from 'react-native';
 import {format, formatDistanceStrict, isEqual, eachDayOfInterval} from 'date-fns';
 
 import {globalStyles} from '../../../styles/GlobalStyles';
 import {useGetDataSampleBetween2DatesQuery} from '../../../services/dataSampleApi';
-import {complaintsData} from '../../../utils/constants';
-import {getNextDay, getDayInDateFormat, getDayInNumberFormat} from '../../../utils/helpers';
+import { getDayInDateFormat, getDayInNumberFormat, getNextDay } from '../../../utils/helpers';
+import { DataSample } from '@icure/medical-device-sdk';
+import { complaintsData } from '../../../utils/constants';
 
 type CycleItemProps = {
   cycle: {
@@ -29,46 +30,69 @@ export const CycleItem: React.FC<CycleItemProps> = ({cycle, expanded}) => {
 
   const nextCycleFirstDay = getDayInNumberFormat(getNextDay(getDayInDateFormat(currentCycleLastDay)));
 
-  const {data: flowLevelDataSampleBetween2Dates, isLoading: flowLevelDataSampleBetween2DatesIsLoading} = useGetDataSampleBetween2DatesQuery({
-    tagType: 'LOINC',
-    tagCode: '49033-4',
+  const { data: flowLevelComplaintsAndNotesDataSamplesBetween2Dates, isLoading: flowLevelDataSampleBetween2DatesIsLoading } = useGetDataSampleBetween2DatesQuery({
+    tagCodes: [
+      {
+        tagType: 'LOINC',
+        tagCode: '49033-4',
+      },
+      {
+        tagType: 'LOINC',
+        tagCode: '75322-8',
+      },
+      {
+        tagType: 'LOINC',
+        tagCode: '34109-9',
+      },
+    ],
     startDate: currentCycleFirstDay,
     endDate: nextCycleFirstDay,
   });
 
-  const {data: complaintDataSampleBetween2Dates, isLoading: complaintDataSampleBetween2DatesIsLoading} = useGetDataSampleBetween2DatesQuery({
-    tagType: 'LOINC',
-    tagCode: '75322-8',
-    startDate: currentCycleFirstDay,
-    endDate: nextCycleFirstDay,
-  });
+  const [dataSamples, setDataSamples] = useState<{ flowLevel: DataSample[], complaints: DataSample[], notes: DataSample[] }| undefined>()
 
-  const {data: noteDataSampleBetween2Dates, isLoading: noteDataSampleBetween2DatesIsLoading} = useGetDataSampleBetween2DatesQuery({
-    tagType: 'LOINC',
-    tagCode: '34109-9',
-    startDate: currentCycleFirstDay,
-    endDate: nextCycleFirstDay,
-  });
+  useEffect(() => {
+    if (!!flowLevelComplaintsAndNotesDataSamplesBetween2Dates) {
+      const dataSamplesToProcess = flowLevelComplaintsAndNotesDataSamplesBetween2Dates!.rows
 
-  const daysOfTheCycle = eachDayOfInterval({start: getDayInDateFormat(currentCycleFirstDay), end: getDayInDateFormat(currentCycleLastDay)});
+      const flowLevelDataSample = dataSamplesToProcess
+        .filter(ds => [...ds.labels].some(it => it.type === 'LOINC' && it.code === '49033-4'));
+
+      const complainsDataSample = dataSamplesToProcess
+        .filter(ds => [...ds.labels].some(it => it.type === 'LOINC' && it.code === '75322-8'));
+
+      const notesDataSample = dataSamplesToProcess
+        .filter(ds => [...ds.labels].some(it => it.type === 'LOINC' && it.code === '34109-9'));
+
+      setDataSamples({ flowLevel: flowLevelDataSample, complaints: complainsDataSample, notes: notesDataSample })
+    }
+  }, [flowLevelComplaintsAndNotesDataSamplesBetween2Dates])
 
   const getTodayFlowLevelData = (currentDay: Date) => {
-    if (!flowLevelDataSampleBetween2DatesIsLoading) {
-      return flowLevelDataSampleBetween2Dates?.rows.find(item => item?.valueDate === getDayInNumberFormat(currentDay) && item?.content?.en?.measureValue?.value > 0);
+    if (!!dataSamples) {
+      return dataSamples
+        .flowLevel
+        .find(item => item.valueDate === getDayInNumberFormat(currentDay) && item.content?.en?.measureValue?.value > 0);
     }
   };
 
   const getTodayComplaintData = (currentDay: Date) => {
-    if (!complaintDataSampleBetween2DatesIsLoading) {
-      return complaintDataSampleBetween2Dates?.rows.filter(item => item.valueDate === getDayInNumberFormat(currentDay));
+    if (!!dataSamples) {
+      return dataSamples
+      .complaints
+      .filter(item => item.valueDate === getDayInNumberFormat(currentDay));
     }
   };
 
   const getTodayNotesData = (currentDay: Date) => {
-    if (!noteDataSampleBetween2DatesIsLoading) {
-      return noteDataSampleBetween2Dates?.rows.find(item => item.valueDate === getDayInNumberFormat(currentDay));
+    if (!!dataSamples) {
+      return dataSamples
+      .notes
+      .find(item => item.valueDate === getDayInNumberFormat(currentDay));
     }
   };
+
+  const daysOfTheCycle = eachDayOfInterval({start: getDayInDateFormat(currentCycleFirstDay), end: getDayInDateFormat(currentCycleLastDay)});
 
   return (
     <View style={cycleItemStyles.container}>
@@ -85,7 +109,7 @@ export const CycleItem: React.FC<CycleItemProps> = ({cycle, expanded}) => {
             ` (${formatDistanceStrict(getDayInDateFormat(currentCycleFirstDay), getDayInDateFormat(currentCycleLastDay), {unit: 'day'})})`
           : getFormatedDaysTitle(currentCycleFirstDay) + ' - ' + getFormatedDaysTitle(currentCycleLastDay)}
       </Text>
-      <Text style={cycleItemStyles.subtitle}>{flowLevelDataSampleBetween2Dates?.rows.filter(item => item?.content?.en?.measureValue?.value > 0).length}-day period</Text>
+      <Text style={cycleItemStyles.subtitle}>{dataSamples?.flowLevel?.filter(item => item?.content?.en?.measureValue?.value > 0).length}-day period</Text>
       <View style={cycleItemStyles.daysContainer}>
         {daysOfTheCycle.map((item, index) => {
           const day = format(new Date(item), 'dd');
@@ -125,7 +149,7 @@ export const CycleItem: React.FC<CycleItemProps> = ({cycle, expanded}) => {
                 const userFlowLevelData = getTodayFlowLevelData(dayWithTheData);
                 const userComplaintData = getTodayComplaintData(dayWithTheData);
                 const userNotesData = getTodayNotesData(dayWithTheData);
-                const selectedComplaintsCodes = userComplaintData?.map(selectedComplain => selectedComplain.codes[0].code);
+                const selectedComplaintsCodes = userComplaintData?.map(selectedComplain => [...selectedComplain.codes][0].code);
 
                 return [
                   userFlowLevelData && (

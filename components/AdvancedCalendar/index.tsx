@@ -6,6 +6,7 @@ import {format, lastDayOfMonth, formatDistanceStrict, add, max, isWithinInterval
 import {AddUserDataSampleModal} from '../AddUserDataSampleModal';
 import {useGetDataSampleBetween2DatesQuery, useGetDataSampleByTagTypeQuery} from '../../services/dataSampleApi';
 import {getCyclesDates, getDayInDateFormat, getNextDay, getDayInNumberFormat} from '../../utils/helpers';
+import { DataSample } from '@icure/medical-device-sdk';
 
 type DayOfTheMonthProps = {
   dayData: any;
@@ -98,26 +99,52 @@ export const AdvancedCalendar: React.FC = () => {
     setNextMonthFirstDate(+format(getNextDay(lastDayOfMonth(currentMonth)), 'yyyyMMdd') * 1000000);
   }, [currentMonth]);
 
-  const {data: flowLevelDataSampleBetween2Dates, isLoading: flowLevelDataSampleBetween2DatesIsLoading} = useGetDataSampleBetween2DatesQuery({
-    tagType: 'LOINC',
-    tagCode: '49033-4',
+  const {data: flowLevelComplaintsAndNotesDataSamplesBetween2Dates, isLoading: flowLevelComplaintsAndNotesDataSamplesBetween2DatesIsLoading} = useGetDataSampleBetween2DatesQuery({
+    tagCodes: [
+      {tagType: 'LOINC', tagCode: '49033-4'},
+      {tagType: 'LOINC', tagCode: '75322-8'},
+      {tagType: 'LOINC', tagCode: '34109-9'},
+    ],
     startDate: currentMonthFirstDate,
     endDate: nextMonthFirstDate,
-  });
+  })
 
-  const {data: complaintDataSampleBetween2Dates, isLoading: complaintDataSampleBetween2DatesIsLoading} = useGetDataSampleBetween2DatesQuery({
-    tagType: 'LOINC',
-    tagCode: '75322-8',
-    startDate: currentMonthFirstDate,
-    endDate: nextMonthFirstDate,
-  });
+  const [dataSamples, setDataSamples] = useState<{ flowLevel: DataSample[], complaints: DataSample[], notes: DataSample[] } | undefined>()
 
-  const {data: noteDataSampleBetween2Dates, isLoading: noteDataSampleBetween2DatesIsLoading} = useGetDataSampleBetween2DatesQuery({
-    tagType: 'LOINC',
-    tagCode: '34109-9',
-    startDate: currentMonthFirstDate,
-    endDate: nextMonthFirstDate,
-  });
+  useEffect(() => {
+    if (!!flowLevelComplaintsAndNotesDataSamplesBetween2Dates) {
+      const dataSamplesToProcess = flowLevelComplaintsAndNotesDataSamplesBetween2Dates!.rows
+
+      const flowLevelDataSample = dataSamplesToProcess
+        .filter(ds => [...ds.labels].some(it => it.type === 'LOINC' && it.code === '49033-4'));
+
+      const complainsDataSample = dataSamplesToProcess
+        .filter(ds => [...ds.labels].some(it => it.type === 'LOINC' && it.code === '75322-8'));
+
+      const notesDataSample = dataSamplesToProcess
+        .filter(ds => [...ds.labels].some(it => it.type === 'LOINC' && it.code === '34109-9'));
+
+      setDataSamples({ flowLevel: flowLevelDataSample, complaints: complainsDataSample, notes: notesDataSample })
+    }
+  }, [flowLevelComplaintsAndNotesDataSamplesBetween2Dates])
+
+  const getTodayFlowLevelData = (currentDay: Date) => {
+    if (!!dataSamples) {
+      return dataSamples.flowLevel.find(item => item.valueDate === getDayInNumberFormat(currentDay));
+    }
+  };
+
+  const getTodayComplaintDatas = (currentDay: Date) => {
+    if (!!dataSamples) {
+      return dataSamples.complaints.filter(item => item.valueDate === getDayInNumberFormat(currentDay));
+    }
+  };
+
+  const getTodayNotesData = (currentDay: Date) => {
+    if (!!dataSamples) {
+      return dataSamples.notes.find(item => item.valueDate === getDayInNumberFormat(currentDay));
+    }
+  };
 
   const {data: allFlowLevelDataSamples, isLoading: allFlowLevelDataSamplesIsLoading} = useGetDataSampleByTagTypeQuery({
     tagType: 'LOINC',
@@ -127,24 +154,6 @@ export const AdvancedCalendar: React.FC = () => {
   const getShortNameOfTheMonth = (today: Date, direction: 'prev' | 'next') => {
     const monthData = direction === 'prev' ? new Date(today.getFullYear(), today.getMonth() - 1, 1) : new Date(today.getFullYear(), today.getMonth() + 1, 1);
     return monthNameFormatter('short').format(new Date(monthData)) + ',' + monthData.getFullYear();
-  };
-
-  const getTodayFlowLevelData = (currentDay: Date) => {
-    if (!flowLevelDataSampleBetween2DatesIsLoading) {
-      return flowLevelDataSampleBetween2Dates?.rows.find(item => item.valueDate === getDayInNumberFormat(currentDay));
-    }
-  };
-
-  const getTodayComplaintDatas = (currentDay: Date) => {
-    if (!complaintDataSampleBetween2DatesIsLoading) {
-      return complaintDataSampleBetween2Dates?.rows.filter(item => item.valueDate === getDayInNumberFormat(currentDay));
-    }
-  };
-
-  const getTodayNotesData = (currentDay: Date) => {
-    if (!noteDataSampleBetween2DatesIsLoading) {
-      return noteDataSampleBetween2Dates?.rows.find(item => item.valueDate === getDayInNumberFormat(currentDay));
-    }
   };
 
   const predictedPeriodDates = useMemo(() => {
@@ -199,7 +208,7 @@ export const AdvancedCalendar: React.FC = () => {
           currentNotesData={getTodayNotesData}
         />
       </Modal>
-      {flowLevelDataSampleBetween2DatesIsLoading || complaintDataSampleBetween2DatesIsLoading || noteDataSampleBetween2DatesIsLoading ? (
+      {flowLevelComplaintsAndNotesDataSamplesBetween2DatesIsLoading ? (
         <View style={styles.activityIndicator}>
           <ActivityIndicator color="#151B5D" />
         </View>

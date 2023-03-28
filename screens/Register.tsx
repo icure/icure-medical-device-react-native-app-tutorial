@@ -43,7 +43,7 @@ export const Register = (): JSX.Element => {
     dispatch(startAuthentication());
   };
 
-  const onRegister = (data: {userEmail: string; userFirstName: string; userLastName: string; userCode: string}) => {
+  const onRegister = (data: {userCode: string}) => {
     setWaitingForCode(false);
     dispatch(setToken({token: data.userCode}));
     dispatch(completeAuthentication());
