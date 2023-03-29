@@ -2,11 +2,13 @@ import React, {useEffect, useState} from 'react';
 import {View, Image, Text, StyleSheet} from 'react-native';
 import {useForm, Controller} from 'react-hook-form';
 import {useNavigate} from 'react-router-native';
+import Config from 'react-native-config';
 
 import {RoundedInput, RoundedButton, TextHelper, ErrorMessage} from '../components/FormElements';
-import {completeAuthentication, login, setEmail, setToken, startAuthentication} from '../services/api';
+import {completeAuthentication, login, setEmail, setToken, startAuthentication, setRecaptcha} from '../services/api';
 import {useAppDispatch, useAppSelector} from '../redux/hooks';
 import {routes} from '../navigation/Router';
+import {WebViewComponent} from '../components/WebViewComponent';
 
 export const Login = () => {
   const [isWaitingForCode, setWaitingForCode] = useState(false);
@@ -83,6 +85,10 @@ export const Login = () => {
           ) : null}
         </View>
 
+        <View style={styles.webviewContainer}>
+          <WebViewComponent sitekey={Config.FRIENDLY_CAPTCHA_KEY} onFinish={value => dispatch(setRecaptcha({recaptcha: value}))} />
+        </View>
+
         {isWaitingForCode ? <RoundedButton title="Login" onClick={handleSubmit(onLogin)} /> : <RoundedButton title="Receive a one time code" onClick={handleSubmit(onAskCode)} />}
 
         <View style={styles.textHelperContainer}>
@@ -123,5 +129,9 @@ const styles = StyleSheet.create({
   },
   textHelperContainer: {
     marginTop: 24,
+  },
+  webviewContainer: {
+    width: '100%',
+    marginBottom: 24,
   },
 });

@@ -14,7 +14,7 @@ import com.facebook.soloader.SoLoader;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.List;
-import com.lugg.ReactNativeConfig.ReactNativeConfigPackage;
+import com.lugg.RNCConfig.RNCConfigPackage;
 import com.reactnativecommunity.webview.RNCWebViewPackage;
 import com.reactnativemmkv.MmkvPackage;
 import com.reactnativequickbase64.QuickBase64Package;
@@ -37,7 +37,7 @@ public class MainApplication extends Application implements ReactApplication {
           protected List<ReactPackage> getPackages() {
               return Arrays.asList(
                       new MainReactPackage(),
-                      new ReactNativeConfigPackage(),
+                      new RNCConfigPackage(),
                       new MmkvPackage(),
                       new RNGetRandomValuesPackage(),
                       new QuickBase64Package(),

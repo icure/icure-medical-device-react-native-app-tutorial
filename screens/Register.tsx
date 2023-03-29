@@ -1,12 +1,14 @@
 import React, {useEffect, useState} from 'react';
 import {View, Image, Text, StyleSheet, ScrollView} from 'react-native';
 import {useForm, Controller} from 'react-hook-form';
+import {useNavigate} from 'react-router-native';
+import Config from 'react-native-config';
 
 import {RoundedInput, RoundedButton, TextHelper, ErrorMessage} from '../components/FormElements';
 import {useAppDispatch, useAppSelector} from '../redux/hooks';
-import {setRegistrationInformation, setToken, startAuthentication, completeAuthentication} from '../services/api';
-import {useNavigate} from 'react-router-native';
+import {setRegistrationInformation, setToken, startAuthentication, completeAuthentication, setRecaptcha} from '../services/api';
 import {routes} from '../navigation/Router';
+import {WebViewComponent} from '../components/WebViewComponent';
 
 export const Register = (): JSX.Element => {
   const {
@@ -96,6 +98,10 @@ export const Register = (): JSX.Element => {
           ) : null}
         </View>
 
+        <View style={styles.webviewContainer}>
+          <WebViewComponent sitekey={Config.FRIENDLY_CAPTCHA_KEY} onFinish={value => dispatch(setRecaptcha({recaptcha: value}))} />
+        </View>
+
         {isWaitingForCode ? (
           <RoundedButton title="Register" onClick={handleSubmit(onRegister)} />
         ) : (
@@ -140,5 +146,9 @@ const styles = StyleSheet.create({
   },
   textHelperContainer: {
     marginTop: 24,
+  },
+  webviewContainer: {
+    width: '100%',
+    marginBottom: 24,
   },
 });
