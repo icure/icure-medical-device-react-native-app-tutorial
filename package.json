@@ -13,7 +13,7 @@
   "dependencies": {
     "@craftzdog/react-native-buffer": "^6.0.5",
     "@icure/icure-react-native-crypto": "^1.0.8",
-    "@icure/medical-device-sdk": "^2.0.3",
+    "@icure/medical-device-sdk": "^2.2.1",
     "@icure/react-native-aes-crypto": "^2.2.11",
     "@icure/react-native-rsa-native": "^2.1.11",
     "@reduxjs/toolkit": "^1.9.0",
@@ -26,8 +26,7 @@
     "react-native-mmkv": "^2.7.0",
     "react-native-modern-datepicker": "^1.0.0-beta.91",
     "react-native-quick-base64": "^2.0.5",
-    "react-native-recaptcha-that-works": "^1.3.2",
-    "react-native-webview": "^11.23.1",
+    "react-native-webview": "12.0.0-rc.2",
     "react-redux": "^8.0.5",
     "react-router-native": "^6.4.3",
     "redux-persist": "^6.0.0"

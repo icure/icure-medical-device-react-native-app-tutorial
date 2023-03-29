@@ -22,6 +22,7 @@ export interface MedTechApiState {
   lastName?: string;
   dateOfBirth?: number;
   mobilePhone?: string;
+  recaptcha?: string;
 }
 
 const initialState: MedTechApiState = {
@@ -37,6 +38,7 @@ const initialState: MedTechApiState = {
   lastName: undefined,
   dateOfBirth: undefined,
   mobilePhone: undefined,
+  recaptcha: undefined,
 };
 
 export const medTechApi = async (getState: () => unknown) => {
@@ -97,7 +99,7 @@ export const getApiFromState = async (getState: () => MedTechApiState | {medTech
 
 export const startAuthentication = createAsyncThunk('medTechApi/startAuthentication', async (_payload, {getState}) => {
   const {
-    medTechApi: {email, firstName, lastName},
+    medTechApi: {email, firstName, lastName, recaptcha},
   } = getState() as {medTechApi: MedTechApiState};
 
   if (!email) {
@@ -119,7 +121,22 @@ export const startAuthentication = createAsyncThunk('medTechApi/startAuthenticat
 
   console.log('medTechApi built');
 
-  const authProcess = await anonymousApi.authenticationApi.startAuthentication(Config.REACT_APP_RECAPTCHA!, email, undefined, firstName, lastName, Config.REACT_APP_PETRA_HCP);
+  console.log('recaptcha');
+  console.log(recaptcha);
+
+  const recaptchaType = 'friendly-captcha';
+
+  const authProcess = await anonymousApi.authenticationApi.startAuthentication(
+    recaptcha,
+    email,
+    undefined,
+    firstName,
+    lastName,
+    Config.REACT_APP_PETRA_HCP,
+    undefined,
+    undefined,
+    recaptchaType,
+  );
 
   console.log('authProcess', authProcess);
 
@@ -220,6 +237,9 @@ export const api = createSlice({
     resetCredentials(state) {
       state.online = false;
     },
+    setRecaptcha: (state, {payload: {recaptcha}}: PayloadAction<{recaptcha: string}>) => {
+      state.recaptcha = recaptcha;
+    },
   },
   extraReducers: builder => {
     builder.addCase(startAuthentication.fulfilled, (state, {payload: authProcess}) => {
@@ -246,4 +266,4 @@ export const api = createSlice({
   },
 });
 
-export const {setEmail, setToken, setAuthProcess, setUser, setRegistrationInformation, resetCredentials} = api.actions;
+export const {setEmail, setToken, setAuthProcess, setUser, setRegistrationInformation, resetCredentials, setRecaptcha} = api.actions;

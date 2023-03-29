@@ -1,6 +1,7 @@
 apply plugin: "com.android.application"
-apply plugin: "com.facebook.react"
 apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
+apply plugin: "com.facebook.react"
+
 
 import com.android.build.OutputFile
 
@@ -154,6 +155,7 @@ dependencies {
     implementation("com.facebook.react:react-android")
 
     implementation project(':react-native-config')
+    implementation project(':react-native-webview')
 
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.0.0")
 
