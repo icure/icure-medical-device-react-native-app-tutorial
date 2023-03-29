@@ -121,9 +121,6 @@ export const startAuthentication = createAsyncThunk('medTechApi/startAuthenticat
 
   console.log('medTechApi built');
 
-  console.log('recaptcha');
-  console.log(recaptcha);
-
   const recaptchaType = 'friendly-captcha';
 
   const authProcess = await anonymousApi.authenticationApi.startAuthentication(
