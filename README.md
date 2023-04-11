@@ -1,6 +1,6 @@
 <p align="center">
     <a href="https://docs.icure.com/sdks/tutorial/petra/foreword">
-        <img alt="icure-your-data-platform-for-medtech-and-ehr" src="./petra_logo.svg">
+        <img alt="icure-your-data-platform-for-medtech-and-ehr" src="./petra_logo.svg" width="500">
     </a>
     <h1 align="center">Petra, your iCure patient-oriented Sample App</h1>
 </p>
