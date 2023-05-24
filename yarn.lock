@@ -1171,9 +1171,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@icure/api@npm:^6.3.0":
-  version: 6.3.1
-  resolution: "@icure/api@npm:6.3.1"
+"@icure/api@npm:^6.4.0":
+  version: 6.4.1
+  resolution: "@icure/api@npm:6.4.1"
   dependencies:
     date-fns: ^2.23.0
     libphonenumber-js: ^1.7.18
@@ -1182,7 +1182,7 @@ __metadata:
     text-encoding: ^0.7.0
     uuid: ^8.3.2
     uuid-encoder: ^1.1.0
-  checksum: ba747d5608fd77cd1b9a72cef192c79ed53037d1284cae161291fe1bcc8079a179f91d59ddf3277c533dcdce88fc5d2bab78b6a787280c2705926909a464376d
+  checksum: f860a624500a4190ea47e43878a2b830f856c40a1680a2cc792c8381b95f23527440f12acae412b92bf597fdbc14effc353a2da02b4100e434986c44d3699bae
   languageName: node
   linkType: hard
 
@@ -1204,18 +1204,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@icure/medical-device-sdk@npm:^2.2.1":
-  version: 2.2.1
-  resolution: "@icure/medical-device-sdk@npm:2.2.1"
+"@icure/medical-device-sdk@npm:^2.2.4":
+  version: 2.2.4
+  resolution: "@icure/medical-device-sdk@npm:2.2.4"
   dependencies:
-    "@icure/api": ^6.3.0
+    "@icure/api": ^6.4.0
     date-fns: ^2.28.0
     es6-promise: ^4.2.4
     loglevel: ^1.8.1
     node-jq: ^2.3.3
     uuid: ^8.3.2
-    ws: ^8.5.0
-  checksum: 7178847e0c7ea29341de902ffd0b623d72dbd585aa727cfcbb646f7795a496b88233085d34e0177cbabdbf695e6c9d044c4fdff079794c0f6109afd1bb48f60f
+    ws: ^8.13.0
+  checksum: 84255916b760f11a90f718e383168dd801ddb34f7f2398ef958d04b655403dad7c7421204d0beaa89d74c716d221299f4699fb3a1d54fa35820086a59943a54f
   languageName: node
   linkType: hard
 
@@ -8986,7 +8986,7 @@ __metadata:
     "@babel/runtime": ^7.12.5
     "@craftzdog/react-native-buffer": ^6.0.5
     "@icure/icure-react-native-crypto": ^1.0.8
-    "@icure/medical-device-sdk": ^2.2.1
+    "@icure/medical-device-sdk": ^2.2.4
     "@icure/react-native-aes-crypto": ^2.2.11
     "@icure/react-native-rsa-native": ^2.1.11
     "@react-native-community/eslint-config": ^2.0.0
@@ -11735,9 +11735,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:^8.5.0":
-  version: 8.12.1
-  resolution: "ws@npm:8.12.1"
+"ws@npm:^8.13.0":
+  version: 8.13.0
+  resolution: "ws@npm:8.13.0"
   peerDependencies:
     bufferutil: ^4.0.1
     utf-8-validate: ">=5.0.2"
@@ -11746,7 +11746,7 @@ __metadata:
       optional: true
     utf-8-validate:
       optional: true
-  checksum: 97301c1c4d838fc81bd413f370f75c12aabe44527b31323b761eab3043a9ecb7e32ffd668548382c9a6a5ad3a1c3a9249608e8338e6b939f2f9540f1e21970b5
+  checksum: 53e991bbf928faf5dc6efac9b8eb9ab6497c69feeb94f963d648b7a3530a720b19ec2e0ec037344257e05a4f35bd9ad04d9de6f289615ffb133282031b18c61c
   languageName: node
   linkType: hard
 

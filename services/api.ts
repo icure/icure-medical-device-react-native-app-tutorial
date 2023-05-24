@@ -106,20 +106,13 @@ export const startAuthentication = createAsyncThunk('medTechApi/startAuthenticat
     throw new Error('No email provided');
   }
 
-  console.log('startAuthentication', email);
-
   const anonymousApi = await new AnonymousMedTechApiBuilder()
     .withCrypto(crypto)
-    .withICureBaseUrl(`${ICURE_CLOUD_URL}/rest/v1`)
-    .withMsgGwUrl(MSG_GW_CLOUD_URL)
-    .withMsgGwSpecId(Config.REACT_APP_MSGGW_SPEC_ID!)
-    .withAuthProcessByEmailId(Config.REACT_APP_AUTH_PROCESS_BY_EMAIL_ID!)
-    .withAuthProcessBySmsId(Config.REACT_APP_AUTH_PROCESS_BY_EMAIL_ID!)
+    .withMsgGwSpecId(Config.EXTERNAL_SERVICES_SPEC_ID!)
+    .withAuthProcessByEmailId(Config.EMAIL_AUTHENTICATION_PROCESS_ID!)
     .withStorage(storage)
     .preventCookieUsage()
     .build();
-
-  console.log('medTechApi built');
 
   const recaptchaType = 'friendly-captcha';
 
@@ -129,13 +122,11 @@ export const startAuthentication = createAsyncThunk('medTechApi/startAuthenticat
     undefined,
     firstName,
     lastName,
-    Config.REACT_APP_PETRA_HCP,
+    Config.PARENT_ORGANISATION_ID,
     undefined,
     undefined,
     recaptchaType,
   );
-
-  console.log('authProcess', authProcess);
 
   apiCache[`${authProcess.login}/${authProcess.requestId}`] = anonymousApi;
 
@@ -184,11 +175,8 @@ export const login = createAsyncThunk('medTechApi/login', async (_, {getState}) 
 
   const api = await new MedTechApiBuilder()
     .withCrypto(crypto)
-    .withICureBaseUrl(`${ICURE_CLOUD_URL}/rest/v1`)
-    .withMsgGwUrl(MSG_GW_CLOUD_URL)
-    .withMsgGwSpecId(Config.REACT_APP_MSGGW_SPEC_ID!)
-    .withAuthProcessByEmailId(Config.REACT_APP_AUTH_PROCESS_BY_EMAIL_ID!)
-    .withAuthProcessBySmsId(Config.REACT_APP_AUTH_PROCESS_BY_EMAIL_ID!)
+    .withMsgGwSpecId(Config.EXTERNAL_SERVICES_SPEC_ID!)
+    .withAuthProcessByEmailId(Config.EMAIL_AUTHENTICATION_PROCESS_ID!)
     .withStorage(storage)
     .preventCookieUsage()
     .withUserName(email)
