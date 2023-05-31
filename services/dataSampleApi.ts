@@ -68,7 +68,7 @@ export const dataSampleApiRtk = createApi({
         return guard([dataSampleApi, dataOwnerApi], async () => {
           const dataOwner = dataOwnerApi.getDataOwnerIdOf(user);
           return await dataSampleApi.filterDataSample(
-            await new DataSampleFilter().forDataOwner(dataOwner).byLabelCodeFilter(tagType, tagCode, undefined, undefined, startDate, endDate).build(),
+            await new DataSampleFilter().forDataOwner(dataOwner).byLabelCodeDateFilter(tagType, tagCode, undefined, undefined, startDate, endDate).build(),
             nextDataSampleId,
             limit,
           );
@@ -83,7 +83,7 @@ export const dataSampleApiRtk = createApi({
         return guard([dataSampleApi, dataOwnerApi], async () => {
           const dataOwner = dataOwnerApi.getDataOwnerIdOf(user);
           return await dataSampleApi.filterDataSample(
-            await new DataSampleFilter().forDataOwner(dataOwner).byLabelCodeFilter(tagType, tagCode, undefined, undefined, undefined, undefined).build(),
+            await new DataSampleFilter().forDataOwner(dataOwner).byLabelCodeDateFilter(tagType, tagCode, undefined, undefined, undefined, undefined).build(),
             nextDataSampleId,
             limit,
           );

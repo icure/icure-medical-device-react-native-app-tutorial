@@ -147,7 +147,7 @@ export const completeAuthentication = createAsyncThunk('medTechApi/completeAuthe
   }
 
   const anonymousApi = apiCache[`${authProcess.login}/${authProcess.requestId}`] as AnonymousMedTechApi;
-  const result = await anonymousApi.authenticationApi.completeAuthentication(authProcess, token, () => anonymousApi.generateRSAKeypair());
+  const result = await anonymousApi.authenticationApi.completeAuthentication(authProcess, token);
   const api = result.medTechApi;
   const user = await api.userApi.getLoggedUser();
 
