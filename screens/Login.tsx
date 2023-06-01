@@ -86,7 +86,7 @@ export const Login = () => {
         </View>
 
         <View style={styles.webviewContainer}>
-          <WebViewComponent sitekey={Config.FRIENDLY_CAPTCHA_KEY} onFinish={value => dispatch(setRecaptcha({recaptcha: value}))} />
+          <WebViewComponent sitekey={Config.FRIENDLY_CAPTCHA_SITE_KEY} onFinish={value => dispatch(setRecaptcha({recaptcha: value}))} />
         </View>
 
         {isWaitingForCode ? <RoundedButton title="Login" onClick={handleSubmit(onLogin)} /> : <RoundedButton title="Receive a one time code" onClick={handleSubmit(onAskCode)} />}
