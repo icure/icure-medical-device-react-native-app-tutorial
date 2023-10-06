@@ -31,11 +31,11 @@ for workspace in $workspaces; do
       if [[ -f $depPath ]]; then
         # Get the repository, license, and version information
         repo=$(jq -r '.repository? | if type == "object" then .url else . end // "null"' $depPath)
-        license=$(jq -r '.license // "null"' $depPath)
+        license=$(jq -r '.license // "null"' $depPath | sed 's/AND/&/g')
         version=$(jq -r '.version // "null"' $depPath)
 
         # Add the information to the JSON array
-        report=$(echo $report | jq --arg dep $dependency --arg repo $repo --arg license $license --arg version $version '. + [{dependency: $dep, repository: $repo, license: $license, version: $version}]')
+        report=$(echo $report | jq --arg dep $dependency --arg repo $repo --arg license "$license" --arg version $version '. + [{dependency: $dep, repository: $repo, license: $license, version: $version}]')
       fi
     done
   fi
