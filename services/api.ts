@@ -51,7 +51,7 @@ export const currentUser = (getState: () => unknown) => {
   return state.medTechApi.user;
 };
 
-export const guard = async <T>(guardedInputs: unknown[], lambda: () => Promise<T>): Promise<{error: FetchBaseQueryError} | {data: T}> => {
+export const guard = async <T>(guardedInputs: unknown[], lambda: () => Promise<T>): Promise<{error: FetchBaseQueryError} | {data: T|undefined}> => {
   if (guardedInputs.some(x => !x)) {
     return {data: undefined};
   }
