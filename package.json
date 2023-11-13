@@ -13,7 +13,7 @@
   "dependencies": {
     "@craftzdog/react-native-buffer": "^6.0.5",
     "@icure/icure-react-native-crypto": "^1.0.8",
-    "@icure/medical-device-sdk": "^2.2.1",
+    "@icure/medical-device-sdk": "^2.2.4",
     "@icure/react-native-aes-crypto": "^2.2.11",
     "@icure/react-native-rsa-native": "^2.1.11",
     "@reduxjs/toolkit": "^1.9.0",
@@ -62,5 +62,5 @@
       "node"
     ]
   },
-  "packageManager": "yarn@3.3.0"
+  "packageManager": "yarn@3.6.4"
 }

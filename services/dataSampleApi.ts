@@ -70,6 +70,7 @@ export const dataSampleApiRtk = createApi({
           const tagCodesFilters = await Promise.all(tagCodes.map(async ({ tagType, tagCode, codeType, codeCode }) => new DataSampleFilter().forDataOwner(dataOwner).byLabelCodeDateFilter(tagType, tagCode, codeType, codeCode, startDate, endDate)))
           return await dataSampleApi.filterDataSample(
             await new DataSampleFilter().forDataOwner(dataOwner).union(tagCodesFilters).build(),
+
             nextDataSampleId,
             limit,
           );
