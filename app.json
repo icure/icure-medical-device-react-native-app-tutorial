@@ -1,4 +1,10 @@
 {
   "name": "Petra",
-  "displayName": "Petra"
+  "displayName": "Petra",
+  "android": {
+    "package": "com.icure.expo.petra"
+  },
+  "ios": {
+    "bundleIdentifier": "com.icure.expo.petra"
+  }
 }

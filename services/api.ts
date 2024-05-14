@@ -1,11 +1,11 @@
-import {AnonymousMedTechApi, AnonymousMedTechApiBuilder, ICURE_CLOUD_URL, MedTechApi, MedTechApiBuilder, MSG_GW_CLOUD_URL, User, ua2b64} from '@icure/medical-device-sdk';
-import crypto from '@icure/icure-react-native-crypto';
+import {AnonymousMedTechApi, AuthenticationProcess, MedTechApi, ua2b64, User, NativeCryptoPrimitivesBridge} from '@icure/medical-device-sdk';
+import {SimpleMedTechCryptoStrategies} from '@icure/medical-device-sdk/src/services/MedTechCryptoStrategies';
 import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
-import {AuthenticationProcess} from '@icure/medical-device-sdk/src/models/AuthenticationProcess';
 import {revertAll, setSavedCredentials} from '../config/PetraState';
 import Config from 'react-native-config';
 import {FetchBaseQueryError} from '@reduxjs/toolkit/query';
 import storage from '../utils/storage';
+import * as ExpoKryptomModule from '@icure/expo-kryptom';
 
 const apiCache: {[key: string]: MedTechApi | AnonymousMedTechApi} = {};
 
@@ -51,7 +51,7 @@ export const currentUser = (getState: () => unknown) => {
   return state.medTechApi.user;
 };
 
-export const guard = async <T>(guardedInputs: unknown[], lambda: () => Promise<T>): Promise<{error: FetchBaseQueryError} | {data: T|undefined}> => {
+export const guard = async <T>(guardedInputs: unknown[], lambda: () => Promise<T>): Promise<{error: FetchBaseQueryError} | {data: T | undefined}> => {
   if (guardedInputs.some(x => !x)) {
     return {data: undefined};
   }
@@ -99,34 +99,26 @@ export const getApiFromState = async (getState: () => MedTechApiState | {medTech
 
 export const startAuthentication = createAsyncThunk('medTechApi/startAuthentication', async (_payload, {getState}) => {
   const {
-    medTechApi: {email, firstName, lastName, recaptcha},
+    medTechApi: {email, firstName, lastName, recaptcha: captcha},
   } = getState() as {medTechApi: MedTechApiState};
 
   if (!email) {
     throw new Error('No email provided');
   }
 
-  const anonymousApi = await new AnonymousMedTechApiBuilder()
-    .withCrypto(crypto)
-    .withMsgGwSpecId(Config.EXTERNAL_SERVICES_SPEC_ID!)
-    .withAuthProcessByEmailId(Config.EMAIL_AUTHENTICATION_PROCESS_ID!)
+  const anonymousApi = await new AnonymousMedTechApi.Builder()
+    .withCrypto(new NativeCryptoPrimitivesBridge(ExpoKryptomModule))
+    .withCryptoStrategies(new SimpleMedTechCryptoStrategies())
+    .withMsgGwSpecId(Config.EXTERNAL_SERVICES_SPEC_ID)
+    .withAuthProcessByEmailId(Config.EMAIL_AUTHENTICATION_PROCESS_ID)
+    .withAuthProcessBySmsId(Config.SMS_AUTHENTICATION_PROCESS_ID)
     .withStorage(storage)
-    .preventCookieUsage()
+    .withICureBaseUrl('https://api.icure.cloud')
     .build();
 
-  const recaptchaType = 'friendly-captcha';
+  const captchaType = 'friendly-captcha';
 
-  const authProcess = await anonymousApi.authenticationApi.startAuthentication(
-    recaptcha,
-    email,
-    undefined,
-    firstName,
-    lastName,
-    Config.PARENT_ORGANISATION_ID,
-    undefined,
-    undefined,
-    recaptchaType,
-  );
+  const authProcess = await anonymousApi.authenticationApi.startAuthentication({recaptcha: captcha!!, email, firstName, lastName, recaptchaType: captchaType});
 
   apiCache[`${authProcess.login}/${authProcess.requestId}`] = anonymousApi;
 
@@ -156,7 +148,7 @@ export const completeAuthentication = createAsyncThunk('medTechApi/completeAuthe
 
   dispatch(setSavedCredentials({login: `${result.groupId}/${result.userId}`, token: result.token, tokenTimestamp: +Date.now()}));
 
-  return user?.marshal();
+  return User.toJSON(user);
 });
 
 export const login = createAsyncThunk('medTechApi/login', async (_, {getState}) => {
@@ -173,25 +165,24 @@ export const login = createAsyncThunk('medTechApi/login', async (_, {getState}) 
     throw new Error('No token provided');
   }
 
-  const api = await new MedTechApiBuilder()
-    .withCrypto(crypto)
-    .withMsgGwSpecId(Config.EXTERNAL_SERVICES_SPEC_ID!)
-    .withAuthProcessByEmailId(Config.EMAIL_AUTHENTICATION_PROCESS_ID!)
+  const api = await new MedTechApi.Builder()
+    .withCrypto(new NativeCryptoPrimitivesBridge(ExpoKryptomModule))
+    .withCryptoStrategies(new SimpleMedTechCryptoStrategies())
     .withStorage(storage)
-    .preventCookieUsage()
+    .withMsgGwSpecId(Config.EXTERNAL_SERVICES_SPEC_ID)
+    .withAuthProcessByEmailId(Config.EMAIL_AUTHENTICATION_PROCESS_ID)
+    .withAuthProcessBySmsId(Config.SMS_AUTHENTICATION_PROCESS_ID)
     .withUserName(email)
     .withPassword(token)
     .build();
-  const userKeyPair = await api.initUserCrypto();
   const user = await api.userApi.getLoggedUser();
-  await api.addKeyPair(api.dataOwnerApi.getDataOwnerIdOf(user), userKeyPair[0]);
 
   apiCache[`${user.groupId}/${user.id}`] = api;
 
-  return user?.marshal();
+  return User.toJSON(user);
 });
 
-export const logout = createAsyncThunk('medTechApi/logout', async (payload, {getState, dispatch}) => {
+export const logout = createAsyncThunk('medTechApi/logout', async (payload, {dispatch}) => {
   dispatch(revertAll());
   dispatch(resetCredentials());
 });
