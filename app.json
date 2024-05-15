@@ -1,10 +1,32 @@
 {
-  "name": "Petra",
-  "displayName": "Petra",
-  "android": {
-    "package": "com.icure.expo.petra"
-  },
-  "ios": {
-    "bundleIdentifier": "com.icure.expo.petra"
+  "expo": {
+    "name": "Petra",
+    "slug": "Petra",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/logo.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/images/logo-with-pod.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.icure.expo.petra"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/logo.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.icure.expo.petra"
+    },
+    "web": {
+      "favicon": "./assets/images/logo.png"
+    }
   }
 }

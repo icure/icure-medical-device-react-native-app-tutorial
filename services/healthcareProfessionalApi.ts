@@ -11,31 +11,46 @@ export const healthcareProfessionalApiRtk = createApi({
   endpoints: builder => ({
     getHealthcareProfessional: builder.query<HealthcareProfessional, string>({
       async queryFn(id, {getState}) {
-        const {healthcareProfessionalApi} = await medTechApi(getState);
-        return guard([healthcareProfessionalApi], () => {
-          return healthcareProfessionalApi.getHealthcareProfessional(id);
+        const api = await medTechApi(getState);
+        if (api === undefined) {
+          throw new Error('No medTechApi available');
+        }
+        const {healthcareProfessionalApi} = api;
+        return guard([healthcareProfessionalApi], async () => {
+          return HealthcareProfessional.toJSON(await healthcareProfessionalApi.getHealthcareProfessional(id));
         });
       },
-      providesTags: ({id}) => [{type: 'hcp', id}],
+      providesTags: hcp => (!!hcp ? [{type: 'hcp', id: hcp.id}] : []),
     }),
     currentHealthcareProfessional: builder.query<HealthcareProfessional, void>({
       async queryFn(_, {getState}) {
-        const {healthcareProfessionalApi, dataOwnerApi} = await medTechApi(getState);
+        const api = await medTechApi(getState);
+        if (api === undefined) {
+          throw new Error('No medTechApi available');
+        }
+        const {healthcareProfessionalApi, dataOwnerApi} = api;
         const user = currentUser(getState);
-        return guard([healthcareProfessionalApi, dataOwnerApi], () => {
+        if (user === undefined) {
+          throw new Error('No user available');
+        }
+        return guard([healthcareProfessionalApi, dataOwnerApi], async () => {
           const dataOwner = dataOwnerApi.getDataOwnerIdOf(user);
-          return healthcareProfessionalApi.getHealthcareProfessional(dataOwner);
+          return HealthcareProfessional.toJSON(await healthcareProfessionalApi.getHealthcareProfessional(dataOwner));
         });
       },
-      providesTags: ({id}) => [{type: 'hcp', id}],
+      providesTags: hcp => (!!hcp ? [{type: 'hcp', id: hcp.id}] : []),
     }),
     filterHealthcareProfessionals: builder.query<HealthcareProfessional[], {name: string}>({
       async queryFn({name}, {getState}) {
-        const {healthcareProfessionalApi} = await medTechApi(getState);
+        const api = await medTechApi(getState);
+        if (api === undefined) {
+          throw new Error('No medTechApi available');
+        }
+        const {healthcareProfessionalApi} = api;
         return guard([healthcareProfessionalApi], async () => {
           return (
             await healthcareProfessionalApi.filterHealthcareProfessionalBy(
-              await new HealthcareProfessionalFilter()
+              await new HealthcareProfessionalFilter(api)
                 .byMatches(
                   name
                     .toLowerCase()
@@ -44,18 +59,22 @@ export const healthcareProfessionalApiRtk = createApi({
                 )
                 .build(),
             )
-          ).rows;
+          ).rows.map(HealthcareProfessional.toJSON);
         });
       },
     }),
     createOrUpdateHealthcareProfessional: builder.mutation<HealthcareProfessional, HealthcareProfessional>({
       async queryFn(healthcareProfessional, {getState}) {
-        const {healthcareProfessionalApi} = await medTechApi(getState);
-        return guard([healthcareProfessionalApi], () => {
-          return healthcareProfessionalApi.createOrModifyHealthcareProfessional(healthcareProfessional);
+        const api = await medTechApi(getState);
+        if (api === undefined) {
+          throw new Error('No medTechApi available');
+        }
+        const {healthcareProfessionalApi} = api;
+        return guard([healthcareProfessionalApi], async () => {
+          return HealthcareProfessional.toJSON(await healthcareProfessionalApi.createOrModifyHealthcareProfessional(healthcareProfessional));
         });
       },
-      invalidatesTags: ({id}) => [{type: 'hcp', id}],
+      invalidatesTags: hcp => (!!hcp ? [{type: 'hcp', id: hcp.id}] : []),
     }),
   }),
 });

@@ -1,4 +1,14 @@
-import {AnonymousMedTechApi, AuthenticationProcess, MedTechApi, ua2b64, User, NativeCryptoPrimitivesBridge} from '@icure/medical-device-sdk';
+import {
+  AnonymousMedTechApi,
+  AuthenticationProcess,
+  MedTechApi,
+  ua2b64,
+  User,
+  NativeCryptoPrimitivesBridge,
+  Patient,
+  DataSample,
+  HealthcareProfessional,
+} from '@icure/medical-device-sdk';
 import {SimpleMedTechCryptoStrategies} from '@icure/medical-device-sdk/src/services/MedTechCryptoStrategies';
 import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {revertAll, setSavedCredentials} from '../config/PetraState';
@@ -51,12 +61,14 @@ export const currentUser = (getState: () => unknown) => {
   return state.medTechApi.user;
 };
 
-export const guard = async <T>(guardedInputs: unknown[], lambda: () => Promise<T>): Promise<{error: FetchBaseQueryError} | {data: T | undefined}> => {
+export const guard = async <T>(guardedInputs: unknown[], lambda: () => Promise<T>): Promise<{error: FetchBaseQueryError} | {data: T }> => {
   if (guardedInputs.some(x => !x)) {
-    return {data: undefined};
+    console.error('Guarded input is undefined');
+    throw new Error('Guarded input is undefined');
   }
   try {
     const res = await lambda();
+    console.log('res', res);
     const curate = (result: T): T => {
       return (
         result === null || result === undefined
@@ -65,12 +77,20 @@ export const guard = async <T>(guardedInputs: unknown[], lambda: () => Promise<T
           ? ua2b64(res)
           : Array.isArray(result)
           ? result.map(curate)
-          : typeof result === 'object'
-          ? (result as any).marshal()
+          : result instanceof Patient
+          ? Patient.toJSON(result)
+          : result instanceof User
+          ? User.toJSON(result)
+          : result instanceof DataSample
+          ? DataSample.toJSON(result)
+          : result instanceof HealthcareProfessional
+          ? HealthcareProfessional.toJSON(result)
           : result
       ) as T;
     };
-    return {data: curate(res)};
+    const curated = curate(res);
+    console.log('curated', curated);
+    return {data: curated};
   } catch (e) {
     return {error: getError(e as Error)};
   }
@@ -109,9 +129,9 @@ export const startAuthentication = createAsyncThunk('medTechApi/startAuthenticat
   const anonymousApi = await new AnonymousMedTechApi.Builder()
     .withCrypto(new NativeCryptoPrimitivesBridge(ExpoKryptomModule))
     .withCryptoStrategies(new SimpleMedTechCryptoStrategies())
-    .withMsgGwSpecId(Config.EXTERNAL_SERVICES_SPEC_ID)
-    .withAuthProcessByEmailId(Config.EMAIL_AUTHENTICATION_PROCESS_ID)
-    .withAuthProcessBySmsId(Config.SMS_AUTHENTICATION_PROCESS_ID)
+    .withMsgGwSpecId(Config.EXTERNAL_SERVICES_SPEC_ID!)
+    .withAuthProcessByEmailId(Config.EMAIL_AUTHENTICATION_PROCESS_ID!)
+    .withAuthProcessBySmsId(Config.SMS_AUTHENTICATION_PROCESS_ID!)
     .withStorage(storage)
     .withICureBaseUrl('https://api.icure.cloud')
     .build();
@@ -139,16 +159,22 @@ export const completeAuthentication = createAsyncThunk('medTechApi/completeAuthe
   }
 
   const anonymousApi = apiCache[`${authProcess.login}/${authProcess.requestId}`] as AnonymousMedTechApi;
-  const result = await anonymousApi.authenticationApi.completeAuthentication(authProcess, token);
-  const api = result.medTechApi;
-  const user = await api.userApi.getLoggedUser();
 
-  apiCache[`${result.groupId}/${result.userId}`] = api;
-  delete apiCache[`${authProcess.login}/${authProcess.requestId}`];
+  try {
+    const result = await anonymousApi.authenticationApi.completeAuthentication(authProcess, token);
+    const api = result.medTechApi;
+    const user = await api.userApi.getLoggedUser();
 
-  dispatch(setSavedCredentials({login: `${result.groupId}/${result.userId}`, token: result.token, tokenTimestamp: +Date.now()}));
+    apiCache[`${result.groupId}/${result.userId}`] = api;
+    delete apiCache[`${authProcess.login}/${authProcess.requestId}`];
 
-  return User.toJSON(user);
+    dispatch(setSavedCredentials({login: `${result.groupId}/${result.userId}`, token: result.token, tokenTimestamp: +Date.now()}));
+
+    return User.toJSON(user);
+  } catch (e) {
+    console.error(`Couldn't complete authentication: ${e}`);
+    throw e;
+  }
 });
 
 export const login = createAsyncThunk('medTechApi/login', async (_, {getState}) => {
@@ -169,11 +195,12 @@ export const login = createAsyncThunk('medTechApi/login', async (_, {getState}) 
     .withCrypto(new NativeCryptoPrimitivesBridge(ExpoKryptomModule))
     .withCryptoStrategies(new SimpleMedTechCryptoStrategies())
     .withStorage(storage)
-    .withMsgGwSpecId(Config.EXTERNAL_SERVICES_SPEC_ID)
-    .withAuthProcessByEmailId(Config.EMAIL_AUTHENTICATION_PROCESS_ID)
-    .withAuthProcessBySmsId(Config.SMS_AUTHENTICATION_PROCESS_ID)
+    .withMsgGwSpecId(Config.EXTERNAL_SERVICES_SPEC_ID!)
+    .withAuthProcessByEmailId(Config.EMAIL_AUTHENTICATION_PROCESS_ID!)
+    .withAuthProcessBySmsId(Config.SMS_AUTHENTICATION_PROCESS_ID!)
     .withUserName(email)
     .withPassword(token)
+    .withICureBaseUrl('https://api.icure.cloud')
     .build();
   const user = await api.userApi.getLoggedUser();
 
@@ -222,7 +249,7 @@ export const api = createSlice({
       state.authProcess = authProcess;
     });
     builder.addCase(completeAuthentication.fulfilled, (state, {payload: user}) => {
-      state.user = user as User;
+      state.user = User.fromJSON(user);
       state.online = true;
     });
     builder.addCase(startAuthentication.rejected, (state, {}) => {
@@ -232,7 +259,7 @@ export const api = createSlice({
       state.invalidToken = true;
     });
     builder.addCase(login.fulfilled, (state, {payload: user}) => {
-      state.user = user as User;
+      state.user = User.fromJSON(user);
       state.online = true;
     });
     builder.addCase(login.rejected, (state, {}) => {

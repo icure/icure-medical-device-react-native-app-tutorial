@@ -72,3 +72,12 @@ buck-out/
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# Expo
+.expo/
+dist/
+web-build/
+
+# IDEs
+.idea/
+.vscode/

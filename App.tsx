@@ -16,8 +16,7 @@ import {Provider} from 'react-redux';
 import {persistor, store} from './redux/store';
 import {PersistGate} from 'redux-persist/integration/react';
 import 'react-native-get-random-values';
-
-Buffer = require('@craftzdog/react-native-buffer').Buffer;
+import '@azure/core-asynciterator-polyfill';
 
 const App = () => {
   const isDarkMode = useColorScheme() === 'dark';

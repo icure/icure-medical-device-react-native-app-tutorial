@@ -6,52 +6,68 @@ export const userApiRtk = createApi({
   reducerPath: 'userApi',
   tagTypes: ['User'],
   baseQuery: fetchBaseQuery({
-    baseUrl: '/rest/v1/user',
+    baseUrl: '/rest/v2/user',
   }),
   endpoints: builder => ({
     getUser: builder.query<User, string>({
       async queryFn(id, {getState}) {
-        const {userApi} = await medTechApi(getState);
-        return guard([userApi], () => {
-          return userApi.getUser(id);
+        const api = await medTechApi(getState);
+        if (api === undefined) {
+          throw new Error('No medTechApi available');
+        }
+        const {userApi} = api;
+        return guard([userApi], async () => {
+          return User.toJSON(await userApi.getUser(id));
         });
       },
       providesTags: ['User'],
     }),
     updateUser: builder.mutation<User, User>({
       async queryFn(user, {getState, dispatch}) {
-        const {userApi} = await medTechApi(getState);
+        const api = await medTechApi(getState);
+        if (api === undefined) {
+          throw new Error('No medTechApi available');
+        }
+        const {userApi} = api;
         return guard([userApi], async () => {
           const updatedUser = await userApi.createOrModifyUser(user);
           if (user.id === currentUser(getState)?.id) {
-            dispatch(setUser({user: updatedUser.marshal() as User}));
+            dispatch(setUser({user: User.toJSON(updatedUser)}));
           }
-          return updatedUser;
+          return User.toJSON(updatedUser);
         });
       },
-      invalidatesTags: [{type: 'User', id: 'all'}],
+      invalidatesTags: ['User'],
     }),
     shareDataWith: builder.mutation<User, {ids: string[]}>({
       async queryFn({ids}, {getState, dispatch}) {
-        const {userApi} = await medTechApi(getState);
+        const api = await medTechApi(getState);
+        if (api === undefined) {
+          throw new Error('No medTechApi available');
+        }
+        const {userApi} = api;
         return guard([userApi], async () => {
           const updatedUser = await userApi.shareAllFutureDataWith(ids, 'medicalInformation');
-          dispatch(setUser({user: updatedUser.marshal() as User}));
-          return updatedUser;
+          dispatch(setUser({user: User.toJSON(updatedUser)}));
+          return User.toJSON(updatedUser);
         });
       },
       invalidatesTags: [{type: 'User', id: 'all'}],
     }),
     stopSharingWith: builder.mutation<User, {ids: string[]}>({
       async queryFn({ids}, {getState, dispatch}) {
-        const {userApi} = await medTechApi(getState);
+        const api = await medTechApi(getState);
+        if (api === undefined) {
+          throw new Error('No medTechApi available');
+        }
+        const {userApi} = api;
         return guard([userApi], async () => {
           const updatedUser = await userApi.stopSharingDataWith(ids, 'medicalInformation');
-          dispatch(setUser({user: updatedUser.marshal() as User}));
-          return updatedUser;
+          dispatch(setUser({user: User.toJSON(updatedUser)}));
+          return User.toJSON(updatedUser);
         });
       },
-      invalidatesTags: [{type: 'User', id: 'all'}],
+      invalidatesTags: ['User'],
     }),
   }),
 });

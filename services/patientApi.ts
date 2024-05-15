@@ -6,37 +6,60 @@ export const patientApiRtk = createApi({
   reducerPath: 'patientApi',
   tagTypes: ['Patient'],
   baseQuery: fetchBaseQuery({
-    baseUrl: '/rest/v1/patient',
+    baseUrl: '/rest/v2/patient',
   }),
   endpoints: builder => ({
     getPatient: builder.query<Patient, string>({
       async queryFn(id, {getState}) {
-        const {patientApi} = await medTechApi(getState);
-        return guard([patientApi], () => {
-          return patientApi.getPatient(id);
+        const api = await medTechApi(getState);
+        if (api === undefined) {
+          throw new Error('No medTechApi available');
+        }
+
+        const {patientApi} = api;
+
+        return guard([patientApi], async () => {
+          return Patient.toJSON(await patientApi.get(id));
         });
       },
-      providesTags: ({id}) => [{type: 'Patient', id}],
+      providesTags: patient => {
+        return patient ? [{type: 'Patient', id: patient.id}] : [];
+      },
     }),
     currentPatient: builder.query<Patient, void>({
       async queryFn(_, {getState}) {
-        const {patientApi, dataOwnerApi} = await medTechApi(getState);
+        const api = await medTechApi(getState);
+        if (api === undefined) {
+          throw new Error('No medTechApi available');
+        }
+        const {patientApi, dataOwnerApi} = api;
         const user = currentUser(getState);
-        return guard([patientApi, dataOwnerApi], () => {
+
+        if (user === undefined) {
+          throw new Error('No user available');
+        }
+
+        return guard([patientApi, dataOwnerApi], async () => {
           const dataOwner = dataOwnerApi.getDataOwnerIdOf(user);
-          return patientApi.getPatient(dataOwner);
+          return Patient.toJSON(await patientApi.get(dataOwner));
         });
       },
-      providesTags: ({id}) => [{type: 'Patient', id}],
+      providesTags: patient => (!!patient ? [{type: 'Patient', id: patient.id}] : []),
     }),
     createOrUpdatePatient: builder.mutation<Patient, Patient>({
       async queryFn(patient, {getState}) {
-        const {patientApi} = await medTechApi(getState);
-        return guard([patientApi], () => {
-          return patientApi.createOrModifyPatient(patient);
+        const api = await medTechApi(getState);
+
+        if (api === undefined) {
+          throw new Error('No medTechApi available');
+        }
+
+        const {patientApi} = api;
+        return guard([patientApi], async () => {
+          return Patient.toJSON(await patientApi.createOrModifyPatient(patient));
         });
       },
-      invalidatesTags: ({id}) => [{type: 'Patient', id}],
+      invalidatesTags: patient => (!!patient ? [{type: 'Patient', id: patient.id}] : []),
     }),
   }),
 });

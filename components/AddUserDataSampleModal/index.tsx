@@ -32,13 +32,13 @@ export const AddUserDataSampleModal: React.FC<AddUserDataSampleModalProps> = ({
   currentComplaintsDatas,
   currentNotesData,
 }) => {
-  const currentFlowLevelDataSample = currentFlowLevelData(date);
-  const currentComplaintsDataSamples = currentComplaintsDatas(date);
-  const currentNotesDataSample = currentNotesData(date);
+  const currentFlowLevelDataSample = currentFlowLevelData!(date);
+  const currentComplaintsDataSamples = currentComplaintsDatas!(date);
+  const currentNotesDataSample = currentNotesData!(date);
 
-  const radioButtonInitialValue = periodFlowLevelsData.find(item => item.flowLevel === currentFlowLevelDataSample?.content.en.measureValue.value) ?? periodFlowLevelsData[0];
+  const radioButtonInitialValue = periodFlowLevelsData.find(item => item.flowLevel === currentFlowLevelDataSample?.content?.get('en')?.measureValue?.value) ?? periodFlowLevelsData[0];
 
-  const selectedComplaintsCodes = currentComplaintsDataSamples?.map(item => item.codes[0].code);
+  const selectedComplaintsCodes = currentComplaintsDataSamples?.map(item => [...item.codes][0].code);
 
   const comparedComplaintsArray = complaintsData.map((item: {label: string; isChecked: boolean; SNOMED_CT_CODE: string}) => {
     return {...item, isChecked: selectedComplaintsCodes?.includes(item.SNOMED_CT_CODE)};
@@ -47,7 +47,7 @@ export const AddUserDataSampleModal: React.FC<AddUserDataSampleModalProps> = ({
   const [selectedFlowLevel, setSelectedFlowLevel] = useState(radioButtonInitialValue);
   const [checkedComplaints, setCheckedComplaints] = useState(comparedComplaintsArray);
   const onlyCheckedComplaints = checkedComplaints?.filter(item => item.isChecked);
-  const [notes, setNotes] = useState(currentNotesDataSample?.content.en.stringValue ?? '');
+  const [notes, setNotes] = useState(currentNotesDataSample?.content.get('en')?.stringValue ?? '');
 
   const [createOrUpdateDataSamples] = useCreateOrUpdateDataSamplesMutation();
   const [deleteDataSamples] = useDeleteDataSamplesMutation();
@@ -80,12 +80,12 @@ export const AddUserDataSampleModal: React.FC<AddUserDataSampleModalProps> = ({
     const userPeriodDataSample = currentFlowLevelDataSample
       ? new DataSample({
           ...currentFlowLevelDataSample,
-          content: flowLevelContent,
+          content: new Map(Object.entries(flowLevelContent)) as Map<'en', Content>,
         })
       : new DataSample({
           valueDate,
           labels: new Set([new CodingReference({type: 'LOINC', code: '49033-4'})]),
-          content: flowLevelContent,
+          content: new Map(Object.entries(flowLevelContent)) as Map<'en', Content>,
         });
 
     const getUserComplaintDataSample = (SNOMED_CODE: string) => {
@@ -105,28 +105,29 @@ export const AddUserDataSampleModal: React.FC<AddUserDataSampleModalProps> = ({
     const userNotesDataSample = currentNotesDataSample
       ? new DataSample({
           ...currentNotesDataSample,
-          content: notesContent,
+          content: new Map(Object.entries(notesContent)) as Map<'en', Content>,
         })
       : new DataSample({
           valueDate,
-          content: notesContent,
+          content: new Map(Object.entries(notesContent)) as Map<'en', Content>,
           labels: new Set([new CodingReference({type: 'LOINC', code: '34109-9'})]),
         });
 
     const addedComplaints = onlyCheckedComplaints?.filter(item => !selectedComplaintsCodes?.includes(item.SNOMED_CT_CODE));
 
     const removedComplaints = currentComplaintsDataSamples?.filter(item => {
-      const complient = complaintsData.find(complientObj => complientObj.SNOMED_CT_CODE === item.codes[0].code);
-      return !onlyCheckedComplaints.some(element => element.SNOMED_CT_CODE === complient.SNOMED_CT_CODE);
+      const complient = complaintsData.find(complientObj => complientObj.SNOMED_CT_CODE === [...item.codes][0].code);
+      return !onlyCheckedComplaints.some(element => element.SNOMED_CT_CODE === complient?.SNOMED_CT_CODE);
     });
 
-    deleteDataSamples(removedComplaints);
+    deleteDataSamples(removedComplaints)
 
-    if (currentNotesDataSample?.content.en.stringValue && !notes) {
+    if (currentNotesDataSample?.content.get('en')?.stringValue && !notes) {
       deleteDataSamples([currentNotesDataSample]);
     } else {
-      createOrUpdateDataSamples(notes?.length && currentNotesDataSample?.content.en.stringValue !== notes ? [userNotesDataSample] : []);
+      createOrUpdateDataSamples(notes?.length && currentNotesDataSample?.content.get('en')?.stringValue !== notes ? [userNotesDataSample] : []);
     }
+
     // USE MUTATION TO CREATE A DATASAMPLE
     createOrUpdateDataSamples([userPeriodDataSample]);
     createOrUpdateDataSamples(addedComplaints.map(item => getUserComplaintDataSample(item.SNOMED_CT_CODE)));
@@ -180,7 +181,7 @@ export const AddUserDataSampleModal: React.FC<AddUserDataSampleModalProps> = ({
           {/* Notes */}
           <View style={globalStyles.mt24}>
             <Text style={[globalStyles.baseText, globalStyles.mb8]}>Notes</Text>
-            <SquareInput value={notes} onChange={value => setNotes(value)} onBlur={() => {}} placeholder="e.g. Medication " />
+            <SquareInput value={notes} onChange={value => value && setNotes(value)} onBlur={() => {}} placeholder="e.g. Medication " />
           </View>
 
           {/* ButtonsGroup */}

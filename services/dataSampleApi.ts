@@ -1,7 +1,6 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import { currentUser, guard, medTechApi } from './api';
-import { DataSample, DataSampleFilter, PaginatedListDataSample } from '@icure/medical-device-sdk';
-import { tagsByIds, tagsByIdsPaginated } from '../utils/tags';
+import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
+import {currentUser, guard, medTechApi} from './api';
+import {DataSample, DataSampleFilter, FilterComposition, PaginatedList} from '@icure/medical-device-sdk';
 
 export const dataSampleApiRtk = createApi({
   reducerPath: 'dataSampleApi',
@@ -10,88 +9,141 @@ export const dataSampleApiRtk = createApi({
     baseUrl: '/rest/v1/dataSample',
   }),
   endpoints: builder => ({
-    getDataSamples: builder.query<PaginatedListDataSample, { ids: string[]; nextDataSampleId?: string; limit: number }>({
-      async queryFn({ ids, nextDataSampleId = undefined, limit = 1000 }, { getState }) {
-        const { dataSampleApi, dataOwnerApi } = (await medTechApi(getState))!;
+    getDataSamples: builder.query<PaginatedList<DataSample>, {ids: string[]; nextDataSampleId?: string; limit: number}>({
+      async queryFn({ids, nextDataSampleId = undefined, limit = 1000}, {getState}) {
+        const api = await medTechApi(getState);
+        if (api === undefined) {
+          throw new Error('No medTechApi available');
+        }
+        const {dataSampleApi, dataOwnerApi} = api;
         const user = currentUser(getState)!;
         return guard([dataSampleApi, dataOwnerApi], async () => {
           const dataOwner = dataOwnerApi.getDataOwnerIdOf(user);
-          return await dataSampleApi.filterDataSample(await new DataSampleFilter().forDataOwner(dataOwner).byIds(ids).build(), nextDataSampleId, limit);
+          const paginatedList = await dataSampleApi.filterDataSample(await new DataSampleFilter(api).forDataOwner(dataOwner).byIds(ids).build(), nextDataSampleId, limit);
+          return PaginatedList.toJSON(paginatedList, DataSample.fromJSON);
         });
       },
-      providesTags: tagsByIdsPaginated('DataSample', 'all'),
+      providesTags: result => result?.rows?.map(({id}) => ({type: 'DataSample', id})) ?? [],
     }),
     createOrUpdateDataSample: builder.mutation<DataSample, DataSample>({
-      async queryFn(dataSample, { getState }) {
-        const { dataSampleApi, dataOwnerApi } = (await medTechApi(getState))!;
+      async queryFn(dataSample, {getState}) {
+        const api = await medTechApi(getState);
+        if (api === undefined) {
+          throw new Error('No medTechApi available');
+        }
+        const {dataSampleApi, dataOwnerApi} = api;
         const user = currentUser(getState)!;
-        return guard([dataSampleApi, dataOwnerApi], () => {
+        return guard([dataSampleApi, dataOwnerApi], async () => {
           const dataOwner = dataOwnerApi.getDataOwnerIdOf(user);
-          return dataSampleApi.createOrModifyDataSampleFor(dataOwner, dataSample);
+          return DataSample.toJSON(await dataSampleApi.createOrModifyDataSampleFor(dataOwner, dataSample));
         });
       },
-      invalidatesTags: (ds) => ds ? [{ type: 'DataSample', id: ds.id }] : [],
+      invalidatesTags: ds => (ds ? [{type: 'DataSample', id: ds.id}] : []),
     }),
     deleteDataSamples: builder.mutation<string[], DataSample[]>({
-      async queryFn(dataSamples, { getState }) {
-        const { dataSampleApi, dataOwnerApi } = (await medTechApi(getState))!;
+      async queryFn(dataSamples, {getState}) {
+
+        console.log('dataSamples to delete', dataSamples);
+
+        const api = await medTechApi(getState);
+        if (api === undefined) {
+          throw new Error('No medTechApi available');
+        }
+        const {dataSampleApi, dataOwnerApi} = api;
         return guard([dataSampleApi, dataOwnerApi], async () => {
-          const groupedDataSamples: { [batchId: string]: string[] } = dataSamples.reduce((acc, dataSample) => {
+          const groupedDataSamples: {[batchId: string]: string[]} = dataSamples.reduce((acc, dataSample) => {
             if (dataSample.batchId && dataSample.id) {
               acc[dataSample.batchId] = [...(acc[dataSample.batchId] ?? []), dataSample.id];
             }
             return acc;
-          }, {} as { [batchId: string]: string[] });
-          return (await Promise.all(Object.values(groupedDataSamples).map(ids => dataSampleApi.deleteDataSamples(ids)))).flatMap(x => x);
+          }, {} as {[batchId: string]: string[]});
+
+          Object.values(groupedDataSamples).forEach(ids => {
+            console.log('ids', ids);
+          });
+
+          return (await Promise.all(Object.values(groupedDataSamples).map(ids => dataSampleApi.deleteDataSamples(ids)))).flatMap(x => x).filter(x => x !== undefined);
         });
       },
-      invalidatesTags: () => [{ type: 'DataSample', id: 'all' }],
+      invalidatesTags: result => result?.map(id => ({type: 'DataSample', id})) ?? [],
     }),
     createOrUpdateDataSamples: builder.mutation<DataSample[], DataSample[]>({
-      async queryFn(dataSamples, { getState }) {
-        const { dataSampleApi, dataOwnerApi } = (await medTechApi(getState))!;
+      async queryFn(dataSamples, {getState}) {
+        console.log('createOrUpdateDataSamples', dataSamples);
+
+        const api = await medTechApi(getState);
+        if (api === undefined) {
+          throw new Error('No medTechApi available');
+        }
+        console.log('createOrUpdateDataSamples: api check');
+        const {dataSampleApi, dataOwnerApi} = api;
         const user = currentUser(getState)!;
-        return guard([dataSampleApi, dataOwnerApi], () => {
-          const dataOwner = dataOwnerApi.getDataOwnerIdOf(user);
-          return dataSampleApi.createOrModifyDataSamplesFor(dataOwner, dataSamples);
+        console.log('createOrUpdateDataSamples: user check', user);
+        return guard([dataSampleApi, dataOwnerApi], async () => {
+          try {
+            const dataOwner = dataOwnerApi.getDataOwnerIdOf(user);
+            console.log('dataOwner', dataOwner);
+            const updatedDss = await dataSampleApi.createOrModifyDataSamplesFor(dataOwner, dataSamples).then(samples => samples.map(DataSample.toJSON));
+            console.log('updatedDss', updatedDss);
+            return updatedDss;
+          } catch (e) {
+            console.error('Error', e);
+            throw e;
+          }
         });
       },
-      invalidatesTags: tagsByIds('DataSample', 'all'),
+      invalidatesTags: dataSamples => dataSamples?.map(ds => ({type: 'DataSample', id: ds.id})) ?? [],
     }),
     getDataSampleBetween2Dates: builder.query<
-      PaginatedListDataSample,
-      { tagCodes: { tagType?: string, tagCode?: string, codeType?: string, codeCode?: string }[], startDate: number, endDate: number, nextDataSampleId?: string, limit?: number }
+      PaginatedList<DataSample>,
+      {tagCodes: {tagType?: string; tagCode?: string; codeType?: string; codeCode?: string}[]; startDate: number; endDate: number; nextDataSampleId?: string; limit?: number}
     >({
-      async queryFn({ tagCodes, startDate, endDate, nextDataSampleId = undefined, limit = 1000 }, { getState }) {
-        const { dataSampleApi, dataOwnerApi } = (await medTechApi(getState))!;
+      async queryFn({tagCodes, startDate, endDate, nextDataSampleId = undefined, limit = 1000}, {getState}) {
+        const api = await medTechApi(getState);
+        if (api === undefined) {
+          throw new Error('No medTechApi available');
+        }
+        const {dataSampleApi, dataOwnerApi} = api;
         const user = currentUser(getState)!;
         return guard([dataSampleApi, dataOwnerApi], async () => {
           const dataOwner = dataOwnerApi.getDataOwnerIdOf(user);
-          const tagCodesFilters = await Promise.all(tagCodes.map(async ({ tagType, tagCode, codeType, codeCode }) => new DataSampleFilter().forDataOwner(dataOwner).byLabelCodeDateFilter(tagType, tagCode, codeType, codeCode, startDate, endDate)))
-          return await dataSampleApi.filterDataSample(
-            await new DataSampleFilter().forDataOwner(dataOwner).union(tagCodesFilters).build(),
+          const tagCodesFilters = await Promise.all(
+            tagCodes.map(async ({tagType, tagCode, codeType, codeCode}) =>
+              new DataSampleFilter(api).forDataOwner(dataOwner).byLabelCodeDateFilter(tagType, tagCode, codeType, codeCode, startDate, endDate).build(),
+            ),
+          );
 
-            nextDataSampleId,
-            limit,
-          );
+          const unionFilter = FilterComposition.union(...tagCodesFilters);
+          try {
+            return await dataSampleApi.filterDataSample(unionFilter, nextDataSampleId, limit).then(p => PaginatedList.toJSON(p, DataSample.toJSON));
+          } catch (e) {
+            console.error('Error filterDataSample', e);
+            throw e;
+          }
         });
       },
-      providesTags: tagsByIdsPaginated('DataSample', 'all'),
+      providesTags: result => result?.rows?.map(({id}) => ({type: 'DataSample', id})) ?? [],
     }),
-    getDataSampleByTagType: builder.query<PaginatedListDataSample, { tagType: string; tagCode: string; nextDataSampleId?: string; limit?: number }>({
-      async queryFn({ tagType, tagCode, nextDataSampleId = undefined, limit = 1000 }, { getState }) {
-        const { dataSampleApi, dataOwnerApi } = (await medTechApi(getState))!;
+    getDataSampleByTagType: builder.query<PaginatedList<DataSample>, {tagType: string; tagCode: string; nextDataSampleId?: string; limit?: number}>({
+      async queryFn({tagType, tagCode, nextDataSampleId = undefined, limit = 1000}, {getState}) {
+        const api = await medTechApi(getState);
+        if (api === undefined) {
+          throw new Error('No medTechApi available');
+        }
+        const {dataSampleApi, dataOwnerApi} = api;
         const user = currentUser(getState)!;
         return guard([dataSampleApi, dataOwnerApi], async () => {
           const dataOwner = dataOwnerApi.getDataOwnerIdOf(user);
-          return await dataSampleApi.filterDataSample(
-            await new DataSampleFilter().forDataOwner(dataOwner).byLabelCodeDateFilter(tagType, tagCode, undefined, undefined, undefined, undefined).build(),
-            nextDataSampleId,
-            limit,
-          );
+          return await dataSampleApi
+            .filterDataSample(
+              await new DataSampleFilter(api).forDataOwner(dataOwner).byLabelCodeDateFilter(tagType, tagCode, undefined, undefined, undefined, undefined).build(),
+              nextDataSampleId,
+              limit,
+            )
+            .then(p => PaginatedList.toJSON(p, DataSample.fromJSON));
         });
       },
-      providesTags: tagsByIdsPaginated('DataSample', 'all'),
+      providesTags: result => result?.rows?.map(({id}) => ({type: 'DataSample', id})) ?? [],
     }),
   }),
 });
