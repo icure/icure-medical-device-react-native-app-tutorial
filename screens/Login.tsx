@@ -2,21 +2,35 @@ import React, {useEffect, useState} from 'react';
 import {View, Image, Text, StyleSheet} from 'react-native';
 import {useForm, Controller} from 'react-hook-form';
 import {useNavigate} from 'react-router-native';
-import Config from 'react-native-config';
+import { createSelector } from '@reduxjs/toolkit'
 
 import {RoundedInput, RoundedButton, TextHelper, ErrorMessage} from '../components/FormElements';
-import {completeAuthentication, login, setEmail, setToken, startAuthentication, setRecaptcha} from '../services/api';
+import {
+  completeAuthentication,
+  login,
+  setEmail,
+  setToken,
+  startAuthentication,
+  setRecaptcha,
+  MedTechApiState,
+} from "../services/api";
 import {useAppDispatch, useAppSelector} from '../redux/hooks';
 import {routes} from '../navigation/Router';
 import {WebViewComponent} from '../components/WebViewComponent';
+import { PetraState } from "../config/PetraState";
+
+const selectMedTechApiData = (state: { medTechApi: MedTechApiState }) => state.medTechApi
+const selectPetraData = (state: { petra: PetraState }) => state.petra
+
+const combinedSelector = createSelector([selectMedTechApiData, selectPetraData], (medTechApi: MedTechApiState, petra: PetraState) => ({
+  online: medTechApi.online,
+  lsUsername: petra?.savedCredentials?.login,
+  lsToken: petra?.savedCredentials?.token,
+}))
 
 export const Login = () => {
   const [isWaitingForCode, setWaitingForCode] = useState(false);
-  const {online, lsUsername, lsToken} = useAppSelector(state => ({
-    ...state.medTechApi,
-    lsUsername: state.petra?.savedCredentials?.login,
-    lsToken: state.petra?.savedCredentials?.token,
-  }));
+  const {online, lsUsername, lsToken} = useAppSelector(combinedSelector);
   const {
     control,
     handleSubmit,
@@ -86,7 +100,9 @@ export const Login = () => {
         </View>
 
         <View style={styles.webviewContainer}>
-          <WebViewComponent sitekey={Config.FRIENDLY_CAPTCHA_SITE_KEY} onFinish={value => dispatch(setRecaptcha({recaptcha: value}))} />
+
+            <WebViewComponent sitekey={process.env.EXPO_PUBLIC_FRIENDLY_CAPTCHA_SITE_KEY}
+                             onFinish={value => dispatch(setRecaptcha({ recaptcha: value }))} />
         </View>
 
         {isWaitingForCode ? <RoundedButton title="Login" onClick={handleSubmit(onLogin)} /> : <RoundedButton title="Receive a one time code" onClick={handleSubmit(onAskCode)} />}
@@ -132,6 +148,11 @@ const styles = StyleSheet.create({
   },
   webviewContainer: {
     width: '100%',
+    height: 75,
     marginBottom: 24,
+    backgroundColor: 'red',
+    borderWidth: 1,
+    borderColor: '#A2A4BE',
+    borderRadius: 25,
   },
 });

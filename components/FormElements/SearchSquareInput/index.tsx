@@ -46,7 +46,7 @@ export const SearchSquareInput: React.FC<SearchSquareInputProps> = ({onSubmit, p
           onChangeText={(value: string) => handleChange(value)}
           value={searchValue}
           autoCapitalize="none"
-          placeholder={placeholder ? placeholder : null}
+          placeholder={placeholder ?? null}
           placeholderTextColor="#A2A4BE"
           onPressIn={() => {
             setInputTouched(true);

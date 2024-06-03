@@ -12,7 +12,6 @@ import {
 import {SimpleMedTechCryptoStrategies} from '@icure/medical-device-sdk/src/services/MedTechCryptoStrategies';
 import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {revertAll, setSavedCredentials} from '../config/PetraState';
-import Config from 'react-native-config';
 import {FetchBaseQueryError} from '@reduxjs/toolkit/query';
 import storage from '../utils/storage';
 import * as ExpoKryptomModule from '@icure/expo-kryptom';
@@ -129,9 +128,8 @@ export const startAuthentication = createAsyncThunk('medTechApi/startAuthenticat
   const anonymousApi = await new AnonymousMedTechApi.Builder()
     .withCrypto(new NativeCryptoPrimitivesBridge(ExpoKryptomModule))
     .withCryptoStrategies(new SimpleMedTechCryptoStrategies())
-    .withMsgGwSpecId(Config.EXTERNAL_SERVICES_SPEC_ID!)
-    .withAuthProcessByEmailId(Config.EMAIL_AUTHENTICATION_PROCESS_ID!)
-    .withAuthProcessBySmsId(Config.SMS_AUTHENTICATION_PROCESS_ID!)
+    .withMsgGwSpecId(process.env.EXPO_PUBLIC_EXTERNAL_SERVICES_SPEC_ID!)
+    .withAuthProcessByEmailId(process.env.EXPO_PUBLIC_EMAIL_AUTHENTICATION_PROCESS_ID!)
     .withStorage(storage)
     .withICureBaseUrl('https://api.icure.cloud')
     .build();
@@ -161,6 +159,9 @@ export const completeAuthentication = createAsyncThunk('medTechApi/completeAuthe
   const anonymousApi = apiCache[`${authProcess.login}/${authProcess.requestId}`] as AnonymousMedTechApi;
 
   try {
+    console.log('token')
+    console.log(token)
+
     const result = await anonymousApi.authenticationApi.completeAuthentication(authProcess, token);
     const api = result.medTechApi;
     const user = await api.userApi.getLoggedUser();
@@ -195,9 +196,8 @@ export const login = createAsyncThunk('medTechApi/login', async (_, {getState}) 
     .withCrypto(new NativeCryptoPrimitivesBridge(ExpoKryptomModule))
     .withCryptoStrategies(new SimpleMedTechCryptoStrategies())
     .withStorage(storage)
-    .withMsgGwSpecId(Config.EXTERNAL_SERVICES_SPEC_ID!)
-    .withAuthProcessByEmailId(Config.EMAIL_AUTHENTICATION_PROCESS_ID!)
-    .withAuthProcessBySmsId(Config.SMS_AUTHENTICATION_PROCESS_ID!)
+    .withMsgGwSpecId(process.env.EXPO_PUBLIC_EXTERNAL_SERVICES_SPEC_ID!)
+    .withAuthProcessByEmailId(process.env.EXPO_PUBLIC_EMAIL_AUTHENTICATION_PROCESS_ID!)
     .withUserName(email)
     .withPassword(token)
     .withICureBaseUrl('https://api.icure.cloud')

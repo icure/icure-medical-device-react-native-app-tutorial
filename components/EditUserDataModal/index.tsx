@@ -4,12 +4,13 @@ import {Patient, Address, Telecom} from '@icure/medical-device-sdk';
 import {useForm, Controller} from 'react-hook-form';
 import {format, parse} from 'date-fns';
 import {useNavigate} from 'react-router-native';
+import { createSelector } from '@reduxjs/toolkit'
 
 import {globalStyles} from '../../styles/GlobalStyles';
 import {SquareInput, SquareButton, ErrorMessage, DatePickerModal, FakeSquareInput, SearchSquareInput} from '../FormElements';
 import {useCreateOrUpdatePatientMutation, useCurrentPatientQuery} from '../../services/patientApi';
 import {useAppSelector, useAppDispatch} from '../../redux/hooks';
-import {logout} from '../../services/api';
+import { logout, MedTechApiState } from "../../services/api";
 import {useFilterHealthcareProfessionalsQuery} from '../../services/healthcareProfessionalApi';
 import {DoctorCardRemove, DoctorCardAdd} from '../DoctorCard';
 import {routes} from '../../navigation/Router';
@@ -23,6 +24,13 @@ type EditUserDataModalProps = {
   onShareWithDoctor: () => void;
   onEditDoctor: () => void;
 };
+
+const reduxSelector = createSelector(
+  (state: { medTechApi: MedTechApiState }) => state.medTechApi,
+  (medTechApi: MedTechApiState) => ({
+    user: medTechApi.user,
+  }),
+)
 
 export const EditUserDataModal: React.FC<EditUserDataModalProps> = ({onCancel, onSave}) => {
   /* My information Tab */
@@ -39,10 +47,10 @@ export const EditUserDataModal: React.FC<EditUserDataModalProps> = ({onCancel, o
   useEffect(() => {
     if (!isFetching && patient) {
       setFormValues({
-        firstName: patient.firstName,
-        lastName: patient.lastName,
-        email: patient.addresses[0].telecoms.find(item => item.telecomType === 'email').telecomNumber,
-        mobilePhone: patient.addresses[0].telecoms.find(item => item.telecomType === 'mobile').telecomNumber,
+        firstName: patient.firstName ?? '',
+        lastName: patient.lastName ?? '',
+        email: patient?.addresses[0]?.telecoms.find(item => item.telecomType === 'email').telecomNumber ?? '',
+        mobilePhone: patient?.addresses[0]?.telecoms.find(item => item.telecomType === 'mobile').telecomNumber ?? '',
         dateOfBirth: patient.dateOfBirth,
       });
     }
@@ -97,10 +105,7 @@ export const EditUserDataModal: React.FC<EditUserDataModalProps> = ({onCancel, o
   // My doctors Tab
   const [isSearchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const {user} = useAppSelector(state => ({
-    ...state.medTechApi,
-    user: state.medTechApi.user,
-  }));
+  const {user} = useAppSelector(reduxSelector);
 
   const {data: hcpListSearchResult, isFetching: isHcpSearchFetching} = useFilterHealthcareProfessionalsQuery({name: searchQuery}, {skip: !searchQuery?.length});
 

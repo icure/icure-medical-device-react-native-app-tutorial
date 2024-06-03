@@ -7,10 +7,11 @@ interface WebViewComponentProps {
 }
 
 export const WebViewComponent = ({sitekey, onFinish}: WebViewComponentProps): JSX.Element => {
+
   return (
     <WebView
       originWhitelist={['*']}
-      style={{width: '100%', height: 70}}
+      style={{width: '100%', height: 70, borderWidth: 1, borderColor: 'red'}}
       source={{
         html: `
           <!DOCTYPE html>
@@ -19,8 +20,9 @@ export const WebViewComponent = ({sitekey, onFinish}: WebViewComponentProps): JS
                 <meta charset="utf-8">
                 <title>Friendly Captcha Verification</title>
 
-                <script type="module" src="https://cdn.jsdelivr.net/npm/friendly-challenge@0.9.11/widget.module.min.js"></script>
-                <script nomodule src="https://cdn.jsdelivr.net/npm/friendly-challenge@0.9.11/widget.min.js"></script>
+                <script type="module" src="https://cdn.jsdelivr.net/npm/friendly-challenge@0.9.14/widget.module.min.js" async defer></script>
+                <script nomodule src="https://cdn.jsdelivr.net/npm/friendly-challenge@0.9.14/widget.min.js" async defer></script>
+
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <style>
                     html, body {
@@ -37,16 +39,26 @@ export const WebViewComponent = ({sitekey, onFinish}: WebViewComponentProps): JS
               <body>
                 <div class="frc-captcha" data-start="auto" data-sitekey="${sitekey}" data-callback="doneCallback" data-lang="en"></div>
                 <script>
-                  function doneCallback(solution) { ReactNativeWebView.postMessage(solution) }
+                console.log('script works')
+                  function doneCallback(solution) { 
+                    console.log('test')
+                    ReactNativeWebView.postMessage(solution)
+                  }
                 </script>
+           
               </body>
             </html>
     `,
       }}
       onMessage={event => {
-        console.log(event.nativeEvent.data);
-        // onFinish(event.nativeEvent.data.split('.')[0]);
+        console.log('Received message from WebView:', event.nativeEvent.data);
         onFinish(event.nativeEvent.data);
+      }}
+      onError={event => {
+        console.error('WebView error:', event.nativeEvent);
+      }}
+      onLoadEnd={() => {
+        console.log('WebView content loaded');
       }}
     />
   );

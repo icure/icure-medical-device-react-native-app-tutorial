@@ -2,13 +2,26 @@ import React, {useEffect, useState} from 'react';
 import {View, Image, Text, StyleSheet, ScrollView} from 'react-native';
 import {useForm, Controller} from 'react-hook-form';
 import {useNavigate} from 'react-router-native';
-import Config from 'react-native-config';
 
 import {RoundedInput, RoundedButton, TextHelper, ErrorMessage} from '../components/FormElements';
 import {useAppDispatch, useAppSelector} from '../redux/hooks';
-import {setRegistrationInformation, setToken, startAuthentication, completeAuthentication, setRecaptcha} from '../services/api';
+import {
+  setRegistrationInformation,
+  setToken,
+  startAuthentication,
+  completeAuthentication,
+  setRecaptcha,
+  MedTechApiState,
+} from "../services/api";
 import {routes} from '../navigation/Router';
 import {WebViewComponent} from '../components/WebViewComponent';
+import { createSelector } from "@reduxjs/toolkit";
+
+const reduxSelector = createSelector(
+  (state: { medTechApi: MedTechApiState }) => state.medTechApi,
+  (medTechApi: MedTechApiState) => ({
+  online: medTechApi.online,
+}))
 
 export const Register = (): JSX.Element => {
   const {
@@ -27,9 +40,7 @@ export const Register = (): JSX.Element => {
   const dispatch = useAppDispatch();
   const [isWaitingForCode, setWaitingForCode] = useState(false);
 
-  const {online} = useAppSelector(state => ({
-    ...state.medTechApi,
-  }));
+  const {online} = useAppSelector(reduxSelector);
 
   useEffect(() => {
     if (online) {
@@ -48,6 +59,7 @@ export const Register = (): JSX.Element => {
     dispatch(setToken({token: data.userCode}));
     dispatch(completeAuthentication());
   };
+
 
   return (
     <ScrollView style={styles.registerScreen}>
@@ -99,7 +111,10 @@ export const Register = (): JSX.Element => {
         </View>
 
         <View style={styles.webviewContainer}>
-          <WebViewComponent sitekey={Config.FRIENDLY_CAPTCHA_SITE_KEY} onFinish={value => dispatch(setRecaptcha({recaptcha: value}))} />
+
+            <WebViewComponent sitekey={process.env.EXPO_PUBLIC_FRIENDLY_CAPTCHA_SITE_KEY}
+                              onFinish={value => dispatch(setRecaptcha({ recaptcha: value }))} />
+
         </View>
 
         {isWaitingForCode ? (
@@ -149,6 +164,11 @@ const styles = StyleSheet.create({
   },
   webviewContainer: {
     width: '100%',
+    height: 75,
     marginBottom: 24,
+    backgroundColor: 'red',
+    borderWidth: 1,
+    borderColor: '#A2A4BE',
+    borderRadius: 25,
   },
 });
