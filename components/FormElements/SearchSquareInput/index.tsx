@@ -1,7 +1,7 @@
 import React, {useState, useRef} from 'react';
 import {View, TextInput, StyleSheet, Image} from 'react-native';
 
-import {IconButton} from '../index';
+import {IconButton} from '../IconButton';
 import {globalStyles} from '../../../styles/GlobalStyles';
 
 export type SearchSquareInputProps = {
@@ -14,20 +14,24 @@ export type SearchSquareInputProps = {
 export const SearchSquareInput: React.FC<SearchSquareInputProps> = ({onSubmit, placeholder, onClose, onOpen}) => {
   const [isInputTouched, setInputTouched] = useState(false);
   const [searchValue, setSearchValue] = useState('');
-  const textInputReference = useRef(null);
+  const textInputReference = useRef(null as TextInput | null);
   const handleChange = (value: string) => {
     setSearchValue(value);
   };
 
   const handleClear = () => {
-    textInputReference.current.blur();
-    textInputReference.current.clear();
+    const current = textInputReference.current;
+    if (!current) {
+      return;
+    }
+    current.blur();
+    current.clear();
     setInputTouched(false);
-    onClose();
+    onClose?.();
   };
 
   const handleSubmit = (value: string) => {
-    onSubmit(value);
+    onSubmit?.(value);
     // textInputReference.current.blur();
     // textInputReference.current.clear();
     // setInputTouched(false);
@@ -46,11 +50,11 @@ export const SearchSquareInput: React.FC<SearchSquareInputProps> = ({onSubmit, p
           onChangeText={(value: string) => handleChange(value)}
           value={searchValue}
           autoCapitalize="none"
-          placeholder={placeholder ?? null}
+          placeholder={placeholder ?? ''}
           placeholderTextColor="#A2A4BE"
           onPressIn={() => {
             setInputTouched(true);
-            onOpen();
+            onOpen?.();
           }}
           ref={textInputReference}
         />

@@ -4,7 +4,7 @@ import DatePicker from 'react-native-modern-datepicker';
 import {format} from 'date-fns';
 
 import {globalStyles} from '../../../styles/GlobalStyles';
-import {SquareButton} from '../index';
+import {SquareButton} from '../SquareButton';
 
 const WIDTH_MODAL = Dimensions.get('window').width;
 const HEIGHT_MODAL = Dimensions.get('window').height;

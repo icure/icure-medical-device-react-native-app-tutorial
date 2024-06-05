@@ -15,9 +15,9 @@ import {
   MedTechApiState,
 } from "../services/api";
 import {useAppDispatch, useAppSelector} from '../redux/hooks';
-import {routes} from '../navigation/Router';
 import {WebViewComponent} from '../components/WebViewComponent';
 import { PetraState } from "../config/PetraState";
+import {routes} from '../navigation/Routes';
 
 const selectMedTechApiData = (state: { medTechApi: MedTechApiState }) => state.medTechApi
 const selectPetraData = (state: { petra: PetraState }) => state.petra

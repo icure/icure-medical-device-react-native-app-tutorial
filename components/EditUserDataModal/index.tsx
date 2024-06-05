@@ -13,7 +13,7 @@ import {useAppSelector, useAppDispatch} from '../../redux/hooks';
 import { logout, MedTechApiState } from "../../services/api";
 import {useFilterHealthcareProfessionalsQuery} from '../../services/healthcareProfessionalApi';
 import {DoctorCardRemove, DoctorCardAdd} from '../DoctorCard';
-import {routes} from '../../navigation/Router';
+import {routes} from '../../navigation/Routes';
 
 const WIDTH_MODAL = Dimensions.get('window').width;
 const HEIGHT_MODAL = Dimensions.get('window').height;

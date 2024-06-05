@@ -13,9 +13,9 @@ import {
   setRecaptcha,
   MedTechApiState,
 } from "../services/api";
-import {routes} from '../navigation/Router';
 import {WebViewComponent} from '../components/WebViewComponent';
 import { createSelector } from "@reduxjs/toolkit";
+import {routes} from '../navigation/Routes';
 
 const reduxSelector = createSelector(
   (state: { medTechApi: MedTechApiState }) => state.medTechApi,
