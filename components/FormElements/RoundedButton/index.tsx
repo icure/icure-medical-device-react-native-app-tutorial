@@ -1,19 +1,19 @@
-import React from 'react';
-import {TouchableOpacity, Text, StyleSheet} from 'react-native';
-import {globalStyles} from '../../../styles/GlobalStyles';
+import React from 'react'
+import { TouchableOpacity, Text, StyleSheet } from 'react-native'
+import { globalStyles } from '../../../styles/GlobalStyles'
 
 export type Props = {
-  title: string;
-  onClick: () => void;
-};
+  title: string
+  onClick: () => void
+}
 
-export const RoundedButton: React.FC<Props> = ({title, onClick}) => {
+export const RoundedButton: React.FC<Props> = ({ title, onClick }) => {
   return (
     <TouchableOpacity onPress={onClick} style={styles.appButtonContainer}>
       <Text style={[globalStyles.baseText, styles.appButtonText]}>{title}</Text>
     </TouchableOpacity>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   appButtonContainer: {
@@ -25,4 +25,4 @@ const styles = StyleSheet.create({
   appButtonText: {
     color: '#FFFDFE',
   },
-});
+})

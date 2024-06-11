@@ -1,15 +1,15 @@
-import React from 'react';
-import {View, Text, StyleSheet} from 'react-native';
-import {Link} from 'react-router-native';
-import {globalStyles} from '../../../styles/GlobalStyles';
+import React from 'react'
+import { View, Text, StyleSheet } from 'react-native'
+import { Link } from 'react-router-native'
+import { globalStyles } from '../../../styles/GlobalStyles'
 
 export type Props = {
-  text: string;
-  url: string;
-  title: string;
-};
+  text: string
+  url: string
+  title: string
+}
 
-export const TextHelper: React.FC<Props> = ({text, url, title}) => {
+export const TextHelper: React.FC<Props> = ({ text, url, title }) => {
   return (
     <View style={styles.textHelper}>
       <Text style={globalStyles.baseText}>{text}</Text>
@@ -17,8 +17,8 @@ export const TextHelper: React.FC<Props> = ({text, url, title}) => {
         <Text style={[globalStyles.baseText, styles.link]}>{title}</Text>
       </Link>
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   textHelper: {
@@ -28,4 +28,4 @@ const styles = StyleSheet.create({
     color: '#D06676',
     marginLeft: 8,
   },
-});
+})

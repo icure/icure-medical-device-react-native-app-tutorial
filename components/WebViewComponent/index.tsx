@@ -1,17 +1,16 @@
-import React from 'react';
-import {WebView} from 'react-native-webview';
+import React from 'react'
+import { WebView } from 'react-native-webview'
 
 interface WebViewComponentProps {
-  sitekey: string;
-  onFinish: (recaptcha: string) => void;
+  sitekey: string
+  onFinish: (recaptcha: string) => void
 }
 
-export const WebViewComponent = ({sitekey, onFinish}: WebViewComponentProps): JSX.Element => {
-
+export const WebViewComponent = ({ sitekey, onFinish }: WebViewComponentProps): JSX.Element => {
   return (
     <WebView
       originWhitelist={['*']}
-      style={{width: '100%', height: 70, borderWidth: 1, borderColor: 'red'}}
+      style={{ width: '100%', height: 70, borderWidth: 1, borderColor: 'red' }}
       source={{
         html: `
           <!DOCTYPE html>
@@ -40,26 +39,26 @@ export const WebViewComponent = ({sitekey, onFinish}: WebViewComponentProps): JS
                 <div class="frc-captcha" data-start="auto" data-sitekey="${sitekey}" data-callback="doneCallback" data-lang="en"></div>
                 <script>
                 console.log('script works')
-                  function doneCallback(solution) { 
+                  function doneCallback(solution) {
                     console.log('test')
                     ReactNativeWebView.postMessage(solution)
                   }
                 </script>
-           
+
               </body>
             </html>
     `,
       }}
-      onMessage={event => {
-        console.log('Received message from WebView:', event.nativeEvent.data);
-        onFinish(event.nativeEvent.data);
+      onMessage={(event) => {
+        console.log('Received message from WebView:', event.nativeEvent.data)
+        onFinish(event.nativeEvent.data)
       }}
-      onError={event => {
-        console.error('WebView error:', event.nativeEvent);
+      onError={(event) => {
+        console.error('WebView error:', event.nativeEvent)
       }}
       onLoadEnd={() => {
-        console.log('WebView content loaded');
+        console.log('WebView content loaded')
       }}
     />
-  );
-};
+  )
+}

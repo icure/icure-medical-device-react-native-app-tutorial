@@ -1,23 +1,15 @@
-import React, {useEffect, useState} from 'react';
-import {View, Image, Text, StyleSheet} from 'react-native';
-import {useForm, Controller} from 'react-hook-form';
-import {useNavigate} from 'react-router-native';
+import React, { useEffect, useState } from 'react'
+import { View, Image, Text, StyleSheet } from 'react-native'
+import { useForm, Controller } from 'react-hook-form'
+import { useNavigate } from 'react-router-native'
 import { createSelector } from '@reduxjs/toolkit'
 
-import {RoundedInput, RoundedButton, TextHelper, ErrorMessage} from '../components/FormElements';
-import {
-  completeAuthentication,
-  login,
-  setEmail,
-  setToken,
-  startAuthentication,
-  setRecaptcha,
-  MedTechApiState,
-} from "../services/api";
-import {useAppDispatch, useAppSelector} from '../redux/hooks';
-import {WebViewComponent} from '../components/WebViewComponent';
-import { PetraState } from "../config/PetraState";
-import {routes} from '../navigation/Routes';
+import { RoundedInput, RoundedButton, TextHelper, ErrorMessage } from '../components/FormElements'
+import { completeAuthentication, login, setEmail, setToken, startAuthentication, setRecaptcha, MedTechApiState } from '../services/api'
+import { useAppDispatch, useAppSelector } from '../redux/hooks'
+import { WebViewComponent } from '../components/WebViewComponent'
+import { PetraState } from '../config/PetraState'
+import { routes } from '../navigation/Routes'
 
 const selectMedTechApiData = (state: { medTechApi: MedTechApiState }) => state.medTechApi
 const selectPetraData = (state: { petra: PetraState }) => state.petra
@@ -29,45 +21,48 @@ const combinedSelector = createSelector([selectMedTechApiData, selectPetraData],
 }))
 
 export const Login = () => {
-  const [isWaitingForCode, setWaitingForCode] = useState(false);
-  const {online, lsUsername, lsToken} = useAppSelector(combinedSelector);
+  const [isWaitingForCode, setWaitingForCodeState] = useState(false)
+  const { online, lsUsername, lsToken } = useAppSelector(combinedSelector)
   const {
     control,
     handleSubmit,
-    formState: {errors},
+    formState: { errors },
   } = useForm({
     defaultValues: {
       userEmail: '',
       userCode: '',
     },
-  });
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
+  })
+  const dispatch = useAppDispatch()
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (lsUsername && lsToken && dispatch) {
-      dispatch(setEmail({email: lsUsername}));
-      dispatch(setToken({token: lsToken}));
-      dispatch(login());
+      dispatch(setEmail({ email: lsUsername }))
+      dispatch(setToken({ token: lsToken }))
+      dispatch(login())
     }
-  }, [navigate, lsUsername, lsToken, dispatch]);
+  }, [navigate, lsUsername, lsToken, dispatch])
 
   useEffect(() => {
     if (online) {
-      navigate(routes.home);
+      navigate(routes.home)
     }
-  }, [online, navigate]);
+  }, [online, navigate])
 
-  const onLogin = (data: {userCode: string}) => {
-    setWaitingForCode(false);
-    dispatch(setToken({token: data.userCode}));
-    dispatch(completeAuthentication());
-  };
-  const onAskCode = (data: {userEmail: string}) => {
-    setWaitingForCode(true);
-    dispatch(setEmail({email: data.userEmail}));
-    dispatch(startAuthentication());
-  };
+  const askForCode = (data: { userEmail: string }) => {
+    setWaitingForCodeState(true)
+
+    dispatch(setEmail({ email: data.userEmail }))
+    dispatch(startAuthentication())
+  }
+
+  const performLogin = (data: { userCode: string }) => {
+    setWaitingForCodeState(false)
+
+    dispatch(setToken({ token: data.userCode }))
+    dispatch(completeAuthentication())
+  }
 
   return (
     <View style={styles.registerScreen}>
@@ -80,7 +75,7 @@ export const Login = () => {
             rules={{
               required: true,
             }}
-            render={({field: {onChange, onBlur, value}}) => <RoundedInput label="Email or phone number" onBlur={onBlur} onChange={onChange} value={value} isRequired />}
+            render={({ field: { onChange, onBlur, value } }) => <RoundedInput label="Email or phone number" onBlur={onBlur} onChange={onChange} value={value} isRequired />}
             name="userEmail"
           />
           {errors.userEmail && <ErrorMessage text="This field is required." />}
@@ -91,7 +86,7 @@ export const Login = () => {
                 rules={{
                   required: true,
                 }}
-                render={({field: {onChange, onBlur, value}}) => <RoundedInput label="Code" onBlur={onBlur} onChange={onChange} value={value} isRequired />}
+                render={({ field: { onChange, onBlur, value } }) => <RoundedInput label="Code" onBlur={onBlur} onChange={onChange} value={value} isRequired />}
                 name="userCode"
               />
               {errors.userCode && <ErrorMessage text="This field is required." />}
@@ -100,20 +95,22 @@ export const Login = () => {
         </View>
 
         <View style={styles.webviewContainer}>
-
-            <WebViewComponent sitekey={process.env.EXPO_PUBLIC_FRIENDLY_CAPTCHA_SITE_KEY}
-                             onFinish={value => dispatch(setRecaptcha({ recaptcha: value }))} />
+          <WebViewComponent sitekey={process.env.EXPO_PUBLIC_FRIENDLY_CAPTCHA_SITE_KEY!} onFinish={(value) => dispatch(setRecaptcha({ recaptcha: value }))} />
         </View>
 
-        {isWaitingForCode ? <RoundedButton title="Login" onClick={handleSubmit(onLogin)} /> : <RoundedButton title="Receive a one time code" onClick={handleSubmit(onAskCode)} />}
+        {isWaitingForCode ? (
+          <RoundedButton title="Login" onClick={handleSubmit(performLogin)} />
+        ) : (
+          <RoundedButton title="Receive a one time code" onClick={handleSubmit(askForCode)} />
+        )}
 
         <View style={styles.textHelperContainer}>
           <TextHelper text="Not registered yet?" url="/register" title="Create an account" />
         </View>
       </View>
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   registerScreen: {
@@ -155,4 +152,4 @@ const styles = StyleSheet.create({
     borderColor: '#A2A4BE',
     borderRadius: 25,
   },
-});
+})

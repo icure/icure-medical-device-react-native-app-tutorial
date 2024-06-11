@@ -1,10 +1,10 @@
-import React from 'react';
-import {NativeRouter, Route, Routes} from 'react-router-native';
-import {Layout} from '../components/layout/Layout';
-import {Register} from '../screens/Register';
-import {Login} from '../screens/Login';
-import {Home} from '../screens/Home';
-import {routes} from './Routes';
+import React from 'react'
+import { NativeRouter, Route, Routes } from 'react-router-native'
+import { Layout } from '../components/layout/Layout'
+import { Register } from '../screens/Register'
+import { Login } from '../screens/Login'
+import { Home } from '../screens/Home'
+import { routes } from './Routes'
 
 export const Router = () => (
   <NativeRouter>
@@ -16,4 +16,4 @@ export const Router = () => (
       </Route>
     </Routes>
   </NativeRouter>
-);
+)

@@ -1,16 +1,16 @@
-import React from 'react';
-import {View, TextInput, Text, StyleSheet} from 'react-native';
+import React from 'react'
+import { View, TextInput, Text, StyleSheet } from 'react-native'
 
 export type Props = {
-  label: string;
-  value: string | undefined;
-  onChange: () => void;
-  onBlur: () => void;
-  secureTextEntry?: boolean;
-  isRequired?: boolean;
-};
+  label: string
+  value: string | undefined
+  onChange: () => void
+  onBlur: () => void
+  secureTextEntry?: boolean
+  isRequired?: boolean
+}
 
-export const RoundedInput: React.FC<Props> = ({label, value, onChange, onBlur, secureTextEntry, isRequired}) => {
+export const RoundedInput: React.FC<Props> = ({ label, value, onChange, onBlur, secureTextEntry, isRequired }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.label}>
@@ -27,8 +27,8 @@ export const RoundedInput: React.FC<Props> = ({label, value, onChange, onBlur, s
         secureTextEntry={secureTextEntry}
       />
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -54,4 +54,4 @@ const styles = StyleSheet.create({
     paddingLeft: 12,
     fontFamily: 'Nunito-Regular',
   },
-});
+})

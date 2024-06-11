@@ -1,19 +1,19 @@
-import React, {useState} from 'react';
-import {ScrollView, StyleSheet, Image, View, Dimensions, Modal, TouchableOpacity} from 'react-native';
+import React, { useState } from 'react'
+import { ScrollView, StyleSheet, Image, View, Dimensions, Modal, TouchableOpacity } from 'react-native'
 
-import {Header} from '../components/Header';
-import {AdvancedCalendar} from '../components/AdvancedCalendar';
-import {SymbolsExplanationModal} from '../components/SymbolsExplanationModal';
-import {useCurrentPatientQuery} from '../services/patientApi';
-import {CyclesHistory} from '../components/CyclesHistory';
+import { Header } from '../components/Header'
+import { AdvancedCalendar } from '../components/AdvancedCalendar'
+import { SymbolsExplanationModal } from '../components/SymbolsExplanationModal'
+import { useCurrentPatientQuery } from '../services/patientApi'
+import { CyclesHistory } from '../components/CyclesHistory'
 
-const WIDTH_MODAL = Dimensions.get('window').width;
-const HEIGHT_MODAL = Dimensions.get('window').height;
+const WIDTH_MODAL = Dimensions.get('window').width
+const HEIGHT_MODAL = Dimensions.get('window').height
 
 export const Home = () => {
-  const [symbolsExplanationmodalVisible, setSymbolsExplanationModalVisible] = useState(false);
+  const [symbolsExplanationmodalVisible, setSymbolsExplanationModalVisible] = useState(false)
 
-  const {data: patient} = useCurrentPatientQuery();
+  const { data: patient } = useCurrentPatientQuery()
 
   return (
     <ScrollView contentContainerStyle={styles.homeScreen}>
@@ -31,13 +31,14 @@ export const Home = () => {
         transparent={true}
         visible={symbolsExplanationmodalVisible}
         onRequestClose={() => {
-          setSymbolsExplanationModalVisible(!symbolsExplanationmodalVisible);
-        }}>
+          setSymbolsExplanationModalVisible(!symbolsExplanationmodalVisible)
+        }}
+      >
         <SymbolsExplanationModal onClose={() => setSymbolsExplanationModalVisible(!symbolsExplanationmodalVisible)} />
       </Modal>
     </ScrollView>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   homeScreen: {
@@ -63,4 +64,4 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
   },
-});
+})

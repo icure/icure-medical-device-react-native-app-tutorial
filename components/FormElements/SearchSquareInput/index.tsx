@@ -1,41 +1,41 @@
-import React, {useState, useRef} from 'react';
-import {View, TextInput, StyleSheet, Image} from 'react-native';
+import React, { useState, useRef } from 'react'
+import { View, TextInput, StyleSheet, Image } from 'react-native'
 
-import {IconButton} from '../IconButton';
-import {globalStyles} from '../../../styles/GlobalStyles';
+import { IconButton } from '../IconButton'
+import { globalStyles } from '../../../styles/GlobalStyles'
 
 export type SearchSquareInputProps = {
-  onSubmit?: (value?: string) => void;
-  onClose?: () => void;
-  onOpen?: () => void;
-  placeholder?: string;
-};
+  onSubmit?: (value?: string) => void
+  onClose?: () => void
+  onOpen?: () => void
+  placeholder?: string
+}
 
-export const SearchSquareInput: React.FC<SearchSquareInputProps> = ({onSubmit, placeholder, onClose, onOpen}) => {
-  const [isInputTouched, setInputTouched] = useState(false);
-  const [searchValue, setSearchValue] = useState('');
-  const textInputReference = useRef(null as TextInput | null);
+export const SearchSquareInput: React.FC<SearchSquareInputProps> = ({ onSubmit, placeholder, onClose, onOpen }) => {
+  const [isInputTouched, setInputTouched] = useState(false)
+  const [searchValue, setSearchValue] = useState('')
+  const textInputReference = useRef(null as TextInput | null)
   const handleChange = (value: string) => {
-    setSearchValue(value);
-  };
+    setSearchValue(value)
+  }
 
   const handleClear = () => {
-    const current = textInputReference.current;
+    const current = textInputReference.current
     if (!current) {
-      return;
+      return
     }
-    current.blur();
-    current.clear();
-    setInputTouched(false);
-    onClose?.();
-  };
+    current.blur()
+    current.clear()
+    setInputTouched(false)
+    onClose?.()
+  }
 
   const handleSubmit = (value: string) => {
-    onSubmit?.(value);
+    onSubmit?.(value)
     // textInputReference.current.blur();
     // textInputReference.current.clear();
     // setInputTouched(false);
-  };
+  }
 
   return (
     <View style={styles.container}>
@@ -53,8 +53,8 @@ export const SearchSquareInput: React.FC<SearchSquareInputProps> = ({onSubmit, p
           placeholder={placeholder ?? ''}
           placeholderTextColor="#A2A4BE"
           onPressIn={() => {
-            setInputTouched(true);
-            onOpen?.();
+            setInputTouched(true)
+            onOpen?.()
           }}
           ref={textInputReference}
         />
@@ -68,8 +68,8 @@ export const SearchSquareInput: React.FC<SearchSquareInputProps> = ({onSubmit, p
         </View>
       )}
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -120,4 +120,4 @@ const styles = StyleSheet.create({
     marginLeft: 4,
     paddingRight: 8,
   },
-});
+})

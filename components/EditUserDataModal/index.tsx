@@ -1,29 +1,29 @@
-import React, {useEffect, useState} from 'react';
-import {ScrollView, StyleSheet, View, Dimensions, Text, Image, TouchableOpacity, Modal, ActivityIndicator} from 'react-native';
-import {Patient, Address, Telecom} from '@icure/medical-device-sdk';
-import {useForm, Controller} from 'react-hook-form';
-import {format, parse} from 'date-fns';
-import {useNavigate} from 'react-router-native';
+import React, { useEffect, useState } from 'react'
+import { ScrollView, StyleSheet, View, Dimensions, Text, Image, TouchableOpacity, Modal, ActivityIndicator } from 'react-native'
+import { Patient, Address, Telecom } from '@icure/medical-device-sdk'
+import { useForm, Controller } from 'react-hook-form'
+import { format, parse } from 'date-fns'
+import { useNavigate } from 'react-router-native'
 import { createSelector } from '@reduxjs/toolkit'
 
-import {globalStyles} from '../../styles/GlobalStyles';
-import {SquareInput, SquareButton, ErrorMessage, DatePickerModal, FakeSquareInput, SearchSquareInput} from '../FormElements';
-import {useCreateOrUpdatePatientMutation, useCurrentPatientQuery} from '../../services/patientApi';
-import {useAppSelector, useAppDispatch} from '../../redux/hooks';
-import { logout, MedTechApiState } from "../../services/api";
-import {useFilterHealthcareProfessionalsQuery} from '../../services/healthcareProfessionalApi';
-import {DoctorCardRemove, DoctorCardAdd} from '../DoctorCard';
-import {routes} from '../../navigation/Routes';
+import { globalStyles } from '../../styles/GlobalStyles'
+import { SquareInput, SquareButton, ErrorMessage, DatePickerModal, FakeSquareInput, SearchSquareInput } from '../FormElements'
+import { useCreateOrUpdatePatientMutation, useCurrentPatientQuery } from '../../services/patientApi'
+import { useAppSelector, useAppDispatch } from '../../redux/hooks'
+import { logout, MedTechApiState } from '../../services/api'
+import { useFilterHealthcareProfessionalsQuery } from '../../services/healthcareProfessionalApi'
+import { DoctorCardRemove, DoctorCardAdd } from '../DoctorCard'
+import { routes } from '../../navigation/Routes'
 
-const WIDTH_MODAL = Dimensions.get('window').width;
-const HEIGHT_MODAL = Dimensions.get('window').height;
+const WIDTH_MODAL = Dimensions.get('window').width
+const HEIGHT_MODAL = Dimensions.get('window').height
 
 type EditUserDataModalProps = {
-  onCancel: () => void;
-  onSave: () => void;
-  onShareWithDoctor: () => void;
-  onEditDoctor: () => void;
-};
+  onCancel: () => void
+  onSave: () => void
+  onShareWithDoctor: () => void
+  onEditDoctor: () => void
+}
 
 const reduxSelector = createSelector(
   (state: { medTechApi: MedTechApiState }) => state.medTechApi,
@@ -32,51 +32,51 @@ const reduxSelector = createSelector(
   }),
 )
 
-export const EditUserDataModal: React.FC<EditUserDataModalProps> = ({onCancel, onSave}) => {
+export const EditUserDataModal: React.FC<EditUserDataModalProps> = ({ onCancel, onSave }) => {
   /* My information Tab */
-  const {data: patient, isFetching} = useCurrentPatientQuery();
-  const [activeTab, setActiveTab] = useState('my-information');
+  const { data: patient, isFetching } = useCurrentPatientQuery()
+  const [activeTab, setActiveTab] = useState('my-information')
 
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [patientBirthDay, setPatientBirthDay] = useState<number>();
+  const [showDatePicker, setShowDatePicker] = useState(false)
+  const [patientBirthDay, setPatientBirthDay] = useState<number>()
 
-  const [formValues, setFormValues] = useState({firstName: '', lastName: '', email: '', mobilePhone: '', dateOfBirth: undefined});
+  const [formValues, setFormValues] = useState({ firstName: '', lastName: '', email: '', mobilePhone: '', dateOfBirth: undefined as number | undefined })
 
-  const [createOrUpdatePatient] = useCreateOrUpdatePatientMutation();
+  const [createOrUpdatePatient] = useCreateOrUpdatePatientMutation()
 
   useEffect(() => {
     if (!isFetching && patient) {
       setFormValues({
         firstName: patient.firstName ?? '',
         lastName: patient.lastName ?? '',
-        email: patient?.addresses[0]?.telecoms.find(item => item.telecomType === 'email').telecomNumber ?? '',
-        mobilePhone: patient?.addresses[0]?.telecoms.find(item => item.telecomType === 'mobile').telecomNumber ?? '',
+        email: patient?.addresses[0]?.telecoms.find((item) => item.telecomType === 'email')?.telecomNumber ?? '',
+        mobilePhone: patient?.addresses[0]?.telecoms.find((item) => item.telecomType === 'mobile')?.telecomNumber ?? '',
         dateOfBirth: patient.dateOfBirth,
-      });
+      })
     }
-  }, [patient, isFetching]);
+  }, [patient, isFetching])
 
   const {
     control,
     handleSubmit,
-    formState: {errors},
+    formState: { errors },
     setValue,
   } = useForm({
     values: formValues,
-  });
+  })
 
   useEffect(() => {
     if (patientBirthDay) {
-      setValue('dateOfBirth', patientBirthDay);
+      setValue('dateOfBirth', patientBirthDay)
     }
-  }, [patientBirthDay, setValue]);
+  }, [patientBirthDay, setValue])
 
   const handleCancel = () => {
-    onCancel();
-  };
+    onCancel()
+  }
 
-  const handleSave = (data: {firstName: string; lastName: string; email: string; mobilePhone: string; dateOfBirth: number}) => {
-    const {firstName, lastName, email, mobilePhone, dateOfBirth} = data;
+  const handleSave = (data: { firstName: string; lastName: string; email: string; mobilePhone: string; dateOfBirth: number | undefined }) => {
+    const { firstName, lastName, email, mobilePhone, dateOfBirth } = data
 
     const address = new Address({
       addressType: 'home',
@@ -90,36 +90,38 @@ export const EditUserDataModal: React.FC<EditUserDataModalProps> = ({onCancel, o
           telecomNumber: mobilePhone,
         }),
       ],
-    });
+    })
 
-    createOrUpdatePatient(new Patient({...patient, firstName, lastName, dateOfBirth, addresses: [address]}));
+    createOrUpdatePatient(new Patient({ ...patient, firstName, lastName, dateOfBirth, addresses: [address] }))
 
-    onSave();
-  };
+    onSave()
+  }
 
   const showFormatedDay = (date: number) => {
-    const numberToData = parse(`${date}`, 'yyyyMMdd', new Date());
-    return format(new Date(numberToData), 'dd MMM yyyy');
-  };
+    const numberToData = parse(`${date}`, 'yyyyMMdd', new Date())
+    return format(new Date(numberToData), 'dd MMM yyyy')
+  }
 
   // My doctors Tab
-  const [isSearchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const {user} = useAppSelector(reduxSelector);
+  const [isSearchOpen, setSearchOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const { user } = useAppSelector(reduxSelector)
 
-  const {data: hcpListSearchResult, isFetching: isHcpSearchFetching} = useFilterHealthcareProfessionalsQuery({name: searchQuery}, {skip: !searchQuery?.length});
+  const { data: hcpListSearchResult, isFetching: isHcpSearchFetching } = useFilterHealthcareProfessionalsQuery({ name: searchQuery }, { skip: !searchQuery?.length })
 
   // if doctor already has access to the user's medical data, we should not show him in this list
-  const filteredHcpList = hcpListSearchResult?.filter(item => !user?.sharingDataWith?.medicalInformation || ![...user?.sharingDataWith?.medicalInformation].includes(item.id));
+  const filteredHcpList = hcpListSearchResult?.filter(
+    (item) => !user?.sharingDataWith?.get('medicalInformation') || ![...(user?.sharingDataWith?.get('medicalInformation') ?? [])].includes(item.id),
+  )
 
   // Logout tab
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
+  const dispatch = useAppDispatch()
+  const navigate = useNavigate()
 
   const handleLogout = () => {
-    dispatch(logout());
-    navigate(routes.login);
-  };
+    dispatch(logout())
+    navigate(routes.login)
+  }
 
   return (
     <>
@@ -165,14 +167,14 @@ export const EditUserDataModal: React.FC<EditUserDataModalProps> = ({onCancel, o
                       message: 'This field is required.',
                     },
                   }}
-                  render={({field: {onChange, onBlur, value}}) => (
+                  render={({ field: { onChange, onBlur, value } }) => (
                     <View style={styles.input}>
                       <SquareInput onBlur={onBlur} onChange={onChange} value={value} label="First name" isRequired />
                     </View>
                   )}
                   name="firstName"
                 />
-                {errors.firstName && <ErrorMessage text={errors.firstName.message.toString()} />}
+                {errors.firstName && <ErrorMessage text={errors.firstName.message?.toString() ?? ''} />}
                 <Controller
                   control={control}
                   rules={{
@@ -181,14 +183,14 @@ export const EditUserDataModal: React.FC<EditUserDataModalProps> = ({onCancel, o
                       message: 'This field is required.',
                     },
                   }}
-                  render={({field: {onChange, onBlur, value}}) => (
+                  render={({ field: { onChange, onBlur, value } }) => (
                     <View style={styles.input}>
                       <SquareInput onBlur={onBlur} onChange={onChange} value={value} label="Last name" isRequired />
                     </View>
                   )}
                   name="lastName"
                 />
-                {errors.lastName && <ErrorMessage text={errors.lastName.message.toString()} />}
+                {errors.lastName && <ErrorMessage text={errors.lastName.message?.toString() ?? ''} />}
                 <Controller
                   control={control}
                   rules={{
@@ -197,14 +199,14 @@ export const EditUserDataModal: React.FC<EditUserDataModalProps> = ({onCancel, o
                       message: 'This field is required.',
                     },
                   }}
-                  render={({field: {onChange, onBlur, value}}) => (
+                  render={({ field: { onChange, onBlur, value } }) => (
                     <View style={styles.input}>
                       <SquareInput onBlur={onBlur} onChange={onChange} value={value} label="Email" isRequired />
                     </View>
                   )}
                   name="email"
                 />
-                {errors.email && <ErrorMessage text={errors.email.message.toString()} />}
+                {errors.email && <ErrorMessage text={errors.email.message?.toString() ?? ''} />}
                 <Controller
                   control={control}
                   rules={{
@@ -213,18 +215,18 @@ export const EditUserDataModal: React.FC<EditUserDataModalProps> = ({onCancel, o
                       message: 'This field is required.',
                     },
                   }}
-                  render={({field: {onChange, onBlur, value}}) => (
+                  render={({ field: { onChange, onBlur, value } }) => (
                     <View style={styles.input}>
                       <SquareInput onBlur={onBlur} onChange={onChange} value={value} label="Mobile phone" isRequired />
                     </View>
                   )}
                   name="mobilePhone"
                 />
-                {errors.mobilePhone && <ErrorMessage text={errors.mobilePhone.message.toString()} />}
+                {errors.mobilePhone && <ErrorMessage text={errors.mobilePhone.message?.toString() ?? ''} />}
 
                 <Controller
                   control={control}
-                  render={({field: {value}}) => (
+                  render={({ field: { value } }) => (
                     <TouchableOpacity onPress={() => setShowDatePicker(!showDatePicker)}>
                       <View style={styles.input}>
                         <FakeSquareInput value={value ? showFormatedDay(value) : ''} label="Date of birth" />
@@ -250,12 +252,12 @@ export const EditUserDataModal: React.FC<EditUserDataModalProps> = ({onCancel, o
                 </Text>
                 <View style={[globalStyles.mt24, globalStyles.ph16]}>
                   <SearchSquareInput
-                    onSubmit={(value: string) => {
-                      setSearchQuery(value);
+                    onSubmit={(value?: string) => {
+                      setSearchQuery(value ?? '')
                     }}
                     onClose={() => {
-                      setSearchQuery('');
-                      setSearchOpen(false);
+                      setSearchQuery('')
+                      setSearchOpen(false)
                     }}
                     onOpen={() => setSearchOpen(true)}
                     placeholder="Search for the doctor by name"
@@ -268,21 +270,21 @@ export const EditUserDataModal: React.FC<EditUserDataModalProps> = ({onCancel, o
                   {!isHcpSearchFetching && searchQuery && filteredHcpList?.length === 0 && (
                     <View style={styles.noSearchResultContainer}>
                       <Text style={styles.noSearchResultText}>
-                        We could not find a doctor with the name: "<Text style={{fontWeight: '700'}}>{searchQuery}</Text>".
+                        We could not find a doctor with the name: `<Text style={{ fontWeight: '700' }}>{searchQuery}</Text>`.
                       </Text>
                       <Text style={[styles.noSearchResultText, globalStyles.mt4]}>Please, change the search query and try one more time.</Text>
                     </View>
                   )}
                   {filteredHcpList?.map((item, index) => (
-                    <DoctorCardAdd key={index} name={item.name} id={item.id} />
+                    <DoctorCardAdd key={index} name={item.name ?? ''} id={item.id} />
                   ))}
                 </View>
                 <View style={[globalStyles.mt24, globalStyles.ph16]}>
                   {isSearchOpen && <View style={styles.bluredBg}></View>}
                   <View>
                     <Text style={styles.doctorsListHeading}>List of the doctors who currently have access to your Medical Data: </Text>
-                    {user?.sharingDataWith?.medicalInformation && [...user?.sharingDataWith?.medicalInformation]?.length !== 0 ? (
-                      [...user?.sharingDataWith?.medicalInformation].map((item, index) => <DoctorCardRemove key={index} id={item} />)
+                    {user?.sharingDataWith?.get('medicalInformation') && [...(user?.sharingDataWith?.get('medicalInformation') ?? [])]?.length !== 0 ? (
+                      [...(user?.sharingDataWith?.get('medicalInformation') ?? [])].map((item, index) => <DoctorCardRemove key={index} id={item} />)
                     ) : (
                       <View style={styles.noSearchResultContainer}>
                         <Text style={styles.noSearchResultText}>You do not share your medical information with any doctor. </Text>
@@ -310,19 +312,20 @@ export const EditUserDataModal: React.FC<EditUserDataModalProps> = ({onCancel, o
         transparent={true}
         visible={showDatePicker}
         onRequestClose={() => {
-          setShowDatePicker(!showDatePicker);
-        }}>
+          setShowDatePicker(!showDatePicker)
+        }}
+      >
         <DatePickerModal
           patientBirthDay={patient?.dateOfBirth}
           onClose={() => setShowDatePicker(!showDatePicker)}
-          onSave={selectedDate => {
-            setPatientBirthDay(selectedDate);
+          onSave={(selectedDate) => {
+            setPatientBirthDay(selectedDate)
           }}
         />
       </Modal>
     </>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -449,7 +452,7 @@ const styles = StyleSheet.create({
   logoutTab: {
     alignItems: 'flex-start',
   },
-});
+})
 
 const iconButton = StyleSheet.create({
   container: {
@@ -473,4 +476,4 @@ const iconButton = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Nunito-Regular',
   },
-});
+})

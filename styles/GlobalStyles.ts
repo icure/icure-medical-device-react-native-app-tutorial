@@ -1,4 +1,4 @@
-import {StyleSheet} from 'react-native';
+import { StyleSheet } from 'react-native'
 
 export const globalStyles = StyleSheet.create({
   baseText: {
@@ -57,4 +57,4 @@ export const globalStyles = StyleSheet.create({
   ph16: {
     paddingHorizontal: 16,
   },
-});
+})

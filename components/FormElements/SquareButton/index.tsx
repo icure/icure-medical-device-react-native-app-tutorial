@@ -1,24 +1,24 @@
-import React from 'react';
-import {TouchableOpacity, Text, StyleSheet} from 'react-native';
-import {globalStyles} from '../../../styles/GlobalStyles';
+import React from 'react'
+import { TouchableOpacity, Text, StyleSheet } from 'react-native'
+import { globalStyles } from '../../../styles/GlobalStyles'
 
 export type Props = {
-  title: string;
-  onClick: () => void;
-  outlined?: boolean;
-  danger?: boolean;
-  size?: 'small';
-};
+  danger?: boolean
+  onClick: () => void
+  outlined?: boolean
+  size?: 'small'
+  title: string
+}
 
-export const SquareButton: React.FC<Props> = ({title, onClick, outlined, danger, size}) => {
+export const SquareButton: React.FC<Props> = ({ title, onClick, outlined, danger, size }) => {
   return (
     <TouchableOpacity onPress={onClick} style={[styles.appButtonContainer, outlined && styles.outlined, danger && styles.danger, size === 'small' && styles.smallContainer]}>
       <Text style={[globalStyles.baseText, styles.appButtonText, outlined && styles.outlinedCaseText, danger && styles.dangerCaseText, size === 'small' && styles.smallText]}>
         {title}
       </Text>
     </TouchableOpacity>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   appButtonContainer: {
@@ -53,4 +53,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
-});
+})

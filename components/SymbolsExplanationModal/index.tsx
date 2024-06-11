@@ -1,20 +1,20 @@
-import React from 'react';
-import {ScrollView, StyleSheet, View, Dimensions, Text, Image, TouchableOpacity} from 'react-native';
+import React from 'react'
+import { ScrollView, StyleSheet, View, Dimensions, Text, Image, TouchableOpacity } from 'react-native'
 
-import {globalStyles} from '../../styles/GlobalStyles';
-import {SquareButton} from '../FormElements';
+import { globalStyles } from '../../styles/GlobalStyles'
+import { SquareButton } from '../FormElements'
 
-const WIDTH_MODAL = Dimensions.get('window').width;
-const HEIGHT_MODAL = Dimensions.get('window').height;
+const WIDTH_MODAL = Dimensions.get('window').width
+const HEIGHT_MODAL = Dimensions.get('window').height
 
 type SymbolsExplanationModalProps = {
-  onClose: () => void;
-};
+  onClose: () => void
+}
 
-export const SymbolsExplanationModal: React.FC<SymbolsExplanationModalProps> = ({onClose}) => {
+export const SymbolsExplanationModal: React.FC<SymbolsExplanationModalProps> = ({ onClose }) => {
   const handleCancel = () => {
-    onClose();
-  };
+    onClose()
+  }
 
   return (
     <View style={styles.container}>
@@ -61,8 +61,8 @@ export const SymbolsExplanationModal: React.FC<SymbolsExplanationModalProps> = (
         </ScrollView>
       </View>
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -129,4 +129,4 @@ const styles = StyleSheet.create({
     width: 15,
     height: 15,
   },
-});
+})

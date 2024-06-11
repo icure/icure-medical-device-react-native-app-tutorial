@@ -1,33 +1,27 @@
-import React, {useEffect, useState} from 'react';
-import {View, Image, Text, StyleSheet, ScrollView} from 'react-native';
-import {useForm, Controller} from 'react-hook-form';
-import {useNavigate} from 'react-router-native';
+import React, { JSX, useEffect, useState } from 'react'
+import { View, Image, Text, StyleSheet, ScrollView } from 'react-native'
+import { useForm, Controller } from 'react-hook-form'
+import { useNavigate } from 'react-router-native'
 
-import {RoundedInput, RoundedButton, TextHelper, ErrorMessage} from '../components/FormElements';
-import {useAppDispatch, useAppSelector} from '../redux/hooks';
-import {
-  setRegistrationInformation,
-  setToken,
-  startAuthentication,
-  completeAuthentication,
-  setRecaptcha,
-  MedTechApiState,
-} from "../services/api";
-import {WebViewComponent} from '../components/WebViewComponent';
-import { createSelector } from "@reduxjs/toolkit";
-import {routes} from '../navigation/Routes';
+import { RoundedInput, RoundedButton, TextHelper, ErrorMessage } from '../components/FormElements'
+import { useAppDispatch, useAppSelector } from '../redux/hooks'
+import { setRegistrationInformation, setToken, startAuthentication, completeAuthentication, setRecaptcha, MedTechApiState } from '../services/api'
+import { WebViewComponent } from '../components/WebViewComponent'
+import { createSelector } from '@reduxjs/toolkit'
+import { routes } from '../navigation/Routes'
 
 const reduxSelector = createSelector(
   (state: { medTechApi: MedTechApiState }) => state.medTechApi,
   (medTechApi: MedTechApiState) => ({
-  online: medTechApi.online,
-}))
+    online: medTechApi.online,
+  }),
+)
 
 export const Register = (): JSX.Element => {
   const {
     control,
     handleSubmit,
-    formState: {errors},
+    formState: { errors },
   } = useForm({
     defaultValues: {
       userFirstName: '',
@@ -35,31 +29,30 @@ export const Register = (): JSX.Element => {
       userEmail: '',
       userCode: '',
     },
-  });
-  const navigate = useNavigate();
-  const dispatch = useAppDispatch();
-  const [isWaitingForCode, setWaitingForCode] = useState(false);
+  })
+  const navigate = useNavigate()
+  const dispatch = useAppDispatch()
+  const [isWaitingForCode, setWaitingForCode] = useState(false)
 
-  const {online} = useAppSelector(reduxSelector);
+  const { online } = useAppSelector(reduxSelector)
 
   useEffect(() => {
     if (online) {
-      navigate(routes.home);
+      navigate(routes.home)
     }
-  }, [online, navigate]);
+  }, [online, navigate])
 
-  const onAskCode = (data: {userEmail: string; userFirstName: string; userLastName: string}) => {
-    setWaitingForCode(true);
-    dispatch(setRegistrationInformation({email: data.userEmail, firstName: data.userFirstName, lastName: data.userLastName}));
-    dispatch(startAuthentication());
-  };
+  const onAskCode = (data: { userEmail: string; userFirstName: string; userLastName: string }) => {
+    setWaitingForCode(true)
+    dispatch(setRegistrationInformation({ email: data.userEmail, firstName: data.userFirstName, lastName: data.userLastName }))
+    dispatch(startAuthentication())
+  }
 
-  const onRegister = (data: {userCode: string}) => {
-    setWaitingForCode(false);
-    dispatch(setToken({token: data.userCode}));
-    dispatch(completeAuthentication());
-  };
-
+  const onRegister = (data: { userCode: string }) => {
+    setWaitingForCode(false)
+    dispatch(setToken({ token: data.userCode }))
+    dispatch(completeAuthentication())
+  }
 
   return (
     <ScrollView style={styles.registerScreen}>
@@ -72,7 +65,7 @@ export const Register = (): JSX.Element => {
             rules={{
               required: true,
             }}
-            render={({field: {onChange, onBlur, value}}) => <RoundedInput label="First name" onBlur={onBlur} onChange={onChange} value={value} isRequired />}
+            render={({ field: { onChange, onBlur, value } }) => <RoundedInput label="First name" onBlur={onBlur} onChange={onChange} value={value} isRequired />}
             name="userFirstName"
           />
           {errors.userFirstName && <ErrorMessage text="This field is required." />}
@@ -81,7 +74,7 @@ export const Register = (): JSX.Element => {
             rules={{
               required: true,
             }}
-            render={({field: {onChange, onBlur, value}}) => <RoundedInput label="Last name" onBlur={onBlur} onChange={onChange} value={value} isRequired />}
+            render={({ field: { onChange, onBlur, value } }) => <RoundedInput label="Last name" onBlur={onBlur} onChange={onChange} value={value} isRequired />}
             name="userLastName"
           />
           {errors.userLastName && <ErrorMessage text="This field is required." />}
@@ -90,7 +83,7 @@ export const Register = (): JSX.Element => {
             rules={{
               required: true,
             }}
-            render={({field: {onChange, onBlur, value}}) => <RoundedInput label="Email or phone number" onBlur={onBlur} onChange={onChange} value={value} isRequired />}
+            render={({ field: { onChange, onBlur, value } }) => <RoundedInput label="Email or phone number" onBlur={onBlur} onChange={onChange} value={value} isRequired />}
             name="userEmail"
           />
           {errors.userEmail && <ErrorMessage text="This field is required." />}
@@ -102,7 +95,7 @@ export const Register = (): JSX.Element => {
                 rules={{
                   required: true,
                 }}
-                render={({field: {onChange, onBlur, value}}) => <RoundedInput label="Code" onBlur={onBlur} onChange={onChange} value={value} isRequired />}
+                render={({ field: { onChange, onBlur, value } }) => <RoundedInput label="Code" onBlur={onBlur} onChange={onChange} value={value} isRequired />}
                 name="userCode"
               />
               {errors.userCode && <ErrorMessage text="This field is required." />}
@@ -111,10 +104,7 @@ export const Register = (): JSX.Element => {
         </View>
 
         <View style={styles.webviewContainer}>
-
-            <WebViewComponent sitekey={process.env.EXPO_PUBLIC_FRIENDLY_CAPTCHA_SITE_KEY}
-                              onFinish={value => dispatch(setRecaptcha({ recaptcha: value }))} />
-
+          <WebViewComponent sitekey={process.env.EXPO_PUBLIC_FRIENDLY_CAPTCHA_SITE_KEY!} onFinish={(value) => dispatch(setRecaptcha({ recaptcha: value }))} />
         </View>
 
         {isWaitingForCode ? (
@@ -128,8 +118,8 @@ export const Register = (): JSX.Element => {
         </View>
       </View>
     </ScrollView>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   registerScreen: {
@@ -171,4 +161,4 @@ const styles = StyleSheet.create({
     borderColor: '#A2A4BE',
     borderRadius: 25,
   },
-});
+})

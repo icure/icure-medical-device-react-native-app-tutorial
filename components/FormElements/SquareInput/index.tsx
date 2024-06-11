@@ -1,16 +1,16 @@
-import React from 'react';
-import {View, TextInput, Text, StyleSheet} from 'react-native';
+import React from 'react'
+import { View, TextInput, Text, StyleSheet } from 'react-native'
 
 export type Props = {
-  label?: string;
-  value: string | number | undefined;
-  onChange: (value?: string) => void;
-  onBlur: () => void;
-  isRequired?: boolean;
-  placeholder?: string;
-};
+  label?: string
+  value: string | number | undefined
+  onChange: (value?: string) => void
+  onBlur: () => void
+  isRequired?: boolean
+  placeholder?: string
+}
 
-export const SquareInput: React.FC<Props> = ({label, value, onChange, onBlur, placeholder, isRequired}) => {
+export const SquareInput: React.FC<Props> = ({ label, value, onChange, onBlur, placeholder, isRequired }) => {
   return (
     <View style={styles.container}>
       {label && (
@@ -24,12 +24,12 @@ export const SquareInput: React.FC<Props> = ({label, value, onChange, onBlur, pl
         onChangeText={onChange}
         value={value?.toString()}
         autoCapitalize="none"
-        placeholder={placeholder ? placeholder : null}
+        placeholder={placeholder ? placeholder : undefined}
         placeholderTextColor="#A2A4BE"
       />
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -55,4 +55,4 @@ const styles = StyleSheet.create({
     paddingLeft: 12,
     fontFamily: 'Nunito-Regular',
   },
-});
+})

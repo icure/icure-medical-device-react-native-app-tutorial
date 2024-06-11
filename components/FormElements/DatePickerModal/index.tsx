@@ -1,46 +1,46 @@
-import React, {useState} from 'react';
-import {StyleSheet, View, Dimensions} from 'react-native';
-import DatePicker from 'react-native-modern-datepicker';
-import {format} from 'date-fns';
+import React, { useState } from 'react'
+import { StyleSheet, View, Dimensions } from 'react-native'
+import DatePicker from 'react-native-modern-datepicker'
+import { format } from 'date-fns'
 
-import {globalStyles} from '../../../styles/GlobalStyles';
-import {SquareButton} from '../SquareButton';
+import { globalStyles } from '../../../styles/GlobalStyles'
+import { SquareButton } from '../SquareButton'
 
-const WIDTH_MODAL = Dimensions.get('window').width;
-const HEIGHT_MODAL = Dimensions.get('window').height;
+const WIDTH_MODAL = Dimensions.get('window').width
+const HEIGHT_MODAL = Dimensions.get('window').height
 
 type DatePickerModalProps = {
-  onClose: () => void;
-  onSave: (date: number) => void;
-  patientBirthDay: number;
-};
+  onClose: () => void
+  onSave: (date?: number) => void
+  patientBirthDay?: number
+}
 
-export const DatePickerModal: React.FC<DatePickerModalProps> = ({onClose, patientBirthDay, onSave}) => {
-  const [date, setDate] = useState(patientBirthDay ?? +format(new Date(), 'yyyyMMdd'));
+export const DatePickerModal: React.FC<DatePickerModalProps> = ({ onClose, patientBirthDay, onSave }) => {
+  const [date, setDate] = useState(patientBirthDay ?? +format(new Date(), 'yyyyMMdd'))
 
   const onDateChange = (selectedDate: number) => {
-    setDate(selectedDate);
-  };
+    setDate(selectedDate)
+  }
 
   const handleCancel = () => {
-    onClose();
-  };
+    onClose()
+  }
 
   const handleSave = () => {
-    onSave(date);
-    onClose();
-  };
+    onSave(date)
+    onClose()
+  }
 
   const getDateFormat = (value: number) => {
     if (!value) {
-      return undefined;
+      return undefined
     }
-    const year = Math.floor(value / 10000);
-    const month = Math.floor(value / 100) % 100;
-    const day = value % 100;
+    const year = Math.floor(value / 10000)
+    const month = Math.floor(value / 100) % 100
+    const day = value % 100
 
-    return `${year}/${month}/${day}`;
-  };
+    return `${year}/${month}/${day}`
+  }
 
   return (
     <View style={styles.container}>
@@ -48,7 +48,7 @@ export const DatePickerModal: React.FC<DatePickerModalProps> = ({onClose, patien
         <View style={styles.scrollableContainer}>
           <DatePicker
             onSelectedChange={(newData: string) => {
-              onDateChange(+newData.replace(/[/]/g, ''));
+              onDateChange(+newData.replace(/[/]/g, ''))
             }}
             selected={getDateFormat(date)}
             mode="calendar"
@@ -70,8 +70,8 @@ export const DatePickerModal: React.FC<DatePickerModalProps> = ({onClose, patien
         </View>
       </View>
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -99,4 +99,4 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-});
+})

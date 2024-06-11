@@ -1,75 +1,75 @@
-import React, {useEffect, useState, useMemo} from 'react';
-import {Image, ImageBackground, Modal, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator} from 'react-native';
-import {Calendar} from 'react-native-calendars';
-import {format, lastDayOfMonth, formatDistanceStrict, add, max, isWithinInterval, isAfter} from 'date-fns';
+import React, { useEffect, useState, useMemo } from 'react'
+import { Image, ImageBackground, Modal, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native'
+import { Calendar } from 'react-native-calendars'
+import { format, lastDayOfMonth, formatDistanceStrict, add, max, isWithinInterval, isAfter } from 'date-fns'
 
-import {AddUserDataSampleModal} from '../AddUserDataSampleModal';
-import {useGetDataSampleBetween2DatesQuery, useGetDataSampleByTagTypeQuery} from '../../services/dataSampleApi';
-import {getCyclesDates, getDayInDateFormat, getNextDay, getDayInNumberFormat} from '../../utils/helpers';
-import { DataSample } from '@icure/medical-device-sdk';
+import { AddUserDataSampleModal } from '../AddUserDataSampleModal'
+import { useGetDataSampleBetween2DatesQuery, useGetDataSampleByTagTypeQuery } from '../../services/dataSampleApi'
+import { getCyclesDates, getDayInDateFormat, getNextDay, getDayInNumberFormat } from '../../utils/helpers'
+import { DataSample } from '@icure/medical-device-sdk'
 
 type DayOfTheMonthProps = {
-  dayData: any;
-  state: string;
-  flowLevel?: number;
-  hasComplaint?: boolean;
-  isPredictedPeriod?: boolean;
-};
+  dayData: any
+  state?: string
+  flowLevel?: number
+  hasComplaint?: boolean
+  isPredictedPeriod?: boolean
+}
 
 export const AdvancedCalendar: React.FC = () => {
-  const [addUserDataSampleModalVisible, setAddUserDataSampleModalVisible] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [selectedDateTitle, setSelectedDateTitle] = useState('');
+  const [addUserDataSampleModalVisible, setAddUserDataSampleModalVisible] = useState(false)
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+  const [selectedDateTitle, setSelectedDateTitle] = useState('')
 
-  const monthNameFormatter = (dataFormat: 'short' | 'long') => new Intl.DateTimeFormat('en', {month: dataFormat});
+  const monthNameFormatter = (dataFormat: 'short' | 'long') => new Intl.DateTimeFormat('en', { month: dataFormat })
 
-  const DayOfTheMonth: React.FC<DayOfTheMonthProps> = ({dayData, state, flowLevel, hasComplaint, isPredictedPeriod}) => {
-    const {day, dateString} = dayData;
+  const DayOfTheMonth: React.FC<DayOfTheMonthProps> = ({ dayData, state, flowLevel, hasComplaint, isPredictedPeriod }) => {
+    const { day, dateString } = dayData
 
     const isToday = (revievedDate: Date) => {
-      const today = new Date();
+      const today = new Date()
       if (today.getFullYear() === revievedDate.getFullYear() && today.getMonth() === revievedDate.getMonth() && today.getDate() === revievedDate.getDate()) {
-        return true;
+        return true
       }
-      return false;
-    };
+      return false
+    }
 
     const getTextsStyle = () => {
       switch (true) {
         case !!flowLevel:
-          return dayOfTheMonthStyles.periodDaysTitle;
+          return dayOfTheMonthStyles.periodDaysTitle
         case state === 'disabled' || isAfter(new Date(dateString), new Date()):
-          return dayOfTheMonthStyles.disabledDaysTitle;
+          return dayOfTheMonthStyles.disabledDaysTitle
         default:
-          break;
+          break
       }
-    };
+    }
 
     const getDaysStyle = () => {
       switch (true) {
         case state === 'disabled' || isAfter(new Date(dateString), new Date()):
-          return dayOfTheMonthStyles.disabledDay;
+          return dayOfTheMonthStyles.disabledDay
         case isToday(new Date(dateString)):
-          return dayOfTheMonthStyles.isToday;
+          return dayOfTheMonthStyles.isToday
         default:
-          break;
+          break
       }
-    };
+    }
 
     const getDropsComponent = (amount: number) => {
       return Array(amount)
         .fill(true)
-        .map((_, i) => <Image key={i} style={dayOfTheMonthStyles.drop} source={require('../../assets/images/drop.png')} />);
-    };
+        .map((_, i) => <Image key={i} style={dayOfTheMonthStyles.drop} source={require('../../assets/images/drop.png')} />)
+    }
 
     const handlePress = () => {
       if (state !== 'disabled') {
-        const title = `${monthNameFormatter('long').format(new Date(dateString))}, ${new Date(dateString).getDate()}`;
-        setSelectedDateTitle(title);
-        setSelectedDate(new Date(dateString));
-        setAddUserDataSampleModalVisible(true);
+        const title = `${monthNameFormatter('long').format(new Date(dateString))}, ${new Date(dateString).getDate()}`
+        setSelectedDateTitle(title)
+        setSelectedDate(new Date(dateString))
+        setAddUserDataSampleModalVisible(true)
       }
-    };
+    }
 
     return (
       <>
@@ -87,106 +87,106 @@ export const AdvancedCalendar: React.FC = () => {
           </View>
         </TouchableOpacity>
       </>
-    );
-  };
+    )
+  }
 
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [currentMonthFirstDate, setCurrentMonthFirstDate] = useState<number>();
-  const [nextMonthFirstDate, setNextMonthFirstDate] = useState<number>();
+  const [currentMonth, setCurrentMonth] = useState(new Date())
+  const [currentMonthFirstDate, setCurrentMonthFirstDate] = useState<number>()
+  const [nextMonthFirstDate, setNextMonthFirstDate] = useState<number>()
 
   useEffect(() => {
-    setCurrentMonthFirstDate(+format(currentMonth, 'yyyyMM01') * 1000000);
-    setNextMonthFirstDate(+format(getNextDay(lastDayOfMonth(currentMonth)), 'yyyyMMdd') * 1000000);
-  }, [currentMonth]);
+    setCurrentMonthFirstDate(+format(currentMonth, 'yyyyMM01') * 1000000)
+    setNextMonthFirstDate(+format(getNextDay(lastDayOfMonth(currentMonth)), 'yyyyMMdd') * 1000000)
+  }, [currentMonth])
 
-  const {data: flowLevelComplaintsAndNotesDataSamplesBetween2Dates, isLoading: flowLevelComplaintsAndNotesDataSamplesBetween2DatesIsLoading} = useGetDataSampleBetween2DatesQuery({
-    tagCodes: [
-      {tagType: 'LOINC', tagCode: '49033-4'},
-      {tagType: 'LOINC', tagCode: '75322-8'},
-      {tagType: 'LOINC', tagCode: '34109-9'},
-    ],
-    startDate: currentMonthFirstDate,
-    endDate: nextMonthFirstDate,
-  })
+  const { data: flowLevelComplaintsAndNotesDataSamplesBetween2Dates, isLoading: flowLevelComplaintsAndNotesDataSamplesBetween2DatesIsLoading } = useGetDataSampleBetween2DatesQuery(
+    {
+      tagCodes: [
+        { tagType: 'LOINC', tagCode: '49033-4' },
+        { tagType: 'LOINC', tagCode: '75322-8' },
+        { tagType: 'LOINC', tagCode: '34109-9' },
+      ],
+      startDate: currentMonthFirstDate ?? 0,
+      endDate: nextMonthFirstDate ?? 0,
+    },
+  )
 
-  const [dataSamples, setDataSamples] = useState<{ flowLevel: DataSample[], complaints: DataSample[], notes: DataSample[] } | undefined>()
+  const [dataSamples, setDataSamples] = useState<{ flowLevel: DataSample[]; complaints: DataSample[]; notes: DataSample[] } | undefined>()
 
   useEffect(() => {
     if (!!flowLevelComplaintsAndNotesDataSamplesBetween2Dates) {
       const dataSamplesToProcess = flowLevelComplaintsAndNotesDataSamplesBetween2Dates!.rows
 
-      const flowLevelDataSample = dataSamplesToProcess
-        .filter(ds => [...ds.labels].some(it => it.type === 'LOINC' && it.code === '49033-4'));
+      const flowLevelDataSample = dataSamplesToProcess.filter((ds) => [...ds.labels].some((it) => it.type === 'LOINC' && it.code === '49033-4'))
 
-      const complainsDataSample = dataSamplesToProcess
-        .filter(ds => [...ds.labels].some(it => it.type === 'LOINC' && it.code === '75322-8'));
+      const complainsDataSample = dataSamplesToProcess.filter((ds) => [...ds.labels].some((it) => it.type === 'LOINC' && it.code === '75322-8'))
 
-      const notesDataSample = dataSamplesToProcess
-        .filter(ds => [...ds.labels].some(it => it.type === 'LOINC' && it.code === '34109-9'));
+      const notesDataSample = dataSamplesToProcess.filter((ds) => [...ds.labels].some((it) => it.type === 'LOINC' && it.code === '34109-9'))
 
       setDataSamples({ flowLevel: flowLevelDataSample, complaints: complainsDataSample, notes: notesDataSample })
     }
   }, [flowLevelComplaintsAndNotesDataSamplesBetween2Dates])
 
-  const getTodayFlowLevelData = (currentDay: Date) => {
-    if (!!dataSamples) {
-      return dataSamples.flowLevel.find(item => item.valueDate === getDayInNumberFormat(currentDay));
+  const getTodayFlowLevelData = (currentDay?: Date) => {
+    if (!!dataSamples && !!currentDay) {
+      return dataSamples.flowLevel.find((item) => item.valueDate === getDayInNumberFormat(currentDay))
     }
-  };
+  }
 
-  const getTodayComplaintDatas = (currentDay: Date) => {
-    if (!!dataSamples) {
-      return dataSamples.complaints.filter(item => item.valueDate === getDayInNumberFormat(currentDay));
+  const getTodayComplaintDatas = (currentDay?: Date) => {
+    if (!!dataSamples && !!currentDay) {
+      return dataSamples.complaints.filter((item) => item.valueDate === getDayInNumberFormat(currentDay))
     }
-  };
+    return []
+  }
 
-  const getTodayNotesData = (currentDay: Date) => {
-    if (!!dataSamples) {
-      return dataSamples.notes.find(item => item.valueDate === getDayInNumberFormat(currentDay));
+  const getTodayNotesData = (currentDay?: Date) => {
+    if (!!dataSamples && !!currentDay) {
+      return dataSamples.notes.find((item) => item.valueDate === getDayInNumberFormat(currentDay))
     }
-  };
+  }
 
-  const {data: allFlowLevelDataSamples, isLoading: allFlowLevelDataSamplesIsLoading} = useGetDataSampleByTagTypeQuery({
+  const { data: allFlowLevelDataSamples, isLoading: allFlowLevelDataSamplesIsLoading } = useGetDataSampleByTagTypeQuery({
     tagType: 'LOINC',
     tagCode: '49033-4',
-  });
+  })
 
   const getShortNameOfTheMonth = (today: Date, direction: 'prev' | 'next') => {
-    const monthData = direction === 'prev' ? new Date(today.getFullYear(), today.getMonth() - 1, 1) : new Date(today.getFullYear(), today.getMonth() + 1, 1);
-    return monthNameFormatter('short').format(new Date(monthData)) + ',' + monthData.getFullYear();
-  };
+    const monthData = direction === 'prev' ? new Date(today.getFullYear(), today.getMonth() - 1, 1) : new Date(today.getFullYear(), today.getMonth() + 1, 1)
+    return monthNameFormatter('short').format(new Date(monthData)) + ',' + monthData.getFullYear()
+  }
 
   const predictedPeriodDates = useMemo(() => {
     if (allFlowLevelDataSamples && !allFlowLevelDataSamplesIsLoading) {
-      const lastThreeCycles = [...getCyclesDates(allFlowLevelDataSamples, allFlowLevelDataSamplesIsLoading)]?.reverse().slice(1, 4);
+      const lastThreeCycles = [...(getCyclesDates(allFlowLevelDataSamples, allFlowLevelDataSamplesIsLoading) ?? [])]?.reverse().slice(1, 4)
 
       if (lastThreeCycles.length !== 0) {
         const lastFlowLevelDataSampleDate = max(
-          allFlowLevelDataSamples?.rows.filter(item => item?.content?.en?.measureValue?.value > 0).map(item => getDayInDateFormat(item.valueDate)),
-        );
+          allFlowLevelDataSamples?.rows.filter((item) => (item?.content?.['en']?.measureValue?.value ?? 0) > 0).map((item) => getDayInDateFormat(item.valueDate ?? 0)),
+        )
         const getCycleDuration = (currentCycleFirstDay: number, currentCycleLastDay: number) => {
-          const duration = formatDistanceStrict(getDayInDateFormat(currentCycleFirstDay), getDayInDateFormat(currentCycleLastDay), {unit: 'day'}).split(' ')[0];
-          return +duration;
-        };
-        const totalDurationOfLastThreeCycles = lastThreeCycles.reduce((accamulator, item) => accamulator + getCycleDuration(item.startDate, item.endDate), 0);
-        const averageCycleDuration = lastThreeCycles.length !== 0 ? Math.floor(totalDurationOfLastThreeCycles / lastThreeCycles.length) : 28;
+          const duration = formatDistanceStrict(getDayInDateFormat(currentCycleFirstDay), getDayInDateFormat(currentCycleLastDay), { unit: 'day' }).split(' ')[0]
+          return +duration
+        }
+        const totalDurationOfLastThreeCycles = lastThreeCycles.reduce((accamulator, item) => accamulator + getCycleDuration(item.startDate ?? 0, item.endDate), 0)
+        const averageCycleDuration = lastThreeCycles.length !== 0 ? Math.floor(totalDurationOfLastThreeCycles / lastThreeCycles.length) : 28
 
-        const firstDayOfThePredictedPeriod = add(lastFlowLevelDataSampleDate, {days: averageCycleDuration});
+        const firstDayOfThePredictedPeriod = add(lastFlowLevelDataSampleDate, { days: averageCycleDuration })
         // let's say the duration of the Predicted period is 7 days, which means that the users period can start at any of those days
-        const lastDayOfThePredictedPeriod = add(firstDayOfThePredictedPeriod, {days: 7});
+        const lastDayOfThePredictedPeriod = add(firstDayOfThePredictedPeriod, { days: 7 })
 
-        return {start: firstDayOfThePredictedPeriod, end: lastDayOfThePredictedPeriod};
+        return { start: firstDayOfThePredictedPeriod, end: lastDayOfThePredictedPeriod }
       }
     }
-    return undefined;
-  }, [allFlowLevelDataSamples, allFlowLevelDataSamplesIsLoading]);
+    return undefined
+  }, [allFlowLevelDataSamples, allFlowLevelDataSamplesIsLoading])
 
-  const isTodayPredictedPeriodDay = (today: Date) => {
-    if (predictedPeriodDates !== undefined) {
-      return isWithinInterval(today, predictedPeriodDates);
+  const isTodayPredictedPeriodDay = (today?: Date) => {
+    if (!!predictedPeriodDates && !!today) {
+      return isWithinInterval(today, predictedPeriodDates)
     }
-    return false;
-  };
+    return false
+  }
 
   return (
     <>
@@ -195,8 +195,9 @@ export const AdvancedCalendar: React.FC = () => {
         transparent={true}
         visible={addUserDataSampleModalVisible}
         onRequestClose={() => {
-          setAddUserDataSampleModalVisible(!addUserDataSampleModalVisible);
-        }}>
+          setAddUserDataSampleModalVisible(!addUserDataSampleModalVisible)
+        }}
+      >
         <AddUserDataSampleModal
           date={selectedDate}
           title={selectedDateTitle}
@@ -215,16 +216,18 @@ export const AdvancedCalendar: React.FC = () => {
       ) : (
         <View style={styles.advancedCalendar}>
           <Calendar
-            dayComponent={({date, state}) => (
+            dayComponent={({ date, state }) => (
               <DayOfTheMonth
                 dayData={date}
                 state={state}
-                flowLevel={getTodayFlowLevelData(new Date(date.dateString))?.content.en.measureValue.value}
-                hasComplaint={!!getTodayComplaintDatas(new Date(date.dateString))?.length || !!getTodayNotesData(new Date(date.dateString))?.content.en.stringValue}
-                isPredictedPeriod={isTodayPredictedPeriodDay(new Date(date.dateString))}
+                flowLevel={getTodayFlowLevelData(date && new Date(date.dateString))?.content?.['en']?.measureValue?.value}
+                hasComplaint={
+                  !!getTodayComplaintDatas(date && new Date(date.dateString))?.length || !!getTodayNotesData(date && new Date(date.dateString))?.content?.['en']?.stringValue
+                }
+                isPredictedPeriod={isTodayPredictedPeriodDay(date && new Date(date.dateString))}
               />
             )}
-            renderArrow={direction => {
+            renderArrow={(direction) => {
               return (
                 <>
                   {direction === 'left' ? (
@@ -235,71 +238,73 @@ export const AdvancedCalendar: React.FC = () => {
                   ) : (
                     <View style={styles.inactiveMonthContainer}>
                       <Text style={styles.inactiveMonth}>{getShortNameOfTheMonth(currentMonth, 'next')}</Text>
-                      <Image style={[styles.arrrow, styles.arrrowRight, {transform: [{rotateY: '3.142rad'}]}]} source={require('../../assets/images/arrows.png')} />
+                      <Image style={[styles.arrrow, styles.arrrowRight, { transform: [{ rotateY: '3.142rad' }] }]} source={require('../../assets/images/arrows.png')} />
                     </View>
                   )}
                 </>
-              );
+              )
             }}
-            onMonthChange={date => {
-              const {dateString} = date;
-              setCurrentMonth(new Date(dateString));
+            onMonthChange={(date) => {
+              const { dateString } = date
+              setCurrentMonth(new Date(dateString))
             }}
             allowSelectionOutOfRange={false}
             hideExtraDays={true}
             maxDate={new Date().toISOString().slice(0, 10)}
-            theme={{
-              'stylesheet.calendar.header': {
-                header: {
-                  width: '100%',
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-end',
-                  paddingBottom: 8,
-                  borderBottomColor: '#E3E4EF',
-                  borderBottomWidth: 1,
+            theme={
+              {
+                'stylesheet.calendar.header': {
+                  header: {
+                    width: '100%',
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-end',
+                    paddingBottom: 8,
+                    borderBottomColor: '#E3E4EF',
+                    borderBottomWidth: 1,
+                  },
+                  monthText: {
+                    fontSize: 20,
+                    color: '#151B5D',
+                    paddingBottom: 6,
+                    fontFamily: 'Nunito-Bold',
+                  },
+                  week: {
+                    marginVertical: 16,
+                    flexDirection: 'row',
+                    justifyContent: 'space-around',
+                    backgroundColor: '#FFFDFE',
+                  },
+                  dayHeader: {
+                    width: 43,
+                    textAlign: 'center',
+                    fontSize: 12,
+                    color: '#A2A4BE',
+                    fontFamily: 'Nunito-Bold',
+                  },
+                  arrow: {
+                    padding: 0,
+                  },
                 },
-                monthText: {
-                  fontSize: 20,
-                  color: '#151B5D',
-                  paddingBottom: 6,
-                  fontFamily: 'Nunito-Bold',
+                'stylesheet.calendar.main': {
+                  container: {
+                    paddingHorizontal: 16,
+                  },
+                  week: {
+                    marginVertical: 2,
+                    flexDirection: 'row',
+                    justifyContent: 'space-around',
+                    backgroundColor: '#FFFDFE',
+                  },
                 },
-                week: {
-                  marginVertical: 16,
-                  flexDirection: 'row',
-                  justifyContent: 'space-around',
-                  backgroundColor: '#FFFDFE',
-                },
-                dayHeader: {
-                  width: 43,
-                  textAlign: 'center',
-                  fontSize: 12,
-                  color: '#A2A4BE',
-                  fontFamily: 'Nunito-Bold',
-                },
-                arrow: {
-                  padding: 0,
-                },
-              },
-              'stylesheet.calendar.main': {
-                container: {
-                  paddingHorizontal: 16,
-                },
-                week: {
-                  marginVertical: 2,
-                  flexDirection: 'row',
-                  justifyContent: 'space-around',
-                  backgroundColor: '#FFFDFE',
-                },
-              },
-            }}
+              } as any
+            }
           />
         </View>
       )}
     </>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   activityIndicator: {
@@ -330,7 +335,7 @@ const styles = StyleSheet.create({
   arrrowRight: {
     marginLeft: 4,
   },
-});
+})
 
 const dayOfTheMonthStyles = StyleSheet.create({
   day: {
@@ -385,5 +390,5 @@ const dayOfTheMonthStyles = StyleSheet.create({
     width: 12,
     height: 12,
   },
-  drop: {width: 8, height: 8},
-});
+  drop: { width: 8, height: 8 },
+})

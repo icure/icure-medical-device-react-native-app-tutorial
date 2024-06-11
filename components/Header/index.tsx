@@ -1,14 +1,14 @@
-import React, {useState} from 'react';
-import {View, Image, Text, StyleSheet, Modal, TouchableOpacity} from 'react-native';
+import React, { useState } from 'react'
+import { View, Image, Text, StyleSheet, Modal, TouchableOpacity } from 'react-native'
 
-import {EditUserDataModal} from '../EditUserDataModal';
+import { EditUserDataModal } from '../EditUserDataModal'
 
 export type Props = {
-  userName: string;
-};
+  userName: string
+}
 
-export const Header: React.FC<Props> = ({userName}) => {
-  const [editUserDataModalVisible, setEditUserDataModalVisible] = useState(false);
+export const Header: React.FC<Props> = ({ userName }) => {
+  const [editUserDataModalVisible, setEditUserDataModalVisible] = useState(false)
 
   return (
     <>
@@ -23,8 +23,9 @@ export const Header: React.FC<Props> = ({userName}) => {
         transparent={true}
         visible={editUserDataModalVisible}
         onRequestClose={() => {
-          setEditUserDataModalVisible(!editUserDataModalVisible);
-        }}>
+          setEditUserDataModalVisible(!editUserDataModalVisible)
+        }}
+      >
         <EditUserDataModal
           onCancel={() => setEditUserDataModalVisible(!editUserDataModalVisible)}
           onSave={() => setEditUserDataModalVisible(!editUserDataModalVisible)}
@@ -33,8 +34,8 @@ export const Header: React.FC<Props> = ({userName}) => {
         />
       </Modal>
     </>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   header: {
@@ -53,4 +54,4 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
   },
-});
+})

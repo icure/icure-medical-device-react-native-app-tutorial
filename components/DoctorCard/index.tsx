@@ -1,32 +1,32 @@
-import React, {useState} from 'react';
-import {StyleSheet, View, Text, Image, Modal, Dimensions} from 'react-native';
+import React, { useState } from 'react'
+import { StyleSheet, View, Text, Image, Modal, Dimensions } from 'react-native'
 
-import {globalStyles} from '../../styles/GlobalStyles';
-import {IconButton} from '../FormElements';
-import {SquareButton} from '../FormElements';
-import {useGetHealthcareProfessionalQuery} from '../../services/healthcareProfessionalApi';
-import {useShareDataWithMutation, useStopSharingWithMutation} from '../../services/userApi';
+import { globalStyles } from '../../styles/GlobalStyles'
+import { IconButton } from '../FormElements'
+import { SquareButton } from '../FormElements'
+import { useGetHealthcareProfessionalQuery } from '../../services/healthcareProfessionalApi'
+import { useShareDataWithMutation, useStopSharingWithMutation } from '../../services/userApi'
 
 type DoctorCardAddProps = {
-  name: string;
-  id: string;
-};
+  name: string
+  id: string
+}
 
 type DoctorCardRemoveProps = {
-  id: string;
-};
+  id: string
+}
 
 type ConfirmationWindowProps = {
-  title: string;
-  description: string;
-  onPositiveButtonClick: () => void;
-  onNegativeButtonClick: () => void;
-};
+  title: string
+  description: string
+  onPositiveButtonClick: () => void
+  onNegativeButtonClick: () => void
+}
 
-const WIDTH_MODAL = Dimensions.get('window').width;
-const HEIGHT_MODAL = Dimensions.get('window').height;
+const WIDTH_MODAL = Dimensions.get('window').width
+const HEIGHT_MODAL = Dimensions.get('window').height
 
-const ConfirmationWindow: React.FC<ConfirmationWindowProps> = ({title, description, onPositiveButtonClick, onNegativeButtonClick}) => {
+const ConfirmationWindow: React.FC<ConfirmationWindowProps> = ({ title, description, onPositiveButtonClick, onNegativeButtonClick }) => {
   return (
     <View style={confirmationWindowStyles.container}>
       <View style={confirmationWindowStyles.popup}>
@@ -40,16 +40,16 @@ const ConfirmationWindow: React.FC<ConfirmationWindowProps> = ({title, descripti
         </View>
       </View>
     </View>
-  );
-};
+  )
+}
 
-export const DoctorCardAdd: React.FC<DoctorCardAddProps> = ({name, id}) => {
-  const [showConfirmationWindow, setShowConfirmationWindow] = useState(false);
-  const [shareDataWithDoctor] = useShareDataWithMutation();
+export const DoctorCardAdd: React.FC<DoctorCardAddProps> = ({ name, id }) => {
+  const [showConfirmationWindow, setShowConfirmationWindow] = useState(false)
+  const [shareDataWithDoctor] = useShareDataWithMutation()
   const handleAdd = () => {
-    shareDataWithDoctor({ids: [id]});
-    setShowConfirmationWindow(false);
-  };
+    shareDataWithDoctor({ ids: [id] })
+    setShowConfirmationWindow(false)
+  }
   return (
     <>
       <View style={styles.doctorCard}>
@@ -68,8 +68,9 @@ export const DoctorCardAdd: React.FC<DoctorCardAddProps> = ({name, id}) => {
         transparent={true}
         visible={showConfirmationWindow}
         onRequestClose={() => {
-          setShowConfirmationWindow(!showConfirmationWindow);
-        }}>
+          setShowConfirmationWindow(!showConfirmationWindow)
+        }}
+      >
         <ConfirmationWindow
           title="Add doctor"
           description="Are you sure you want to start sharing your Medical Data with this doctor?"
@@ -78,19 +79,19 @@ export const DoctorCardAdd: React.FC<DoctorCardAddProps> = ({name, id}) => {
         />
       </Modal>
     </>
-  );
-};
+  )
+}
 
-export const DoctorCardRemove: React.FC<DoctorCardRemoveProps> = ({id}) => {
-  const [showConfirmationWindow, setShowConfirmationWindow] = useState(false);
-  const {data: hcp} = useGetHealthcareProfessionalQuery(id, {skip: !id});
+export const DoctorCardRemove: React.FC<DoctorCardRemoveProps> = ({ id }) => {
+  const [showConfirmationWindow, setShowConfirmationWindow] = useState(false)
+  const { data: hcp } = useGetHealthcareProfessionalQuery(id, { skip: !id })
 
-  const [stopSharingDataWithDoctor] = useStopSharingWithMutation();
+  const [stopSharingDataWithDoctor] = useStopSharingWithMutation()
 
   const handleRevome = () => {
-    stopSharingDataWithDoctor({ids: [id]});
-    setShowConfirmationWindow(false);
-  };
+    stopSharingDataWithDoctor({ ids: [id] })
+    setShowConfirmationWindow(false)
+  }
 
   return (
     <>
@@ -105,7 +106,7 @@ export const DoctorCardRemove: React.FC<DoctorCardRemoveProps> = ({id}) => {
           <IconButton
             icon="close"
             onClick={() => {
-              setShowConfirmationWindow(true);
+              setShowConfirmationWindow(true)
             }}
             fulfilled
           />
@@ -116,8 +117,9 @@ export const DoctorCardRemove: React.FC<DoctorCardRemoveProps> = ({id}) => {
         transparent={true}
         visible={showConfirmationWindow}
         onRequestClose={() => {
-          setShowConfirmationWindow(!showConfirmationWindow);
-        }}>
+          setShowConfirmationWindow(!showConfirmationWindow)
+        }}
+      >
         <ConfirmationWindow
           title="Remove doctor"
           description="Are you sure you want to stop sharing your Medical Data with this doctor?"
@@ -126,8 +128,8 @@ export const DoctorCardRemove: React.FC<DoctorCardRemoveProps> = ({id}) => {
         />
       </Modal>
     </>
-  );
-};
+  )
+}
 
 const confirmationWindowStyles = StyleSheet.create({
   container: {
@@ -167,7 +169,7 @@ const confirmationWindowStyles = StyleSheet.create({
   leftButton: {
     marginRight: 24,
   },
-});
+})
 const styles = StyleSheet.create({
   doctorCard: {
     width: '100%',
@@ -198,4 +200,4 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-});
+})
