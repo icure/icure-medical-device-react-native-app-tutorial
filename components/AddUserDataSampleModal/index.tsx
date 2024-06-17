@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { DataSample, CodingReference, Content, Measure } from '@icure/medical-device-sdk'
+import { DataSample, CodingReference, Content, Measure, IContent, IDataSample } from '@icure/medical-device-sdk'
 import { ScrollView, StyleSheet, View, Dimensions, Text, Image, TouchableOpacity } from 'react-native'
 import { format } from 'date-fns'
 
@@ -7,6 +7,7 @@ import { useCreateOrUpdateDataSamplesMutation, useDeleteDataSamplesMutation } fr
 import { globalStyles } from '../../styles/GlobalStyles'
 import { RadioButton, CheckBox, SquareInput, SquareButton } from '../FormElements'
 import { periodFlowLevelsData, complaintsData } from '../../utils/constants'
+import { ISO639_1 } from '@icure/typescript-common'
 
 const WIDTH_MODAL = Dimensions.get('window').width
 const HEIGHT_MODAL = Dimensions.get('window').height
@@ -17,9 +18,9 @@ type AddUserDataSampleModalProps = {
   onClose: () => void
   onSave: () => void
   onDelete: () => void
-  currentFlowLevelData?: (date: Date) => DataSample | undefined
-  currentComplaintsDatas?: (date: Date) => DataSample[]
-  currentNotesData?: (date: Date) => DataSample | undefined
+  currentFlowLevelData?: (date: Date) => IDataSample | undefined
+  currentComplaintsDatas?: (date: Date) => IDataSample[]
+  currentNotesData?: (date: Date) => IDataSample | undefined
 }
 
 export const AddUserDataSampleModal: React.FC<AddUserDataSampleModalProps> = ({
@@ -68,7 +69,7 @@ export const AddUserDataSampleModal: React.FC<AddUserDataSampleModalProps> = ({
 
   const handleSave = () => {
     // CREATE A DATASAMPLE OBJECT ACCORDINGLY
-    const flowLevelContent = {
+    const flowLevelContent: Partial<Record<ISO639_1, IContent>> = {
       en: new Content({
         measureValue: new Measure({
           value: selectedFlowLevel.flowLevel,
@@ -81,19 +82,19 @@ export const AddUserDataSampleModal: React.FC<AddUserDataSampleModalProps> = ({
     const userPeriodDataSample = currentFlowLevelDataSample
       ? new DataSample({
           ...currentFlowLevelDataSample,
-          content: new Map(Object.entries(flowLevelContent)) as Map<'en', Content>,
+          content: flowLevelContent,
         })
       : new DataSample({
           valueDate,
-          labels: new Set([new CodingReference({ type: 'LOINC', code: '49033-4' })]),
-          content: new Map(Object.entries(flowLevelContent)) as Map<'en', Content>,
+          labels: [new CodingReference({ type: 'LOINC', code: '49033-4' })],
+          content: flowLevelContent,
         })
 
     const getUserComplaintDataSample = (SNOMED_CODE: string) => {
       return new DataSample({
         valueDate,
-        codes: new Set([new CodingReference({ type: 'SNOMED-CT', code: SNOMED_CODE })]),
-        labels: new Set([new CodingReference({ type: 'LOINC', code: '75322-8' })]),
+        codes: [new CodingReference({ type: 'SNOMED-CT', code: SNOMED_CODE })],
+        labels: [new CodingReference({ type: 'LOINC', code: '75322-8' })],
       })
     }
 
@@ -106,12 +107,12 @@ export const AddUserDataSampleModal: React.FC<AddUserDataSampleModalProps> = ({
     const userNotesDataSample = currentNotesDataSample
       ? new DataSample({
           ...currentNotesDataSample,
-          content: new Map(Object.entries(notesContent)) as Map<'en', Content>,
+          content: notesContent,
         })
       : new DataSample({
           valueDate,
-          content: new Map(Object.entries(notesContent)) as Map<'en', Content>,
-          labels: new Set([new CodingReference({ type: 'LOINC', code: '34109-9' })]),
+          content: notesContent,
+          labels: [new CodingReference({ type: 'LOINC', code: '34109-9' })],
         })
 
     const addedComplaints = onlyCheckedComplaints?.filter((item) => !selectedComplaintsCodes?.includes(item.SNOMED_CT_CODE))

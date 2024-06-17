@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import { Patient } from '@icure/medical-device-sdk'
+import { IPatient, Patient, User } from '@icure/medical-device-sdk'
 import { currentUser, guard, medTechApi } from './api'
 
 export const patientApiRtk = createApi({
@@ -9,7 +9,7 @@ export const patientApiRtk = createApi({
     baseUrl: '/rest/v2/patient',
   }),
   endpoints: (builder) => ({
-    getPatient: builder.query<Patient, string>({
+    getPatient: builder.query<IPatient, string>({
       async queryFn(id, { getState }) {
         const api = await medTechApi(getState)
         if (api === undefined) {
@@ -19,14 +19,14 @@ export const patientApiRtk = createApi({
         const { patientApi } = api
 
         return guard([patientApi], async () => {
-          return Patient.toJSON(await patientApi.get(id))
+          return (await patientApi.get(id)).toJSON()
         })
       },
       providesTags: (patient) => {
         return patient ? [{ type: 'Patient', id: patient.id }] : []
       },
     }),
-    currentPatient: builder.query<Patient, void>({
+    currentPatient: builder.query<IPatient, void>({
       async queryFn(_, { getState }) {
         const api = await medTechApi(getState)
         if (api === undefined) {
@@ -40,13 +40,13 @@ export const patientApiRtk = createApi({
         }
 
         return guard([patientApi, dataOwnerApi], async () => {
-          const dataOwner = dataOwnerApi.getDataOwnerIdOf(user)
-          return Patient.toJSON(await patientApi.get(dataOwner))
+          const dataOwner = dataOwnerApi.getDataOwnerIdOf(new User(user))
+          return (await patientApi.get(dataOwner)).toJSON()
         })
       },
       providesTags: (patient) => (!!patient ? [{ type: 'Patient', id: patient.id }] : []),
     }),
-    createOrUpdatePatient: builder.mutation<Patient, Patient>({
+    createOrUpdatePatient: builder.mutation<IPatient, IPatient>({
       async queryFn(patient, { getState }) {
         const api = await medTechApi(getState)
 
@@ -56,7 +56,7 @@ export const patientApiRtk = createApi({
 
         const { patientApi } = api
         return guard([patientApi], async () => {
-          return Patient.toJSON(await patientApi.createOrModifyPatient(patient))
+          return (await patientApi.createOrModifyPatient(new Patient(patient))).toJSON()
         })
       },
       invalidatesTags: (patient) => (!!patient ? [{ type: 'Patient', id: patient.id }] : []),

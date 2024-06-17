@@ -111,7 +111,7 @@ export const EditUserDataModal: React.FC<EditUserDataModalProps> = ({ onCancel, 
 
   // if doctor already has access to the user's medical data, we should not show him in this list
   const filteredHcpList = hcpListSearchResult?.filter(
-    (item) => !user?.sharingDataWith?.get('medicalInformation') || ![...(user?.sharingDataWith?.get('medicalInformation') ?? [])].includes(item.id),
+    (item) => item.id && (!user?.sharingDataWith?.['medicalInformation'] || ![...(user?.sharingDataWith?.['medicalInformation'] ?? [])].includes(item.id)),
   )
 
   // Logout tab
@@ -275,16 +275,14 @@ export const EditUserDataModal: React.FC<EditUserDataModalProps> = ({ onCancel, 
                       <Text style={[styles.noSearchResultText, globalStyles.mt4]}>Please, change the search query and try one more time.</Text>
                     </View>
                   )}
-                  {filteredHcpList?.map((item, index) => (
-                    <DoctorCardAdd key={index} name={item.name ?? ''} id={item.id} />
-                  ))}
+                  {filteredHcpList?.map((item, index) => item.id && <DoctorCardAdd key={index} name={item.name ?? ''} id={item.id} />)}
                 </View>
                 <View style={[globalStyles.mt24, globalStyles.ph16]}>
                   {isSearchOpen && <View style={styles.bluredBg}></View>}
                   <View>
                     <Text style={styles.doctorsListHeading}>List of the doctors who currently have access to your Medical Data: </Text>
-                    {user?.sharingDataWith?.get('medicalInformation') && [...(user?.sharingDataWith?.get('medicalInformation') ?? [])]?.length !== 0 ? (
-                      [...(user?.sharingDataWith?.get('medicalInformation') ?? [])].map((item, index) => <DoctorCardRemove key={index} id={item} />)
+                    {user?.sharingDataWith?.['medicalInformation'] && [...(user?.sharingDataWith?.['medicalInformation'] ?? [])]?.length !== 0 ? (
+                      [...(user?.sharingDataWith?.['medicalInformation'] ?? [])].map((item, index) => <DoctorCardRemove key={index} id={item} />)
                     ) : (
                       <View style={styles.noSearchResultContainer}>
                         <Text style={styles.noSearchResultText}>You do not share your medical information with any doctor. </Text>

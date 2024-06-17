@@ -1,34 +1,34 @@
-import React, {useEffect, useState} from 'react';
-import {StyleSheet, Image, Text, View, TouchableOpacity} from 'react-native';
-import {format, formatDistanceStrict, isEqual, eachDayOfInterval} from 'date-fns';
+import React, { useEffect, useState } from 'react'
+import { StyleSheet, Image, Text, View, TouchableOpacity } from 'react-native'
+import { format, formatDistanceStrict, isEqual, eachDayOfInterval } from 'date-fns'
 
-import {globalStyles} from '../../../styles/GlobalStyles';
-import {useGetDataSampleBetween2DatesQuery} from '../../../services/dataSampleApi';
-import { getDayInDateFormat, getDayInNumberFormat, getNextDay } from '../../../utils/helpers';
-import { DataSample } from '@icure/medical-device-sdk';
-import { complaintsData } from '../../../utils/constants';
+import { globalStyles } from '../../../styles/GlobalStyles'
+import { useGetDataSampleBetween2DatesQuery } from '../../../services/dataSampleApi'
+import { getDayInDateFormat, getDayInNumberFormat, getNextDay } from '../../../utils/helpers'
+import { DataSample, IDataSample } from '@icure/medical-device-sdk'
+import { complaintsData } from '../../../utils/constants'
 
 type CycleItemProps = {
   cycle: {
-    startDate: number;
-    endDate: number;
-  };
-  expanded?: boolean;
-};
+    startDate: number
+    endDate: number
+  }
+  expanded?: boolean
+}
 
-export const CycleItem: React.FC<CycleItemProps> = ({cycle, expanded}) => {
-  const [showComplients, setShowComplients] = useState(false);
+export const CycleItem: React.FC<CycleItemProps> = ({ cycle, expanded }) => {
+  const [showComplients, setShowComplients] = useState(false)
   const getDropsComponent = (amount: number) => {
     return Array(amount)
       .fill(true)
-      .map((_, i) => <Image key={i} style={cycleItemStyles.drop} source={require('../../../assets/images/drop.png')} />);
-  };
+      .map((_, i) => <Image key={i} style={cycleItemStyles.drop} source={require('../../../assets/images/drop.png')} />)
+  }
 
-  const {startDate: currentCycleFirstDay, endDate: currentCycleLastDay} = cycle;
+  const { startDate: currentCycleFirstDay, endDate: currentCycleLastDay } = cycle
 
-  const getFormatedDaysTitle = (date: number) => format(getDayInDateFormat(date), 'dd MMM');
+  const getFormatedDaysTitle = (date: number) => format(getDayInDateFormat(date), 'dd MMM')
 
-  const nextCycleFirstDay = getDayInNumberFormat(getNextDay(getDayInDateFormat(currentCycleLastDay)));
+  const nextCycleFirstDay = getDayInNumberFormat(getNextDay(getDayInDateFormat(currentCycleLastDay)))
 
   const { data: flowLevelComplaintsAndNotesDataSamplesBetween2Dates, isLoading: flowLevelDataSampleBetween2DatesIsLoading } = useGetDataSampleBetween2DatesQuery({
     tagCodes: [
@@ -47,22 +47,19 @@ export const CycleItem: React.FC<CycleItemProps> = ({cycle, expanded}) => {
     ],
     startDate: currentCycleFirstDay,
     endDate: nextCycleFirstDay,
-  });
+  })
 
-  const [dataSamples, setDataSamples] = useState<{ flowLevel: DataSample[], complaints: DataSample[], notes: DataSample[] }| undefined>()
+  const [dataSamples, setDataSamples] = useState<{ flowLevel: IDataSample[]; complaints: DataSample[]; notes: DataSample[] } | undefined>()
 
   useEffect(() => {
     if (!!flowLevelComplaintsAndNotesDataSamplesBetween2Dates) {
       const dataSamplesToProcess = flowLevelComplaintsAndNotesDataSamplesBetween2Dates!.rows
 
-      const flowLevelDataSample = dataSamplesToProcess
-        .filter(ds => [...ds.labels].some(it => it.type === 'LOINC' && it.code === '49033-4'));
+      const flowLevelDataSample = dataSamplesToProcess.filter((ds) => [...ds.labels].some((it) => it.type === 'LOINC' && it.code === '49033-4'))
 
-      const complainsDataSample = dataSamplesToProcess
-        .filter(ds => [...ds.labels].some(it => it.type === 'LOINC' && it.code === '75322-8'));
+      const complainsDataSample = dataSamplesToProcess.filter((ds) => [...ds.labels].some((it) => it.type === 'LOINC' && it.code === '75322-8'))
 
-      const notesDataSample = dataSamplesToProcess
-        .filter(ds => [...ds.labels].some(it => it.type === 'LOINC' && it.code === '34109-9'));
+      const notesDataSample = dataSamplesToProcess.filter((ds) => [...ds.labels].some((it) => it.type === 'LOINC' && it.code === '34109-9'))
 
       setDataSamples({ flowLevel: flowLevelDataSample, complaints: complainsDataSample, notes: notesDataSample })
     }
@@ -70,53 +67,47 @@ export const CycleItem: React.FC<CycleItemProps> = ({cycle, expanded}) => {
 
   const getTodayFlowLevelData = (currentDay: Date) => {
     if (!!dataSamples) {
-      return dataSamples
-        .flowLevel
-        .find(item => item.valueDate === getDayInNumberFormat(currentDay) && item.content?.en?.measureValue?.value > 0);
+      return dataSamples.flowLevel.find((item) => item.valueDate === getDayInNumberFormat(currentDay) && item.content?.en?.measureValue?.value > 0)
     }
-  };
+  }
 
   const getTodayComplaintData = (currentDay: Date) => {
     if (!!dataSamples) {
-      return dataSamples
-      .complaints
-      .filter(item => item.valueDate === getDayInNumberFormat(currentDay));
+      return dataSamples.complaints.filter((item) => item.valueDate === getDayInNumberFormat(currentDay))
     }
-  };
+  }
 
   const getTodayNotesData = (currentDay: Date) => {
     if (!!dataSamples) {
-      return dataSamples
-      .notes
-      .find(item => item.valueDate === getDayInNumberFormat(currentDay));
+      return dataSamples.notes.find((item) => item.valueDate === getDayInNumberFormat(currentDay))
     }
-  };
+  }
 
-  const daysOfTheCycle = eachDayOfInterval({start: getDayInDateFormat(currentCycleFirstDay), end: getDayInDateFormat(currentCycleLastDay)});
+  const daysOfTheCycle = eachDayOfInterval({ start: getDayInDateFormat(currentCycleFirstDay), end: getDayInDateFormat(currentCycleLastDay) })
 
   return (
     <View style={cycleItemStyles.container}>
       <Text style={cycleItemStyles.title}>
-        <Text style={{fontFamily: 'Nunito-Bold'}}>
+        <Text style={{ fontFamily: 'Nunito-Bold' }}>
           {isEqual(currentCycleLastDay, +format(new Date(), 'yyyyMMdd') * 1000000)
             ? 'Current cycle'
-            : formatDistanceStrict(getDayInDateFormat(currentCycleFirstDay), getDayInDateFormat(currentCycleLastDay), {unit: 'day'})}
+            : formatDistanceStrict(getDayInDateFormat(currentCycleFirstDay), getDayInDateFormat(currentCycleLastDay), { unit: 'day' })}
           :{' '}
         </Text>
         {isEqual(currentCycleLastDay, +format(new Date(), 'yyyyMMdd') * 1000000)
           ? 'Started ' +
             getFormatedDaysTitle(currentCycleFirstDay) +
-            ` (${formatDistanceStrict(getDayInDateFormat(currentCycleFirstDay), getDayInDateFormat(currentCycleLastDay), {unit: 'day'})})`
+            ` (${formatDistanceStrict(getDayInDateFormat(currentCycleFirstDay), getDayInDateFormat(currentCycleLastDay), { unit: 'day' })})`
           : getFormatedDaysTitle(currentCycleFirstDay) + ' - ' + getFormatedDaysTitle(currentCycleLastDay)}
       </Text>
-      <Text style={cycleItemStyles.subtitle}>{dataSamples?.flowLevel?.filter(item => item?.content?.en?.measureValue?.value > 0).length}-day period</Text>
+      <Text style={cycleItemStyles.subtitle}>{dataSamples?.flowLevel?.filter((item) => item?.content?.en?.measureValue?.value > 0).length}-day period</Text>
       <View style={cycleItemStyles.daysContainer}>
         {daysOfTheCycle.map((item, index) => {
-          const day = format(new Date(item), 'dd');
-          const userFlowLevelData = getTodayFlowLevelData(item);
-          const userComplaintData = getTodayComplaintData(item);
-          const userNotesData = getTodayNotesData(item);
-          const isComplaint = userNotesData || userComplaintData?.length !== 0;
+          const day = format(new Date(item), 'dd')
+          const userFlowLevelData = getTodayFlowLevelData(item)
+          const userComplaintData = getTodayComplaintData(item)
+          const userNotesData = getTodayNotesData(item)
+          const isComplaint = userNotesData || userComplaintData?.length !== 0
 
           return (
             <View style={cycleItemStyles.dayOfTheCycle} key={index}>
@@ -127,7 +118,7 @@ export const CycleItem: React.FC<CycleItemProps> = ({cycle, expanded}) => {
               </View>
               {isComplaint && <Image style={cycleItemStyles.complaint} source={require('../../../assets/images/triangle.png')} />}
             </View>
-          );
+          )
         })}
       </View>
       {expanded && (
@@ -145,11 +136,11 @@ export const CycleItem: React.FC<CycleItemProps> = ({cycle, expanded}) => {
           {showComplients && (
             <View style={globalStyles.mt8}>
               {daysOfTheCycle.map((dayWithTheData, dayWithTheDataIndex) => {
-                const day = format(new Date(dayWithTheData), 'dd MMM');
-                const userFlowLevelData = getTodayFlowLevelData(dayWithTheData);
-                const userComplaintData = getTodayComplaintData(dayWithTheData);
-                const userNotesData = getTodayNotesData(dayWithTheData);
-                const selectedComplaintsCodes = userComplaintData?.map(selectedComplain => [...selectedComplain.codes][0].code);
+                const day = format(new Date(dayWithTheData), 'dd MMM')
+                const userFlowLevelData = getTodayFlowLevelData(dayWithTheData)
+                const userComplaintData = getTodayComplaintData(dayWithTheData)
+                const userNotesData = getTodayNotesData(dayWithTheData)
+                const selectedComplaintsCodes = userComplaintData?.map((selectedComplain) => [...selectedComplain.codes][0].code)
 
                 return [
                   userFlowLevelData && (
@@ -170,7 +161,7 @@ export const CycleItem: React.FC<CycleItemProps> = ({cycle, expanded}) => {
                       <Text style={[globalStyles.baseText, cycleItemStyles.symbolDayTitle]}>{day}:</Text>
                       <View style={cycleItemStyles.complientsTitlesList}>
                         {selectedComplaintsCodes?.map((complientCode, complientCodeIndex) => {
-                          const complaintsLabel = complaintsData.find(complientObj => complientObj.SNOMED_CT_CODE === complientCode)?.label;
+                          const complaintsLabel = complaintsData.find((complientObj) => complientObj.SNOMED_CT_CODE === complientCode)?.label
                           return (
                             <View key={complientCodeIndex}>
                               <Text style={cycleItemStyles.complientsTitle}>
@@ -178,7 +169,7 @@ export const CycleItem: React.FC<CycleItemProps> = ({cycle, expanded}) => {
                                 {complientCodeIndex !== selectedComplaintsCodes?.length - 1 && ', '}
                               </Text>
                             </View>
-                          );
+                          )
                         })}
                       </View>
                     </View>
@@ -195,15 +186,15 @@ export const CycleItem: React.FC<CycleItemProps> = ({cycle, expanded}) => {
                       </View>
                     </View>
                   ),
-                ].filter(x => x);
+                ].filter((x) => x)
               })}
             </View>
           )}
         </>
       )}
     </View>
-  );
-};
+  )
+}
 
 const cycleItemStyles = StyleSheet.create({
   container: {
@@ -323,4 +314,4 @@ const cycleItemStyles = StyleSheet.create({
     height: '100%',
     alignItems: 'center',
   },
-});
+})

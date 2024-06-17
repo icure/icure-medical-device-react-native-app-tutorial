@@ -13,7 +13,7 @@
   "dependencies": {
     "@azure/core-asynciterator-polyfill": "^1.0.2",
     "@icure/expo-kryptom": "1.0.0",
-    "@icure/medical-device-sdk": "3.2.1",
+    "@icure/medical-device-sdk": "3.3.4",
     "@reduxjs/toolkit": "^1.9.0",
     "expo": "~50.0.19",
     "expo-status-bar": "~1.11.1",
@@ -69,11 +69,11 @@
   "prettier": {
     "semi": false,
     "bracketSpacing": true,
-    "trailingComma":  "all",
-    "singleQuote":  true,
-    "printWidth":  180,
+    "trailingComma": "all",
+    "singleQuote": true,
+    "printWidth": 180,
     "bracketSameLine": false,
-    "tabWidth":  2
+    "tabWidth": 2
   },
   "packageManager": "yarn@3.6.4"
 }

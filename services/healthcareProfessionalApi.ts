@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { currentUser, guard, medTechApi } from './api'
-import { HealthcareProfessional, HealthcareProfessionalFilter } from '@icure/medical-device-sdk'
+import { HealthcareProfessional, HealthcareProfessionalFilter, IHealthcareProfessional, User } from '@icure/medical-device-sdk'
 
 export const healthcareProfessionalApiRtk = createApi({
   reducerPath: 'healthcareProfessionalApi',
@@ -9,7 +9,7 @@ export const healthcareProfessionalApiRtk = createApi({
     baseUrl: '/rest/v1/healthcareProfessional',
   }),
   endpoints: (builder) => ({
-    getHealthcareProfessional: builder.query<HealthcareProfessional, string>({
+    getHealthcareProfessional: builder.query<IHealthcareProfessional, string>({
       async queryFn(id, { getState }) {
         const api = await medTechApi(getState)
         if (api === undefined) {
@@ -17,12 +17,12 @@ export const healthcareProfessionalApiRtk = createApi({
         }
         const { healthcareProfessionalApi } = api
         return guard([healthcareProfessionalApi], async () => {
-          return HealthcareProfessional.toJSON(await healthcareProfessionalApi.getHealthcareProfessional(id))
+          return (await healthcareProfessionalApi.getHealthcareProfessional(id)).toJSON()
         })
       },
       providesTags: (hcp) => (!!hcp ? [{ type: 'hcp', id: hcp.id }] : []),
     }),
-    currentHealthcareProfessional: builder.query<HealthcareProfessional, void>({
+    currentHealthcareProfessional: builder.query<IHealthcareProfessional, void>({
       async queryFn(_, { getState }) {
         const api = await medTechApi(getState)
         if (api === undefined) {
@@ -34,13 +34,13 @@ export const healthcareProfessionalApiRtk = createApi({
           throw new Error('No user available')
         }
         return guard([healthcareProfessionalApi, dataOwnerApi], async () => {
-          const dataOwner = dataOwnerApi.getDataOwnerIdOf(user)
-          return HealthcareProfessional.toJSON(await healthcareProfessionalApi.getHealthcareProfessional(dataOwner))
+          const dataOwner = dataOwnerApi.getDataOwnerIdOf(new User(user))
+          return (await healthcareProfessionalApi.getHealthcareProfessional(dataOwner)).toJSON()
         })
       },
       providesTags: (hcp) => (!!hcp ? [{ type: 'hcp', id: hcp.id }] : []),
     }),
-    filterHealthcareProfessionals: builder.query<HealthcareProfessional[], { name: string }>({
+    filterHealthcareProfessionals: builder.query<IHealthcareProfessional[], { name: string }>({
       async queryFn({ name }, { getState }) {
         const api = await medTechApi(getState)
         if (api === undefined) {
@@ -59,11 +59,11 @@ export const healthcareProfessionalApiRtk = createApi({
                 )
                 .build(),
             )
-          ).rows.map(HealthcareProfessional.toJSON)
+          ).rows.map((h) => h.toJSON())
         })
       },
     }),
-    createOrUpdateHealthcareProfessional: builder.mutation<HealthcareProfessional, HealthcareProfessional>({
+    createOrUpdateHealthcareProfessional: builder.mutation<IHealthcareProfessional, HealthcareProfessional>({
       async queryFn(healthcareProfessional, { getState }) {
         const api = await medTechApi(getState)
         if (api === undefined) {
@@ -71,7 +71,7 @@ export const healthcareProfessionalApiRtk = createApi({
         }
         const { healthcareProfessionalApi } = api
         return guard([healthcareProfessionalApi], async () => {
-          return HealthcareProfessional.toJSON(await healthcareProfessionalApi.createOrModifyHealthcareProfessional(healthcareProfessional))
+          return (await healthcareProfessionalApi.createOrModifyHealthcareProfessional(healthcareProfessional)).toJSON()
         })
       },
       invalidatesTags: (hcp) => (!!hcp ? [{ type: 'hcp', id: hcp.id }] : []),

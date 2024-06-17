@@ -1,5 +1,5 @@
 import { format, parse, formatDistanceStrict } from 'date-fns'
-import { DataSample } from '@icure/medical-device-sdk'
+import { DataSample, IDataSample } from '@icure/medical-device-sdk'
 
 export const getDayInDateFormat = (date: number) => parse(`${date}`, 'yyyyMMdd000000', new Date())
 export const getDayInNumberFormat = (date: Date) => +format(date, 'yyyyMMdd') * 1000000
@@ -14,7 +14,7 @@ export const getNextDay = (date: Date) => {
   return yesterday
 }
 
-export const getCyclesDates = (flowLevelDataSamples: { rows: DataSample[] }, flowLevelDataSamplesIsLoading: boolean) => {
+export const getCyclesDates = (flowLevelDataSamples: { rows: IDataSample[] }, flowLevelDataSamplesIsLoading: boolean) => {
   if (flowLevelDataSamples && !flowLevelDataSamplesIsLoading) {
     const flowLevelsValueDatesSorted = flowLevelDataSamples.rows
       .filter((item) => item?.content?.['en']?.measureValue?.value ?? 0 > 0)

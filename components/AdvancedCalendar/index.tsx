@@ -6,7 +6,7 @@ import { format, lastDayOfMonth, formatDistanceStrict, add, max, isWithinInterva
 import { AddUserDataSampleModal } from '../AddUserDataSampleModal'
 import { useGetDataSampleBetween2DatesQuery, useGetDataSampleByTagTypeQuery } from '../../services/dataSampleApi'
 import { getCyclesDates, getDayInDateFormat, getNextDay, getDayInNumberFormat } from '../../utils/helpers'
-import { DataSample } from '@icure/medical-device-sdk'
+import { DataSample, IDataSample } from '@icure/medical-device-sdk'
 
 type DayOfTheMonthProps = {
   dayData: any
@@ -111,7 +111,7 @@ export const AdvancedCalendar: React.FC = () => {
     },
   )
 
-  const [dataSamples, setDataSamples] = useState<{ flowLevel: DataSample[]; complaints: DataSample[]; notes: DataSample[] } | undefined>()
+  const [dataSamples, setDataSamples] = useState<{ flowLevel: IDataSample[]; complaints: IDataSample[]; notes: IDataSample[] } | undefined>()
 
   useEffect(() => {
     if (!!flowLevelComplaintsAndNotesDataSamplesBetween2Dates) {

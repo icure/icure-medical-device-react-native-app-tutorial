@@ -15,13 +15,14 @@ import { revertAll, setSavedCredentials } from '../config/PetraState'
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query'
 import storage from '../utils/storage'
 import * as ExpoKryptomModule from '@icure/expo-kryptom'
+import { IUser } from '@icure/typescript-common/models/User.model'
 
 const apiCache: { [key: string]: MedTechApi | AnonymousMedTechApi } = {}
 
 export interface MedTechApiState {
   email?: string
   token?: string
-  user?: User
+  user?: IUser
   keyPair?: { publicKey: string; privateKey: string }
   authProcess?: AuthenticationProcess
   online: boolean
@@ -66,30 +67,7 @@ export const guard = async <T>(guardedInputs: unknown[], lambda: () => Promise<T
     throw new Error('Guarded input is undefined')
   }
   try {
-    const res = await lambda()
-    console.log('res', res)
-    const curate = (result: T): T => {
-      return (
-        result === null || result === undefined
-          ? null
-          : res instanceof ArrayBuffer
-          ? ua2b64(res)
-          : Array.isArray(result)
-          ? result.map(curate)
-          : result instanceof Patient
-          ? Patient.toJSON(result)
-          : result instanceof User
-          ? User.toJSON(result)
-          : result instanceof DataSample
-          ? DataSample.toJSON(result)
-          : result instanceof HealthcareProfessional
-          ? HealthcareProfessional.toJSON(result)
-          : result
-      ) as T
-    }
-    const curated = curate(res)
-    console.log('curated', curated)
-    return { data: curated }
+    return { data: await lambda() }
   } catch (e) {
     return { error: getError(e as Error) }
   }
@@ -171,7 +149,7 @@ export const completeAuthentication = createAsyncThunk('medTechApi/completeAuthe
 
     dispatch(setSavedCredentials({ login: `${result.groupId}/${result.userId}`, token: result.token, tokenTimestamp: +Date.now() }))
 
-    return User.toJSON(user)
+    return user.toJSON()
   } catch (e) {
     console.error(`Couldn't complete authentication: ${e}`)
     throw e
@@ -206,7 +184,7 @@ export const login = createAsyncThunk('medTechApi/login', async (_, { getState }
 
   apiCache[`${user.groupId}/${user.id}`] = api
 
-  return User.toJSON(user)
+  return user.toJSON()
 })
 
 export const logout = createAsyncThunk('medTechApi/logout', async (payload, { dispatch }) => {
@@ -229,7 +207,7 @@ export const api = createSlice({
     setAuthProcess: (state, { payload: { authProcess } }: PayloadAction<{ authProcess: AuthenticationProcess }>) => {
       state.authProcess = authProcess
     },
-    setUser: (state, { payload: { user } }: PayloadAction<{ user: User }>) => {
+    setUser: (state, { payload: { user } }: PayloadAction<{ user: IUser }>) => {
       state.user = user
     },
     setRegistrationInformation: (state, { payload: { firstName, lastName, email } }: PayloadAction<{ firstName: string; lastName: string; email: string }>) => {
@@ -249,7 +227,7 @@ export const api = createSlice({
       state.authProcess = authProcess
     })
     builder.addCase(completeAuthentication.fulfilled, (state, { payload: user }) => {
-      state.user = User.fromJSON(user)
+      state.user = { ...user }
       state.online = true
     })
     builder.addCase(startAuthentication.rejected, (state, {}) => {
@@ -259,7 +237,7 @@ export const api = createSlice({
       state.invalidToken = true
     })
     builder.addCase(login.fulfilled, (state, { payload: user }) => {
-      state.user = User.fromJSON(user)
+      state.user = new User(user)
       state.online = true
     })
     builder.addCase(login.rejected, (state, {}) => {
