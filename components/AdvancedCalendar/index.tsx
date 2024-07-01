@@ -68,22 +68,14 @@ export const AdvancedCalendar: React.FC = () => {
     }
   }, [flowLevelComplaintsAndNotesDataSamplesBetween2Dates])
 
-  const getTodayFlowLevelData = (currentDay?: Date) => {
+  const getDataSamplesOnDate = (dataSamples?: IDataSample[], currentDay?: Date) => {
     if (!!dataSamples && !!currentDay) {
-      return dataSamples.flowLevel.find((item) => item.valueDate === getDayInNumberFormat(currentDay))
+      return dataSamples.filter((item) => item.valueDate === getDayInNumberFormat(currentDay))
+    } else {
+      return []
     }
   }
-  const getTodayComplaintDatas = (currentDay?: Date) => {
-    if (!!dataSamples && !!currentDay) {
-      return dataSamples.complaints.filter((item) => item.valueDate === getDayInNumberFormat(currentDay))
-    }
-    return []
-  }
-  const getTodayNotesData = (currentDay?: Date) => {
-    if (!!dataSamples && !!currentDay) {
-      return dataSamples.notes.find((item) => item.valueDate === getDayInNumberFormat(currentDay))
-    }
-  }
+
   const getShortNameOfTheMonth = (today: Date, direction: 'prev' | 'next') => {
     const monthData = direction === 'prev' ? new Date(today.getFullYear(), today.getMonth() - 1, 1) : new Date(today.getFullYear(), today.getMonth() + 1, 1)
     return monthNameFormatter('short').format(new Date(monthData)) + ',' + monthData.getFullYear()
@@ -197,9 +189,9 @@ export const AdvancedCalendar: React.FC = () => {
           onClose={() => setAddUserDataSampleModalVisible(!addUserDataSampleModalVisible)}
           onSave={() => setAddUserDataSampleModalVisible(!addUserDataSampleModalVisible)}
           onDelete={() => setAddUserDataSampleModalVisible(!addUserDataSampleModalVisible)}
-          currentFlowLevelData={getTodayFlowLevelData}
-          currentComplaintsDatas={getTodayComplaintDatas}
-          currentNotesData={getTodayNotesData}
+          currentFlowLevelData={(d) => getDataSamplesOnDate(dataSamples?.flowLevel, d)[0]}
+          currentComplaintsDatas={(d) => getDataSamplesOnDate(dataSamples?.complaints, d)}
+          currentNotesData={(d) => getDataSamplesOnDate(dataSamples?.notes, d)[0]}
           createOrUpdateDataSamples={createOrUpdateDataSamples}
           deleteDataSamples={deleteDataSamples}
         />
@@ -214,9 +206,10 @@ export const AdvancedCalendar: React.FC = () => {
             <DayOfTheMonth
               dayData={date}
               state={state}
-              flowLevel={getTodayFlowLevelData(date && new Date(date.dateString))?.content?.['en']?.measureValue?.value}
+              flowLevel={getDataSamplesOnDate(dataSamples?.flowLevel, date ? new Date(date.dateString) : undefined)[0]?.content?.['en']?.measureValue?.value}
               hasComplaint={
-                !!getTodayComplaintDatas(date && new Date(date.dateString))?.length || !!getTodayNotesData(date && new Date(date.dateString))?.content?.['en']?.stringValue
+                !!getDataSamplesOnDate(dataSamples?.complaints, date && new Date(date.dateString))?.length ||
+                !!getDataSamplesOnDate(dataSamples?.notes, date && new Date(date.dateString))[0]?.content?.['en']?.stringValue
               }
               isPredictedPeriod={isTodayPredictedPeriodDay(date && new Date(date.dateString))}
             />
