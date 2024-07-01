@@ -217,7 +217,7 @@ export const EditUserDataModal: React.FC<EditUserDataModalProps> = ({ onCancel, 
                   }}
                   render={({ field: { onChange, onBlur, value } }) => (
                     <View style={styles.input}>
-                      <SquareInput onBlur={onBlur} onChange={onChange} value={value} label="Mobile phone" isRequired />
+                      <SquareInput onBlur={onBlur} onChange={onChange} value={value} label="Mobile phone" />
                     </View>
                   )}
                   name="mobilePhone"

@@ -14,7 +14,7 @@ export const dataSampleApiRtk = createApi({
       async queryFn({ ids, nextDataSampleId = undefined, limit = 1000 }, { getState }) {
         const api = await medTechApi(getState)
         if (api === undefined) {
-          throw new Error('No medTechApi available')
+          throw new Error('MedTechApi in unavailable')
         }
         const { dataSampleApi, dataOwnerApi } = api
         const user = currentUser(getState)
@@ -29,31 +29,11 @@ export const dataSampleApiRtk = createApi({
       },
       providesTags: (result) => result?.rows?.map(({ id }) => ({ type: 'DataSample', id })) ?? [],
     }),
-    createOrUpdateDataSample: builder.mutation<IDataSample, IDataSample>({
-      async queryFn(dataSample, { getState }) {
-        const api = await medTechApi(getState)
-        if (api === undefined) {
-          throw new Error('No medTechApi available')
-        }
-        const { dataSampleApi, dataOwnerApi } = api
-        const user = currentUser(getState)
-        if (!user) {
-          throw new Error('No user set')
-        }
-        return guard([dataSampleApi, dataOwnerApi], async () => {
-          const dataOwner = dataOwnerApi.getDataOwnerIdOf(new User(user))
-          return (await dataSampleApi.createOrModifyDataSampleFor(dataOwner, new DataSample(dataSample))).toJSON()
-        })
-      },
-      invalidatesTags: (ds) => (ds ? [{ type: 'DataSample', id: ds.id }] : []),
-    }),
     deleteDataSamples: builder.mutation<string[], IDataSample[]>({
       async queryFn(dataSamples, { getState }) {
-        console.log('dataSamples to delete', dataSamples)
-
         const api = await medTechApi(getState)
         if (api === undefined) {
-          throw new Error('No medTechApi available')
+          throw new Error('MedTechApi in unavailable')
         }
         const { dataSampleApi, dataOwnerApi } = api
         return guard([dataSampleApi, dataOwnerApi], async () => {
@@ -64,49 +44,52 @@ export const dataSampleApiRtk = createApi({
             return acc
           }, {} as { [batchId: string]: string[] })
 
-          Object.values(groupedDataSamples).forEach((ids) => {
-            console.log('ids', ids)
-          })
-
           return (await Promise.all(Object.values(groupedDataSamples).map((ids) => dataSampleApi.deleteDataSamples(ids)))).flatMap((x) => x).filter((x) => x !== undefined)
         })
       },
-      invalidatesTags: (result) => result?.map((id) => ({ type: 'DataSample', id })) ?? [],
+      invalidatesTags: (result: string[] | undefined) => result?.map((id) => ({ type: 'DataSample', id })) ?? [],
     }),
     createOrUpdateDataSamples: builder.mutation<IDataSample[], IDataSample[]>({
       async queryFn(dataSamples, { getState }) {
-        console.log('createOrUpdateDataSamples', dataSamples)
-
         const api = await medTechApi(getState)
         if (api === undefined) {
-          throw new Error('No medTechApi available')
+          throw new Error('MedTechApi in unavailable')
         }
-        console.log('createOrUpdateDataSamples: api check')
         const { dataSampleApi, dataOwnerApi } = api
         const user = currentUser(getState)
         if (!user) {
           throw new Error('No user set')
         }
-        console.log('createOrUpdateDataSamples: user check', user)
         return guard([dataSampleApi, dataOwnerApi], async () => {
           try {
+            // TODO: is the dataOwner correct?
             const dataOwner = dataOwnerApi.getDataOwnerIdOf(new User(user))
-            console.log('dataOwner', dataOwner)
-            const updatedDss = await dataSampleApi
-              .createOrModifyDataSamplesFor(
+
+            const res = await Promise.all(
+              await dataSampleApi.createOrModifyDataSamplesFor(
                 dataOwner,
-                dataSamples.map((d) => new DataSample(d)),
-              )
-              .then((samples) => samples.map((d) => d.toJSON()))
-            console.log('updatedDss', updatedDss)
-            return updatedDss
+                dataSamples.map((ds) => new DataSample(ds)),
+              ),
+            )
+            return res.map((ds) => ds.toJSON())
           } catch (e) {
-            console.error('Error', e)
+            console.error('Custom Error:', e)
             throw e
           }
         })
       },
-      invalidatesTags: (dataSamples) => dataSamples?.map((ds) => ({ type: 'DataSample', id: ds.id })) ?? [],
+      invalidatesTags: (res: IDataSample[] | undefined) =>
+        res
+          ? [
+              { type: 'DataSample', id: 'all' },
+              ...res.map((ds) => {
+                return {
+                  type: 'DataSample',
+                  id: ds.id,
+                } as { type: 'DataSample'; id: string }
+              }),
+            ]
+          : [],
     }),
     getDataSampleBetween2Dates: builder.query<
       IPaginatedList<IDataSample>,
@@ -115,14 +98,16 @@ export const dataSampleApiRtk = createApi({
       async queryFn({ tagCodes, startDate, endDate, nextDataSampleId = undefined, limit = 1000 }, { getState }) {
         const api = await medTechApi(getState)
         if (api === undefined) {
-          throw new Error('No medTechApi available')
+          throw new Error('MedTechApi in unavailable')
         }
         const { dataSampleApi, dataOwnerApi } = api
         const user = currentUser(getState)
         if (!user) {
           throw new Error('No user set')
         }
+        console.log('Executing load')
         return guard([dataSampleApi, dataOwnerApi], async () => {
+          console.log('Executing load: guard passed')
           const dataOwner = dataOwnerApi.getDataOwnerIdOf(new User(user))
           const tagCodesFilters = await Promise.all(
             tagCodes.map(async ({ tagType, tagCode, codeType, codeCode }) =>
@@ -132,20 +117,40 @@ export const dataSampleApiRtk = createApi({
 
           const unionFilter = FilterComposition.union(...tagCodesFilters)
           try {
-            return PaginatedList.toJSON(await dataSampleApi.filterDataSample(unionFilter, nextDataSampleId, limit), (d) => d.toJSON())
+            const result = await dataSampleApi.filterDataSample(unionFilter, nextDataSampleId, limit)
+            console.log(
+              'result: ' +
+                JSON.stringify(
+                  result.rows.map((s) => s.id),
+                  null,
+                  ' ',
+                ),
+            )
+            return PaginatedList.toJSON(result, (d) => d.toJSON())
           } catch (e) {
-            console.error('Error filterDataSample', e)
+            console.error('Error in getDataSampleBetween2Dates:', e)
             throw e
           }
         })
       },
-      providesTags: (result) => result?.rows?.map(({ id }) => ({ type: 'DataSample', id })) ?? [],
+      providesTags: (res) =>
+        res
+          ? [
+              { type: 'DataSample', id: 'all' },
+              ...res.rows.map((ds) => {
+                return {
+                  type: 'DataSample',
+                  id: ds.id,
+                } as { type: 'DataSample'; id: string }
+              }),
+            ]
+          : [{ type: 'DataSample', id: 'all' }],
     }),
     getDataSampleByTagType: builder.query<IPaginatedList<IDataSample>, { tagType: string; tagCode: string; nextDataSampleId?: string; limit?: number }>({
       async queryFn({ tagType, tagCode, nextDataSampleId = undefined, limit = 1000 }, { getState }) {
         const api = await medTechApi(getState)
         if (api === undefined) {
-          throw new Error('No medTechApi available')
+          throw new Error('MedTechApi in unavailable')
         }
         const { dataSampleApi, dataOwnerApi } = api
         const user = currentUser(getState)
@@ -154,26 +159,35 @@ export const dataSampleApiRtk = createApi({
         }
         return guard([dataSampleApi, dataOwnerApi], async () => {
           const dataOwner = dataOwnerApi.getDataOwnerIdOf(new User(user))
-          return PaginatedList.toJSON(
-            await dataSampleApi.filterDataSample(
+          try {
+            const result = await dataSampleApi.filterDataSample(
               await new DataSampleFilter(api).forDataOwner(dataOwner).byLabelCodeDateFilter(tagType, tagCode, undefined, undefined, undefined, undefined).build(),
               nextDataSampleId,
               limit,
-            ),
-            (d) => d.toJSON(),
-          )
+            )
+
+            return PaginatedList.toJSON(result, (d) => d.toJSON())
+          } catch (e) {
+            console.error('Error in getDataSampleByTagType:', e)
+            throw e
+          }
         })
       },
-      providesTags: (result) => result?.rows?.map(({ id }) => ({ type: 'DataSample', id })) ?? [],
+      providesTags: (res) =>
+        res
+          ? [
+              { type: 'DataSample', id: 'all' },
+              ...res.rows.map((ds) => {
+                return {
+                  type: 'DataSample',
+                  id: ds.id,
+                } as { type: 'DataSample'; id: string }
+              }),
+            ]
+          : [{ type: 'DataSample', id: 'all' }],
     }),
   }),
 })
 
-export const {
-  useGetDataSamplesQuery,
-  useGetDataSampleBetween2DatesQuery,
-  useGetDataSampleByTagTypeQuery,
-  useCreateOrUpdateDataSampleMutation,
-  useCreateOrUpdateDataSamplesMutation,
-  useDeleteDataSamplesMutation,
-} = dataSampleApiRtk
+export const { useGetDataSamplesQuery, useGetDataSampleBetween2DatesQuery, useGetDataSampleByTagTypeQuery, useCreateOrUpdateDataSamplesMutation, useDeleteDataSamplesMutation } =
+  dataSampleApiRtk

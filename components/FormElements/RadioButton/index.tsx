@@ -30,7 +30,7 @@ export const RadioButton: React.FC<RadioButtonProps> = ({ data, initialData, onS
           <Pressable key={index} style={styles.container} onPress={() => selectHandler(item)}>
             <View style={[styles.unselected, item.value === userOption.value && styles.selected]}>{item.value === userOption.value && <View style={styles.selectedCircle} />}</View>
             <Text style={styles.option}> {item.value}</Text>
-            <View style={styles.merkersContainer}>{item.flowLevel > 0 && getDropsComponent(item.flowLevel)}</View>
+            <View style={styles.markersContainer}>{item.flowLevel > 0 && getDropsComponent(item.flowLevel)}</View>
           </Pressable>
         )
       })}
@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     backgroundColor: '#D06676',
   },
-  merkersContainer: {
+  markersContainer: {
     flexDirection: 'row',
   },
   drop: { width: 8, height: 8 },

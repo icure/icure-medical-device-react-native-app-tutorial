@@ -11,7 +11,7 @@ import {
 } from '@icure/medical-device-sdk'
 import { SimpleMedTechCryptoStrategies } from '@icure/medical-device-sdk/src/services/MedTechCryptoStrategies'
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { revertAll, setSavedCredentials } from '../config/PetraState'
+import { revertAll, setSavedCredentials, setLoginProcessStarted } from '../config/PetraState'
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query'
 import storage from '../utils/storage'
 import * as ExpoKryptomModule from '@icure/expo-kryptom'
@@ -86,6 +86,7 @@ export const getApiFromState = async (getState: () => MedTechApiState | { medTec
   const { user } = medTechApiState
 
   if (!user) {
+    console.error('There is no user in the medTechApiState')
     return undefined
   }
 
@@ -94,12 +95,15 @@ export const getApiFromState = async (getState: () => MedTechApiState | { medTec
   return cachedApi
 }
 
-export const startAuthentication = createAsyncThunk('medTechApi/startAuthentication', async (_payload, { getState }) => {
+export const startAuthentication = createAsyncThunk('medTechApi/startAuthentication', async (_payload, { getState, dispatch }) => {
   const {
     medTechApi: { email, firstName, lastName, recaptcha: captcha },
   } = getState() as { medTechApi: MedTechApiState }
 
+  dispatch(setLoginProcessStarted(true))
+
   if (!email) {
+    dispatch(setLoginProcessStarted(false))
     throw new Error('No email provided')
   }
 
@@ -118,6 +122,8 @@ export const startAuthentication = createAsyncThunk('medTechApi/startAuthenticat
 
   apiCache[`${authProcess.login}/${authProcess.requestId}`] = anonymousApi
 
+  dispatch(setLoginProcessStarted(false))
+
   return authProcess
 })
 
@@ -126,20 +132,21 @@ export const completeAuthentication = createAsyncThunk('medTechApi/completeAuthe
     medTechApi: { authProcess, token },
   } = getState() as { medTechApi: MedTechApiState }
 
+  dispatch(setLoginProcessStarted(true))
+
   if (!authProcess) {
+    dispatch(setLoginProcessStarted(false))
     throw new Error('No authProcess provided')
   }
 
   if (!token) {
+    dispatch(setLoginProcessStarted(false))
     throw new Error('No token provided')
   }
 
   const anonymousApi = apiCache[`${authProcess.login}/${authProcess.requestId}`] as AnonymousMedTechApi
 
   try {
-    console.log('token')
-    console.log(token)
-
     const result = await anonymousApi.authenticationApi.completeAuthentication(authProcess, token)
     const api = result.medTechApi
     const user = await api.userApi.getLoggedUser()
@@ -148,25 +155,29 @@ export const completeAuthentication = createAsyncThunk('medTechApi/completeAuthe
     delete apiCache[`${authProcess.login}/${authProcess.requestId}`]
 
     dispatch(setSavedCredentials({ login: `${result.groupId}/${result.userId}`, token: result.token, tokenTimestamp: +Date.now() }))
-
+    dispatch(setLoginProcessStarted(false))
     return user.toJSON()
   } catch (e) {
+    dispatch(setLoginProcessStarted(false))
     console.error(`Couldn't complete authentication: ${e}`)
     throw e
   }
 })
 
-export const login = createAsyncThunk('medTechApi/login', async (_, { getState }) => {
-  console.log('login')
+export const login = createAsyncThunk('medTechApi/login', async (_, { getState, dispatch }) => {
   const {
     medTechApi: { email, token },
   } = getState() as { medTechApi: MedTechApiState }
 
+  dispatch(setLoginProcessStarted(true))
+
   if (!email) {
+    dispatch(setLoginProcessStarted(false))
     throw new Error('No email provided')
   }
 
   if (!token) {
+    dispatch(setLoginProcessStarted(false))
     throw new Error('No token provided')
   }
 
@@ -183,6 +194,8 @@ export const login = createAsyncThunk('medTechApi/login', async (_, { getState }
   const user = await api.userApi.getLoggedUser()
 
   apiCache[`${user.groupId}/${user.id}`] = api
+
+  dispatch(setLoginProcessStarted(false))
 
   return user.toJSON()
 })

@@ -3,7 +3,6 @@ import { DataSample, CodingReference, Content, Measure, IContent, IDataSample } 
 import { ScrollView, StyleSheet, View, Dimensions, Text, Image, TouchableOpacity } from 'react-native'
 import { format } from 'date-fns'
 
-import { useCreateOrUpdateDataSamplesMutation, useDeleteDataSamplesMutation } from '../../services/dataSampleApi'
 import { globalStyles } from '../../styles/GlobalStyles'
 import { RadioButton, CheckBox, SquareInput, SquareButton } from '../FormElements'
 import { periodFlowLevelsData, complaintsData } from '../../utils/constants'
@@ -15,6 +14,8 @@ const HEIGHT_MODAL = Dimensions.get('window').height
 type AddUserDataSampleModalProps = {
   date: Date
   title: string
+  createOrUpdateDataSamples: (dsArray: (DataSample | IDataSample)[]) => void
+  deleteDataSamples: (dsArray: (DataSample | IDataSample)[]) => void
   onClose: () => void
   onSave: () => void
   onDelete: () => void
@@ -26,6 +27,8 @@ type AddUserDataSampleModalProps = {
 export const AddUserDataSampleModal: React.FC<AddUserDataSampleModalProps> = ({
   date,
   title,
+  createOrUpdateDataSamples,
+  deleteDataSamples,
   onClose,
   onSave,
   onDelete,
@@ -49,19 +52,15 @@ export const AddUserDataSampleModal: React.FC<AddUserDataSampleModalProps> = ({
   const [selectedFlowLevel, setSelectedFlowLevel] = useState(radioButtonInitialValue)
   const [checkedComplaints, setCheckedComplaints] = useState(comparedComplaintsArray)
   const onlyCheckedComplaints = checkedComplaints?.filter((item) => item.isChecked)
-  const [notes, setNotes] = useState(currentNotesDataSample?.content?.['en']?.stringValue ?? '')
+  const [notes, setNotes] = useState(currentNotesDataSample?.content?.['en']?.stringValue ?? undefined)
 
-  const [createOrUpdateDataSamples] = useCreateOrUpdateDataSamplesMutation()
-  const [deleteDataSamples] = useDeleteDataSamplesMutation()
-
-  const valueDate = +format(date, 'yyyyMMdd') * 1000000
-
+  // TODO: should be more precise
+  const valueDate = +format(new Date(), 'yyyyMMddhhmmss')
   const handleClose = () => {
     onClose()
   }
-
   const handleDelete = () => {
-    deleteDataSamples([...currentComplaintsDataSamples])
+    currentComplaintsDataSamples && deleteDataSamples([...currentComplaintsDataSamples])
     currentFlowLevelDataSample && deleteDataSamples([currentFlowLevelDataSample])
     currentNotesDataSample && deleteDataSamples([currentNotesDataSample])
     onDelete()
@@ -118,8 +117,8 @@ export const AddUserDataSampleModal: React.FC<AddUserDataSampleModalProps> = ({
     const addedComplaints = onlyCheckedComplaints?.filter((item) => !selectedComplaintsCodes?.includes(item.SNOMED_CT_CODE))
 
     const removedComplaints = currentComplaintsDataSamples?.filter((item) => {
-      const complient = complaintsData.find((complientObj) => complientObj.SNOMED_CT_CODE === [...item.codes][0].code)
-      return !onlyCheckedComplaints.some((element) => element.SNOMED_CT_CODE === complient?.SNOMED_CT_CODE)
+      const complaint = complaintsData.find((complaintObj) => complaintObj.SNOMED_CT_CODE === [...item.codes][0].code)
+      return !onlyCheckedComplaints.some((element) => element.SNOMED_CT_CODE === complaint?.SNOMED_CT_CODE)
     })
 
     deleteDataSamples(removedComplaints)
@@ -218,7 +217,6 @@ const styles = StyleSheet.create({
   popup: {
     width: '100%',
     marginTop: HEIGHT_MODAL * 0.05,
-    // height: HEIGHT_MODAL,
     backgroundColor: '#FFFDFE',
     borderTopRightRadius: 15,
     borderTopLeftRadius: 15,

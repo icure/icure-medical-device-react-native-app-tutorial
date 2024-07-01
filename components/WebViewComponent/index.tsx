@@ -10,7 +10,7 @@ export const WebViewComponent = ({ sitekey, onFinish }: WebViewComponentProps): 
   return (
     <WebView
       originWhitelist={['*']}
-      style={{ width: '100%', height: 70, borderWidth: 1, borderColor: 'red' }}
+      style={{ width: '100%', height: 70 }}
       source={{
         html: `
           <!DOCTYPE html>

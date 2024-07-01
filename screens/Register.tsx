@@ -9,13 +9,16 @@ import { setRegistrationInformation, setToken, startAuthentication, completeAuth
 import { WebViewComponent } from '../components/WebViewComponent'
 import { createSelector } from '@reduxjs/toolkit'
 import { routes } from '../navigation/Routes'
+import { PetraState } from '../config/PetraState'
+import { CustomActivityIndicator } from '../components/CustomActivityIndicator'
 
-const reduxSelector = createSelector(
-  (state: { medTechApi: MedTechApiState }) => state.medTechApi,
-  (medTechApi: MedTechApiState) => ({
-    online: medTechApi.online,
-  }),
-)
+const selectMedTechApiData = (state: { medTechApi: MedTechApiState }) => state.medTechApi
+const selectPetraData = (state: { petra: PetraState }) => state.petra
+
+const combinedSelector = createSelector([selectMedTechApiData, selectPetraData], (medTechApi: MedTechApiState, petra: PetraState) => ({
+  online: medTechApi.online,
+  loginProcessStarted: petra?.loginProcessStarted,
+}))
 
 export const Register = (): JSX.Element => {
   const {
@@ -34,7 +37,7 @@ export const Register = (): JSX.Element => {
   const dispatch = useAppDispatch()
   const [isWaitingForCode, setWaitingForCode] = useState(false)
 
-  const { online } = useAppSelector(reduxSelector)
+  const { online, loginProcessStarted } = useAppSelector(combinedSelector)
 
   useEffect(() => {
     if (online) {
@@ -55,69 +58,72 @@ export const Register = (): JSX.Element => {
   }
 
   return (
-    <ScrollView style={styles.registerScreen}>
-      <View style={styles.contentHolder}>
-        <Image style={styles.logo} source={require('../assets/images/logo.png')} />
-        <Text style={styles.heading}>Registration</Text>
-        <View style={styles.inputsContainer}>
-          <Controller
-            control={control}
-            rules={{
-              required: true,
-            }}
-            render={({ field: { onChange, onBlur, value } }) => <RoundedInput label="First name" onBlur={onBlur} onChange={onChange} value={value} isRequired />}
-            name="userFirstName"
-          />
-          {errors.userFirstName && <ErrorMessage text="This field is required." />}
-          <Controller
-            control={control}
-            rules={{
-              required: true,
-            }}
-            render={({ field: { onChange, onBlur, value } }) => <RoundedInput label="Last name" onBlur={onBlur} onChange={onChange} value={value} isRequired />}
-            name="userLastName"
-          />
-          {errors.userLastName && <ErrorMessage text="This field is required." />}
-          <Controller
-            control={control}
-            rules={{
-              required: true,
-            }}
-            render={({ field: { onChange, onBlur, value } }) => <RoundedInput label="Email or phone number" onBlur={onBlur} onChange={onChange} value={value} isRequired />}
-            name="userEmail"
-          />
-          {errors.userEmail && <ErrorMessage text="This field is required." />}
+    <>
+      {loginProcessStarted && <CustomActivityIndicator />}
+      <View style={styles.registerScreen}>
+        <View style={styles.contentHolder}>
+          <Image style={styles.logo} source={require('../assets/images/logo.png')} />
+          <Text style={styles.heading}>Registration</Text>
+          <View style={styles.inputsContainer}>
+            <Controller
+              control={control}
+              rules={{
+                required: true,
+              }}
+              render={({ field: { onChange, onBlur, value } }) => <RoundedInput label="First name" onBlur={onBlur} onChange={onChange} value={value} isRequired />}
+              name="userFirstName"
+            />
+            {errors.userFirstName && <ErrorMessage text="This field is required." />}
+            <Controller
+              control={control}
+              rules={{
+                required: true,
+              }}
+              render={({ field: { onChange, onBlur, value } }) => <RoundedInput label="Last name" onBlur={onBlur} onChange={onChange} value={value} isRequired />}
+              name="userLastName"
+            />
+            {errors.userLastName && <ErrorMessage text="This field is required." />}
+            <Controller
+              control={control}
+              rules={{
+                required: true,
+              }}
+              render={({ field: { onChange, onBlur, value } }) => <RoundedInput label="Email or phone number" onBlur={onBlur} onChange={onChange} value={value} isRequired />}
+              name="userEmail"
+            />
+            {errors.userEmail && <ErrorMessage text="This field is required." />}
+
+            {isWaitingForCode ? (
+              <>
+                <Controller
+                  control={control}
+                  rules={{
+                    required: true,
+                  }}
+                  render={({ field: { onChange, onBlur, value } }) => <RoundedInput label="Code" onBlur={onBlur} onChange={onChange} value={value} isRequired />}
+                  name="userCode"
+                />
+                {errors.userCode && <ErrorMessage text="This field is required." />}
+              </>
+            ) : null}
+          </View>
+
+          <View style={styles.webviewContainer}>
+            <WebViewComponent sitekey={process.env.EXPO_PUBLIC_FRIENDLY_CAPTCHA_SITE_KEY!} onFinish={(value) => dispatch(setRecaptcha({ recaptcha: value }))} />
+          </View>
 
           {isWaitingForCode ? (
-            <>
-              <Controller
-                control={control}
-                rules={{
-                  required: true,
-                }}
-                render={({ field: { onChange, onBlur, value } }) => <RoundedInput label="Code" onBlur={onBlur} onChange={onChange} value={value} isRequired />}
-                name="userCode"
-              />
-              {errors.userCode && <ErrorMessage text="This field is required." />}
-            </>
-          ) : null}
-        </View>
+            <RoundedButton title="Register" onClick={handleSubmit(onRegister)} />
+          ) : (
+            <RoundedButton title="Receive a one time code" onClick={handleSubmit(onAskCode)} />
+          )}
 
-        <View style={styles.webviewContainer}>
-          <WebViewComponent sitekey={process.env.EXPO_PUBLIC_FRIENDLY_CAPTCHA_SITE_KEY!} onFinish={(value) => dispatch(setRecaptcha({ recaptcha: value }))} />
-        </View>
-
-        {isWaitingForCode ? (
-          <RoundedButton title="Register" onClick={handleSubmit(onRegister)} />
-        ) : (
-          <RoundedButton title="Receive a one time code" onClick={handleSubmit(onAskCode)} />
-        )}
-
-        <View style={styles.textHelperContainer}>
-          <TextHelper text="Already have an account?" url="/" title="Log in" />
+          <View style={styles.textHelperContainer}>
+            <TextHelper text="Already have an account?" url="/" title="Log in" />
+          </View>
         </View>
       </View>
-    </ScrollView>
+    </>
   )
 }
 
@@ -154,11 +160,6 @@ const styles = StyleSheet.create({
   },
   webviewContainer: {
     width: '100%',
-    height: 75,
     marginBottom: 24,
-    backgroundColor: 'red',
-    borderWidth: 1,
-    borderColor: '#A2A4BE',
-    borderRadius: 25,
   },
 })
