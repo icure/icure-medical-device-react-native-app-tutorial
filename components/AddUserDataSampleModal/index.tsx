@@ -116,22 +116,20 @@ export const AddUserDataSampleModal: React.FC<AddUserDataSampleModalProps> = ({
 
     const addedComplaints = onlyCheckedComplaints?.filter((item) => !selectedComplaintsCodes?.includes(item.SNOMED_CT_CODE))
 
-    const removedComplaints = currentComplaintsDataSamples?.filter((item) => {
-      const complaint = complaintsData.find((complaintObj) => complaintObj.SNOMED_CT_CODE === [...item.codes][0].code)
-      return !onlyCheckedComplaints.some((element) => element.SNOMED_CT_CODE === complaint?.SNOMED_CT_CODE)
-    })
+    const removedComplaints =
+      currentComplaintsDataSamples?.filter((item) => {
+        const complaint = complaintsData.find((complaintObj) => complaintObj.SNOMED_CT_CODE === [...item.codes][0].code)
+        return !onlyCheckedComplaints.some((element) => element.SNOMED_CT_CODE === complaint?.SNOMED_CT_CODE)
+      }) ?? []
 
-    deleteDataSamples(removedComplaints)
+    const removedDataSamples = removedComplaints.concat(currentNotesDataSample?.content?.['en']?.stringValue && !notes ? [currentNotesDataSample] : [])
+    if (removedDataSamples.length) deleteDataSamples(removedDataSamples)
 
-    if (currentNotesDataSample?.content?.['en']?.stringValue && !notes) {
-      deleteDataSamples([currentNotesDataSample])
-    } else {
-      createOrUpdateDataSamples(notes?.length && currentNotesDataSample?.content?.['en']?.stringValue !== notes ? [userNotesDataSample] : [])
-    }
+    const createdOrUpdatedDataSamples = (notes?.length && currentNotesDataSample?.content?.['en']?.stringValue !== notes ? [userNotesDataSample] : [])
+      .concat([userPeriodDataSample])
+      .concat(addedComplaints.map((item) => getUserComplaintDataSample(item.SNOMED_CT_CODE)))
+    if (createdOrUpdatedDataSamples.length) createOrUpdateDataSamples(createdOrUpdatedDataSamples)
 
-    // USE MUTATION TO CREATE A DATASAMPLE
-    createOrUpdateDataSamples([userPeriodDataSample])
-    createOrUpdateDataSamples(addedComplaints.map((item) => getUserComplaintDataSample(item.SNOMED_CT_CODE)))
     onSave()
   }
   return (
