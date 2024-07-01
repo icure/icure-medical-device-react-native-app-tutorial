@@ -113,7 +113,7 @@ export const startAuthentication = createAsyncThunk('medTechApi/startAuthenticat
     .withMsgGwSpecId(process.env.EXPO_PUBLIC_EXTERNAL_SERVICES_SPEC_ID!)
     .withAuthProcessByEmailId(process.env.EXPO_PUBLIC_EMAIL_AUTHENTICATION_PROCESS_ID!)
     .withStorage(storage)
-    .withICureBaseUrl('https://api.icure.cloud')
+    .withICureBaseUrl('https://krakenad.taktik.to')
     .build()
 
   const captchaType = 'friendly-captcha'
@@ -189,7 +189,7 @@ export const login = createAsyncThunk('medTechApi/login', async (_, { getState, 
     .withAuthProcessByEmailId(process.env.EXPO_PUBLIC_EMAIL_AUTHENTICATION_PROCESS_ID!)
     .withUserName(email)
     .withPassword(token)
-    .withICureBaseUrl('https://api.icure.cloud')
+    .withICureBaseUrl('https://krakenad.taktik.to')
     .build()
   const user = await api.userApi.getLoggedUser()
 

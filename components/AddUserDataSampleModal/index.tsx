@@ -55,7 +55,7 @@ export const AddUserDataSampleModal: React.FC<AddUserDataSampleModalProps> = ({
   const [notes, setNotes] = useState(currentNotesDataSample?.content?.['en']?.stringValue ?? undefined)
 
   // TODO: should be more precise
-  const valueDate = +format(new Date(), 'yyyyMMddhhmmss')
+  const valueDate = +format(new Date(), 'yyyyMMdd000000')
   const handleClose = () => {
     onClose()
   }

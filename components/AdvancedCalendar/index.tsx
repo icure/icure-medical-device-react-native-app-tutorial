@@ -86,6 +86,7 @@ export const AdvancedCalendar: React.FC = () => {
   }
 
   const predictedPeriodDates = useMemo(() => {
+    return undefined
     if (allFlowLevelDataSamples && !allFlowLevelDataSamplesIsLoading) {
       const lastThreeCycles = [...(getCyclesDates(allFlowLevelDataSamples, allFlowLevelDataSamplesIsLoading) ?? [])]?.reverse().slice(1, 4)
 

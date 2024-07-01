@@ -25,7 +25,7 @@ export const Home = () => {
         </TouchableOpacity>
       </View>
       <AdvancedCalendar />
-      <CyclesHistory />
+      {/*<CyclesHistory />*/}
       <Modal
         animationType="slide"
         transparent={true}

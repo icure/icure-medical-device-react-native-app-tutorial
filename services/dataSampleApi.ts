@@ -78,8 +78,9 @@ export const dataSampleApiRtk = createApi({
           }
         })
       },
-      invalidatesTags: (res: IDataSample[] | undefined) =>
-        res
+      invalidatesTags: (res: IDataSample[] | undefined) => {
+        console.log('invalidatesTags', res)
+        return res?.length
           ? [
               { type: 'DataSample', id: 'all' },
               ...res.map((ds) => {
@@ -89,7 +90,8 @@ export const dataSampleApiRtk = createApi({
                 } as { type: 'DataSample'; id: string }
               }),
             ]
-          : [],
+          : []
+      },
     }),
     getDataSampleBetween2Dates: builder.query<
       IPaginatedList<IDataSample>,
