@@ -41,8 +41,8 @@ export const AdvancedCalendar: React.FC = () => {
   const [createOrUpdateDataSamples, { isLoading: isCreateOrUpdateDataSamplesLoading }] = useCreateOrUpdateDataSamplesMutation()
 
   const [deleteDataSamples, { isLoading: isDeleteDataSamplesLoading }] = useDeleteDataSamplesMutation()
-  const { data: flowLevelComplaintsAndNotesDataSamplesBetween2Dates, isLoading: flowLevelComplaintsAndNotesDataSamplesBetween2DatesIsLoading } = useGetDataSampleBetween2DatesQuery(
-    {
+  const filter = useMemo(
+    () => ({
       tagCodes: [
         { tagType: 'LOINC', tagCode: '49033-4' },
         { tagType: 'LOINC', tagCode: '75322-8' },
@@ -50,7 +50,11 @@ export const AdvancedCalendar: React.FC = () => {
       ],
       startDate: currentMonthFirstDate ?? 0,
       endDate: nextMonthFirstDate ?? 0,
-    },
+    }),
+    [currentMonthFirstDate, nextMonthFirstDate],
+  )
+  const { data: flowLevelComplaintsAndNotesDataSamplesBetween2Dates, isLoading: flowLevelComplaintsAndNotesDataSamplesBetween2DatesIsLoading } = useGetDataSampleBetween2DatesQuery(
+    filter,
     { skip: !currentMonthFirstDate || !nextMonthFirstDate },
   )
   const { data: allFlowLevelDataSamples, isLoading: allFlowLevelDataSamplesIsLoading } = useGetDataSampleByTagTypeQuery({
