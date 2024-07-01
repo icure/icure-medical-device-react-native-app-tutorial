@@ -49,7 +49,7 @@ export const CycleItem: React.FC<CycleItemProps> = ({ cycle, expanded }) => {
     endDate: nextCycleFirstDay,
   })
 
-  const [dataSamples, setDataSamples] = useState<{ flowLevel: IDataSample[]; complaints: DataSample[]; notes: DataSample[] } | undefined>()
+  const [dataSamples, setDataSamples] = useState<{ flowLevel: IDataSample[]; complaints: IDataSample[]; notes: IDataSample[] } | undefined>()
 
   useEffect(() => {
     if (!!flowLevelComplaintsAndNotesDataSamplesBetween2Dates) {
@@ -67,7 +67,7 @@ export const CycleItem: React.FC<CycleItemProps> = ({ cycle, expanded }) => {
 
   const getTodayFlowLevelData = (currentDay: Date) => {
     if (!!dataSamples) {
-      return dataSamples.flowLevel.find((item) => item.valueDate === getDayInNumberFormat(currentDay) && item.content?.en?.measureValue?.value > 0)
+      return dataSamples.flowLevel.find((item) => item.valueDate === getDayInNumberFormat(currentDay) && (item.content?.en?.measureValue?.value ?? 0) > 0)
     }
   }
 
@@ -100,7 +100,7 @@ export const CycleItem: React.FC<CycleItemProps> = ({ cycle, expanded }) => {
             ` (${formatDistanceStrict(getDayInDateFormat(currentCycleFirstDay), getDayInDateFormat(currentCycleLastDay), { unit: 'day' })})`
           : getFormatedDaysTitle(currentCycleFirstDay) + ' - ' + getFormatedDaysTitle(currentCycleLastDay)}
       </Text>
-      <Text style={cycleItemStyles.subtitle}>{dataSamples?.flowLevel?.filter((item) => item?.content?.en?.measureValue?.value > 0).length}-day period</Text>
+      <Text style={cycleItemStyles.subtitle}>{dataSamples?.flowLevel?.filter((item) => (item?.content?.en?.measureValue?.value ?? 0) > 0).length}-day period</Text>
       <View style={cycleItemStyles.daysContainer}>
         {daysOfTheCycle.map((item, index) => {
           const day = format(new Date(item), 'dd')
@@ -149,7 +149,7 @@ export const CycleItem: React.FC<CycleItemProps> = ({ cycle, expanded }) => {
                         <Image style={cycleItemStyles.symbolsIcn} source={require('../../../assets/images/circle.png')} />
                       </View>
                       <Text style={[globalStyles.baseText, cycleItemStyles.symbolDayTitle]}>{day}:</Text>
-                      <View style={cycleItemStyles.flowLevelContainer}>{getDropsComponent(userFlowLevelData.content.en.measureValue.value)}</View>
+                      <View style={cycleItemStyles.flowLevelContainer}>{getDropsComponent(userFlowLevelData.content.en?.measureValue?.value ?? 0)}</View>
                     </View>
                   ),
 
@@ -182,7 +182,7 @@ export const CycleItem: React.FC<CycleItemProps> = ({ cycle, expanded }) => {
                       </View>
                       <Text style={[globalStyles.baseText, cycleItemStyles.symbolDayTitle]}>{day}:</Text>
                       <View style={cycleItemStyles.complientsTitlesList}>
-                        <Text style={cycleItemStyles.complientsTitle}>{userNotesData?.content.en.stringValue}</Text>
+                        <Text style={cycleItemStyles.complientsTitle}>{userNotesData?.content.en?.stringValue ?? ''}</Text>
                       </View>
                     </View>
                   ),

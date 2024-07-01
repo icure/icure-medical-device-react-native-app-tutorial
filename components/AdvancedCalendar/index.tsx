@@ -51,6 +51,7 @@ export const AdvancedCalendar: React.FC = () => {
       startDate: currentMonthFirstDate ?? 0,
       endDate: nextMonthFirstDate ?? 0,
     },
+    { skip: !currentMonthFirstDate || !nextMonthFirstDate },
   )
   const { data: allFlowLevelDataSamples, isLoading: allFlowLevelDataSamplesIsLoading } = useGetDataSampleByTagTypeQuery({
     tagType: 'LOINC',
