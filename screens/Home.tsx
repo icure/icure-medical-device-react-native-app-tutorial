@@ -11,7 +11,7 @@ const WIDTH_MODAL = Dimensions.get('window').width
 const HEIGHT_MODAL = Dimensions.get('window').height
 
 export const Home = () => {
-  const [symbolsExplanationmodalVisible, setSymbolsExplanationModalVisible] = useState(false)
+  const [symbolsExplanationModalVisible, setSymbolsExplanationModalVisible] = useState(false)
 
   const { data: patient } = useCurrentPatientQuery()
 
@@ -25,16 +25,16 @@ export const Home = () => {
         </TouchableOpacity>
       </View>
       <AdvancedCalendar />
-      {/*<CyclesHistory />*/}
+      <CyclesHistory />
       <Modal
         animationType="slide"
         transparent={true}
-        visible={symbolsExplanationmodalVisible}
+        visible={symbolsExplanationModalVisible}
         onRequestClose={() => {
-          setSymbolsExplanationModalVisible(!symbolsExplanationmodalVisible)
+          setSymbolsExplanationModalVisible(!symbolsExplanationModalVisible)
         }}
       >
-        <SymbolsExplanationModal onClose={() => setSymbolsExplanationModalVisible(!symbolsExplanationmodalVisible)} />
+        <SymbolsExplanationModal onClose={() => setSymbolsExplanationModalVisible(!symbolsExplanationModalVisible)} />
       </Modal>
     </ScrollView>
   )

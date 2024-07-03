@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { ScrollView, StyleSheet, Image, Text, View, Dimensions, Modal, TouchableOpacity, ActivityIndicator } from 'react-native'
 
 import { useGetDataSampleByTagTypeQuery } from '../../services/dataSampleApi'
@@ -10,22 +10,24 @@ const HEIGHT_MODAL = Dimensions.get('window').height
 
 export const CyclesHistory = () => {
   const [showCyclesHistoryWindow, setShowCyclesHistoryWindow] = useState(false)
-
-  const { data: allFlowLevelDataSamples, isLoading: allFlowLevelDataSamplesIsLoading } = useGetDataSampleByTagTypeQuery({
-    tagType: 'LOINC',
-    tagCode: '49033-4',
-  })
+  const periodFilter = useMemo(
+    () => ({
+      tagType: 'LOINC',
+      tagCode: '49033-4',
+    }),
+    [],
+  )
+  const { data: periodDataSamples, isLoading: periodDataSamplesAreLoading } = useGetDataSampleByTagTypeQuery(periodFilter)
 
   return (
     <>
-      {allFlowLevelDataSamplesIsLoading ? (
+      {periodDataSamplesAreLoading ? (
         <ActivityIndicator color="#151B5D" />
       ) : (
         <View style={blockStyles.container}>
           <Text style={blockStyles.heading}>My cycles</Text>
           <View style={blockStyles.innerContainer}>
-            {getCyclesDates(allFlowLevelDataSamples ?? { rows: [] }, allFlowLevelDataSamplesIsLoading) === undefined ||
-            getCyclesDates(allFlowLevelDataSamples ?? { rows: [] }, allFlowLevelDataSamplesIsLoading)?.length === 0 ? (
+            {getCyclesDates(periodDataSamples)?.length === 0 ? (
               <View style={blockStyles.placeholderContainer}>
                 <Text style={blockStyles.placeholderText}>There is no Cycle History data yet. </Text>
                 <Text style={blockStyles.placeholderText}>Please, add you period data to the calendar above.</Text>
@@ -38,7 +40,7 @@ export const CyclesHistory = () => {
                     <Image style={blockStyles.arrowIcn} source={require('../../assets/images/purple-arrow-right.png')} />
                   </View>
                 </TouchableOpacity>
-                {[...(getCyclesDates(allFlowLevelDataSamples ?? { rows: [] }, allFlowLevelDataSamplesIsLoading ?? { rows: [] }) ?? [])]
+                {[...getCyclesDates(periodDataSamples)]
                   ?.reverse()
                   .slice(0, 3)
                   .map((item, index) => (
@@ -67,11 +69,10 @@ export const CyclesHistory = () => {
               </TouchableOpacity>
             </View>
             <ScrollView contentContainerStyle={cycleHistoryPopupStyles.scrollableContainer}>
-              {getCyclesDates(allFlowLevelDataSamples ?? { rows: [] }, allFlowLevelDataSamplesIsLoading) === undefined ||
-              getCyclesDates(allFlowLevelDataSamples ?? { rows: [] }, allFlowLevelDataSamplesIsLoading)?.length === 0 ? (
+              {getCyclesDates(periodDataSamples)?.length === 0 ? (
                 <ActivityIndicator color="#151B5D" />
               ) : (
-                [...getCyclesDates(allFlowLevelDataSamples ?? { rows: [] }, allFlowLevelDataSamplesIsLoading)]?.reverse().map((item, index) => (
+                [...getCyclesDates(periodDataSamples)]?.reverse().map((item, index) => (
                   <View key={index} style={cycleHistoryPopupStyles.cycleItemContainer}>
                     <CycleItem expanded cycle={item} />
                   </View>

@@ -2,7 +2,6 @@ import React, { useState, useRef } from 'react'
 import { View, TextInput, StyleSheet, Image } from 'react-native'
 
 import { IconButton } from '../IconButton'
-import { globalStyles } from '../../../styles/GlobalStyles'
 
 export type SearchSquareInputProps = {
   onSubmit?: (value?: string) => void
@@ -32,9 +31,6 @@ export const SearchSquareInput: React.FC<SearchSquareInputProps> = ({ onSubmit, 
 
   const handleSubmit = (value: string) => {
     onSubmit?.(value)
-    // textInputReference.current.blur();
-    // textInputReference.current.clear();
-    // setInputTouched(false);
   }
 
   return (
@@ -61,9 +57,7 @@ export const SearchSquareInput: React.FC<SearchSquareInputProps> = ({ onSubmit, 
       </View>
       {isInputTouched && (
         <View style={styles.buttonGroup}>
-          <View style={globalStyles.mr4}>
-            <IconButton icon="arrow" onClick={() => handleSubmit(searchValue)} />
-          </View>
+          <IconButton icon="arrow" onClick={() => handleSubmit(searchValue)} />
           <IconButton icon="close" onClick={handleClear} />
         </View>
       )}
@@ -76,7 +70,6 @@ const styles = StyleSheet.create({
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
     justifyContent: 'flex-end',
   },
   inputContainer: {
@@ -84,8 +77,8 @@ const styles = StyleSheet.create({
     height: 42,
     borderWidth: 1,
     borderColor: '#A2A4BE',
-    borderRadius: 10,
-    paddingLeft: 12,
+    borderRadius: 25,
+    paddingLeft: 15,
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -119,5 +112,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginLeft: 4,
     paddingRight: 8,
+    gap: 4,
   },
 })

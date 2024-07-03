@@ -5,6 +5,7 @@ import { Register } from '../screens/Register'
 import { Login } from '../screens/Login'
 import { Home } from '../screens/Home'
 import { routes } from './Routes'
+import { CustomActivityIndicator } from '../components/CustomActivityIndicator'
 
 export const Router = () => (
   <NativeRouter>

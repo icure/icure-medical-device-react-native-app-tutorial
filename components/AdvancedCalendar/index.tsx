@@ -1,26 +1,19 @@
 import React, { useEffect, useState, useMemo } from 'react'
-import { Image, ImageBackground, Modal, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native'
+import { Image, Modal, StyleSheet, Text, View } from 'react-native'
 import { Calendar } from 'react-native-calendars'
-import { format, lastDayOfMonth, formatDistanceStrict, add, max, isWithinInterval, isAfter } from 'date-fns'
+import { format, lastDayOfMonth, formatDistanceStrict, add, max, isWithinInterval } from 'date-fns'
 
-import { AddUserDataSampleModal } from '../AddUserDataSampleModal'
+import { AddDataSamplesModal } from '../AddDataSamplesModal'
 import {
   useCreateOrUpdateDataSamplesMutation,
   useDeleteDataSamplesMutation,
   useGetDataSampleBetween2DatesQuery,
   useGetDataSampleByTagTypeQuery,
 } from '../../services/dataSampleApi'
-import { getCyclesDates, getDayInDateFormat, getNextDay, getDayInNumberFormat } from '../../utils/helpers'
-import { DataSample, IDataSample } from '@icure/medical-device-sdk'
+import { getCyclesDates, getDayInDateFormat, getNextDay, getDayInNumberFormat, getShortNameOfTheMonth } from '../../utils/helpers'
+import { IDataSample } from '@icure/medical-device-sdk'
 import { CustomActivityIndicator } from '../CustomActivityIndicator'
-
-type DayOfTheMonthProps = {
-  dayData: any
-  state?: string
-  flowLevel?: number
-  hasComplaint?: boolean
-  isPredictedPeriod?: boolean
-}
+import { CalendarCustomDay } from './CalendarCustomDay'
 
 export const AdvancedCalendar: React.FC = () => {
   const [addUserDataSampleModalVisible, setAddUserDataSampleModalVisible] = useState(false)
@@ -28,7 +21,6 @@ export const AdvancedCalendar: React.FC = () => {
   const [selectedDateTitle, setSelectedDateTitle] = useState('')
   const [dataSamples, setDataSamples] = useState<{ flowLevel: IDataSample[]; complaints: IDataSample[]; notes: IDataSample[] } | undefined>()
 
-  const monthNameFormatter = (dataFormat: 'short' | 'long') => new Intl.DateTimeFormat('en', { month: dataFormat })
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [currentMonthFirstDate, setCurrentMonthFirstDate] = useState<number>()
   const [nextMonthFirstDate, setNextMonthFirstDate] = useState<number>()
@@ -41,7 +33,7 @@ export const AdvancedCalendar: React.FC = () => {
   const [createOrUpdateDataSamples, { isLoading: isCreateOrUpdateDataSamplesLoading }] = useCreateOrUpdateDataSamplesMutation()
 
   const [deleteDataSamples, { isLoading: isDeleteDataSamplesLoading }] = useDeleteDataSamplesMutation()
-  const predictionFilter = useMemo(
+  const periodFilter = useMemo(
     () => ({
       tagType: 'LOINC',
       tagCode: '49033-4',
@@ -64,14 +56,14 @@ export const AdvancedCalendar: React.FC = () => {
     monthFilter,
     { skip: !currentMonthFirstDate || !nextMonthFirstDate },
   )
-  const { data: allFlowLevelDataSamples, isLoading: allFlowLevelDataSamplesIsLoading } = useGetDataSampleByTagTypeQuery(predictionFilter)
+  const { data: periodDataSamples, isLoading: periodDataSamplesIsLoading } = useGetDataSampleByTagTypeQuery(periodFilter)
 
   useEffect(() => {
     if (!!flowLevelComplaintsAndNotesDataSamplesBetween2Dates) {
       const dataSamplesToProcess = flowLevelComplaintsAndNotesDataSamplesBetween2Dates?.rows
-      const flowLevelDataSample = dataSamplesToProcess.filter((ds) => [...ds.labels].some((it) => it.type === 'LOINC' && it.code === '49033-4'))
-      const complainsDataSample = dataSamplesToProcess.filter((ds) => [...ds.labels].some((it) => it.type === 'LOINC' && it.code === '75322-8'))
-      const notesDataSample = dataSamplesToProcess.filter((ds) => [...ds.labels].some((it) => it.type === 'LOINC' && it.code === '34109-9'))
+      const flowLevelDataSample = dataSamplesToProcess.filter((ds) => ds.labels.some((it) => it.type === 'LOINC' && it.code === '49033-4'))
+      const complainsDataSample = dataSamplesToProcess.filter((ds) => ds.labels.some((it) => it.type === 'LOINC' && it.code === '75322-8'))
+      const notesDataSample = dataSamplesToProcess.filter((ds) => ds.labels.some((it) => it.type === 'LOINC' && it.code === '34109-9'))
       setDataSamples({ flowLevel: flowLevelDataSample, complaints: complainsDataSample, notes: notesDataSample })
     }
   }, [flowLevelComplaintsAndNotesDataSamplesBetween2Dates])
@@ -84,19 +76,13 @@ export const AdvancedCalendar: React.FC = () => {
     }
   }
 
-  const getShortNameOfTheMonth = (today: Date, direction: 'prev' | 'next') => {
-    const monthData = direction === 'prev' ? new Date(today.getFullYear(), today.getMonth() - 1, 1) : new Date(today.getFullYear(), today.getMonth() + 1, 1)
-    return monthNameFormatter('short').format(new Date(monthData)) + ',' + monthData.getFullYear()
-  }
-
   const predictedPeriodDates = useMemo(() => {
-    return undefined
-    if (allFlowLevelDataSamples && !allFlowLevelDataSamplesIsLoading) {
-      const lastThreeCycles = [...(getCyclesDates(allFlowLevelDataSamples, allFlowLevelDataSamplesIsLoading) ?? [])]?.reverse().slice(1, 4)
+    if (periodDataSamples && !periodDataSamplesIsLoading) {
+      const lastThreeCycles = [...getCyclesDates(periodDataSamples)]?.reverse().slice(1, 4)
 
       if (lastThreeCycles.length !== 0) {
-        const lastFlowLevelDataSampleDate = max(
-          allFlowLevelDataSamples?.rows.filter((item) => (item?.content?.['en']?.measureValue?.value ?? 0) > 0).map((item) => getDayInDateFormat(item.valueDate ?? 0)),
+        const lastPeriodDataSampleDate = max(
+          periodDataSamples?.rows.filter((item) => (item?.content?.['en']?.measureValue?.value ?? 0) > 0).map((item) => getDayInDateFormat(item.valueDate ?? 0)),
         )
         const getCycleDuration = (currentCycleFirstDay: number, currentCycleLastDay: number) => {
           const duration = formatDistanceStrict(getDayInDateFormat(currentCycleFirstDay), getDayInDateFormat(currentCycleLastDay), { unit: 'day' }).split(' ')[0]
@@ -105,81 +91,20 @@ export const AdvancedCalendar: React.FC = () => {
         const totalDurationOfLastThreeCycles = lastThreeCycles.reduce((accamulator, item) => accamulator + getCycleDuration(item.startDate ?? 0, item.endDate), 0)
         const averageCycleDuration = lastThreeCycles.length !== 0 ? Math.floor(totalDurationOfLastThreeCycles / lastThreeCycles.length) : 28
 
-        const firstDayOfThePredictedPeriod = add(lastFlowLevelDataSampleDate, { days: averageCycleDuration })
+        const firstDayOfThePredictedPeriod = add(lastPeriodDataSampleDate, { days: averageCycleDuration })
         // let's say the duration of the Predicted period is 7 days, which means that the users period can start at any of those days
-        const lastDayOfThePredictedPeriod = add(firstDayOfThePredictedPeriod, { days: 7 })
+        const lastDayOfThePredictedPeriod = add(firstDayOfThePredictedPeriod, { days: 5 })
 
         return { start: firstDayOfThePredictedPeriod, end: lastDayOfThePredictedPeriod }
       }
     }
     return undefined
-  }, [allFlowLevelDataSamples, allFlowLevelDataSamplesIsLoading])
+  }, [periodDataSamples, periodDataSamplesIsLoading])
   const isTodayPredictedPeriodDay = (today?: Date) => {
     if (!!predictedPeriodDates && !!today) {
       return isWithinInterval(today, predictedPeriodDates)
     }
     return false
-  }
-
-  const DayOfTheMonth: React.FC<DayOfTheMonthProps> = ({ dayData, state, flowLevel, hasComplaint, isPredictedPeriod }) => {
-    const { day, dateString } = dayData
-    const isToday = (revievedDate: Date) => {
-      const today = new Date()
-      return today.getFullYear() === revievedDate.getFullYear() && today.getMonth() === revievedDate.getMonth() && today.getDate() === revievedDate.getDate()
-    }
-    const getExtraTextStyle = () => {
-      if (!!flowLevel) {
-        return dayOfTheMonthStyles.periodDayTitle
-      } else if (state === 'disabled' || isAfter(new Date(dateString), new Date())) {
-        return dayOfTheMonthStyles.disabledDayTitle
-      }
-    }
-    const getExtraDayBgStyle = () => {
-      if (!!flowLevel) {
-        return dayOfTheMonthStyles.periodDayBg
-      }
-    }
-    const getExtraDayStyle = () => {
-      if (state === 'disabled' || isAfter(new Date(dateString), new Date())) {
-        return dayOfTheMonthStyles.disabledDay
-      } else if (isToday(new Date(dateString))) {
-        return dayOfTheMonthStyles.isToday
-      }
-    }
-    const getDropsComponent = (amount: number) => {
-      return Array(amount)
-        .fill(true)
-        .map((_, i) => <Image key={i} style={dayOfTheMonthStyles.drop} source={require('../../assets/images/drop.png')} />)
-    }
-
-    const handlePress = () => {
-      if (state !== 'disabled') {
-        const title = `${monthNameFormatter('long').format(new Date(dateString))}, ${new Date(dateString).getDate()}`
-        setSelectedDateTitle(title)
-        setSelectedDate(new Date(dateString))
-        setAddUserDataSampleModalVisible(true)
-      }
-    }
-
-    return (
-      <>
-        <TouchableOpacity onPress={handlePress} style={[dayOfTheMonthStyles.day, getExtraDayStyle()]}>
-          {isPredictedPeriod ? (
-            <ImageBackground source={require('../../assets/images/striped-bg.png')} style={dayOfTheMonthStyles.predictedPeriodBg}>
-              <Text style={dayOfTheMonthStyles.predictedPeriodDayTitle}>{day}</Text>
-            </ImageBackground>
-          ) : (
-            <View style={[dayOfTheMonthStyles.dayBg, getExtraDayBgStyle()]}>
-              <Text style={[dayOfTheMonthStyles.dayTitle, getExtraTextStyle()]}>{day}</Text>
-            </View>
-          )}
-          <View style={dayOfTheMonthStyles.markersContainer}>
-            {!!hasComplaint && !flowLevel && <Image style={dayOfTheMonthStyles.complaint} source={require('../../assets/images/triangle.png')} />}
-            {!!flowLevel && getDropsComponent(flowLevel)}
-          </View>
-        </TouchableOpacity>
-      </>
-    )
   }
 
   return (
@@ -192,7 +117,7 @@ export const AdvancedCalendar: React.FC = () => {
           setAddUserDataSampleModalVisible(!addUserDataSampleModalVisible)
         }}
       >
-        <AddUserDataSampleModal
+        <AddDataSamplesModal
           date={selectedDate}
           title={selectedDateTitle}
           onClose={() => setAddUserDataSampleModalVisible(!addUserDataSampleModalVisible)}
@@ -206,23 +131,30 @@ export const AdvancedCalendar: React.FC = () => {
         />
       </Modal>
       {flowLevelComplaintsAndNotesDataSamplesBetween2DatesIsLoading ||
-        allFlowLevelDataSamplesIsLoading ||
+        periodDataSamplesIsLoading ||
         isCreateOrUpdateDataSamplesLoading ||
         (isDeleteDataSamplesLoading && <CustomActivityIndicator />)}
       <View style={styles.advancedCalendar}>
         <Calendar
-          dayComponent={({ date, state }) => (
-            <DayOfTheMonth
-              dayData={date}
-              state={state}
-              flowLevel={getDataSamplesOnDate(dataSamples?.flowLevel, date ? new Date(date.dateString) : undefined)[0]?.content?.['en']?.measureValue?.value}
-              hasComplaint={
-                !!getDataSamplesOnDate(dataSamples?.complaints, date && new Date(date.dateString))?.length ||
-                !!getDataSamplesOnDate(dataSamples?.notes, date && new Date(date.dateString))[0]?.content?.['en']?.stringValue
-              }
-              isPredictedPeriod={isTodayPredictedPeriodDay(date && new Date(date.dateString))}
-            />
-          )}
+          dayComponent={({ date, state }) =>
+            date ? (
+              <CalendarCustomDay
+                dayData={date}
+                state={state}
+                flowLevel={getDataSamplesOnDate(dataSamples?.flowLevel, date ? new Date(date.dateString) : undefined)[0]?.content?.['en']?.measureValue?.value}
+                hasComplaint={
+                  !!getDataSamplesOnDate(dataSamples?.complaints, date && new Date(date.dateString))?.length ||
+                  !!getDataSamplesOnDate(dataSamples?.notes, date && new Date(date.dateString))[0]?.content?.['en']?.stringValue
+                }
+                isPredictedPeriod={isTodayPredictedPeriodDay(date && new Date(date.dateString))}
+                setSelectedDateTitle={setSelectedDateTitle}
+                setSelectedDate={setSelectedDate}
+                setAddUserDataSampleModalVisible={setAddUserDataSampleModalVisible}
+              />
+            ) : (
+              <View></View>
+            )
+          }
           renderArrow={(direction) => {
             return (
               <>
@@ -323,70 +255,5 @@ const styles = StyleSheet.create({
   },
   arrowRight: {
     marginLeft: 4,
-  },
-})
-
-const dayOfTheMonthStyles = StyleSheet.create({
-  day: {
-    width: 43,
-    height: 60,
-    backgroundColor: 'rgba(214, 223, 248, 0.6)',
-    borderRadius: 21,
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 6,
-  },
-  dayBg: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  dayTitle: {
-    width: 31,
-    height: 31,
-    fontSize: 14,
-    fontFamily: 'Nunito-Bold',
-    color: '#151B5D',
-    paddingTop: '20%',
-    textAlign: 'center',
-  },
-  disabledDayTitle: {
-    color: 'rgba(21, 27, 93, 0.6)',
-    fontFamily: 'Nunito-Regular',
-  },
-  isToday: {
-    borderColor: '#6273D9',
-    borderWidth: 2,
-  },
-  disabledDay: {
-    backgroundColor: 'rgba(242, 243, 254, 0.6)',
-  },
-  periodDayTitle: {
-    color: 'white',
-  },
-  periodDayBg: {
-    backgroundColor: '#D06676',
-    borderRadius: 50,
-  },
-  predictedPeriodDayTitle: {
-    color: 'white',
-    fontSize: 14,
-    fontFamily: 'Nunito-Bold',
-  },
-  predictedPeriodBg: {
-    width: 31,
-    height: 31,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  markersContainer: {
-    flexDirection: 'row',
-  },
-  complaint: {
-    width: 12,
-    height: 12,
-  },
-  drop: {
-    width: 8,
-    height: 8,
   },
 })

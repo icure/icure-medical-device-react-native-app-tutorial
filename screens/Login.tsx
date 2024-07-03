@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import { View, Image, Text, StyleSheet, ActivityIndicator, Dimensions } from 'react-native'
+import { View, Image, Text, StyleSheet } from 'react-native'
 import { useForm, Controller } from 'react-hook-form'
 import { useNavigate } from 'react-router-native'
 import { createSelector } from '@reduxjs/toolkit'
 
-import { RoundedInput, RoundedButton, TextHelper, ErrorMessage } from '../components/FormElements'
+import { CustomInput, Button, TextHelper, ErrorMessage } from '../components/FormElements'
 import { completeAuthentication, login, setEmail, setToken, startAuthentication, setRecaptcha, MedTechApiState } from '../services/api'
 import { useAppDispatch, useAppSelector } from '../redux/hooks'
 import { WebViewComponent } from '../components/WebViewComponent'
@@ -19,7 +19,7 @@ const combinedSelector = createSelector([selectMedTechApiData, selectPetraData],
   online: medTechApi.online,
   lsUsername: petra?.savedCredentials?.login,
   lsToken: petra?.savedCredentials?.token,
-  loginProcessStarted: petra?.loginProcessStarted,
+  loginProcessStarted: medTechApi.loginProcessStarted,
 }))
 
 export const Login = () => {
@@ -74,27 +74,39 @@ export const Login = () => {
           <Image style={styles.logo} source={require('../assets/images/logo.png')} />
           <Text style={styles.heading}>Login</Text>
           <View style={styles.inputsContainer}>
-            <Controller
-              control={control}
-              rules={{
-                required: true,
-              }}
-              render={({ field: { onChange, onBlur, value } }) => <RoundedInput label="Email or phone number" onBlur={onBlur} onChange={onChange} value={value} isRequired />}
-              name="userEmail"
-            />
-            {errors.userEmail && <ErrorMessage text="This field is required." />}
+            <View style={styles.input}>
+              <Controller
+                control={control}
+                rules={{
+                  required: {
+                    value: true,
+                    message: 'Email or phone number is required.',
+                  },
+                }}
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <CustomInput label="Email or phone number" onBlur={onBlur} onChange={onChange} value={value} isRequired error={!!errors.userEmail?.message} />
+                )}
+                name="userEmail"
+              />
+              {errors.userEmail?.message && <ErrorMessage text={errors.userEmail.message?.toString()} />}
+            </View>
             {isWaitingForCode ? (
-              <>
+              <View style={styles.input}>
                 <Controller
                   control={control}
                   rules={{
-                    required: true,
+                    required: {
+                      value: true,
+                      message: 'Confirmation code is required.',
+                    },
                   }}
-                  render={({ field: { onChange, onBlur, value } }) => <RoundedInput label="Code" onBlur={onBlur} onChange={onChange} value={value} isRequired />}
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <CustomInput label="Code" onBlur={onBlur} onChange={onChange} value={value} isRequired error={!!errors.userCode?.message} />
+                  )}
                   name="userCode"
                 />
-                {errors.userCode && <ErrorMessage text="This field is required." />}
-              </>
+                {errors.userCode?.message && <ErrorMessage text={errors.userCode.message?.toString()} />}
+              </View>
             ) : null}
           </View>
 
@@ -103,9 +115,9 @@ export const Login = () => {
           </View>
 
           {isWaitingForCode ? (
-            <RoundedButton title="Login" onClick={handleSubmit(performLogin)} />
+            <Button title="Login" onClick={handleSubmit(performLogin)} size="large" />
           ) : (
-            <RoundedButton title="Receive a one time code" onClick={handleSubmit(askForCode)} />
+            <Button title="Receive a one time code" onClick={handleSubmit(askForCode)} size="large" />
           )}
 
           <View style={styles.textHelperContainer}>
@@ -121,7 +133,7 @@ const styles = StyleSheet.create({
   registerScreen: {
     flex: 1,
     height: '100%',
-    paddingTop: 40,
+    paddingTop: 24,
     backgroundColor: '#FFFDFE',
   },
   heading: {
@@ -137,13 +149,17 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   logo: {
-    width: 201,
-    height: 201,
+    width: 150,
+    height: 150,
     marginBottom: 32,
   },
   inputsContainer: {
     width: '100%',
     marginBottom: 12,
+    gap: 16,
+  },
+  input: {
+    gap: 4,
   },
   textHelperContainer: {
     marginTop: 24,

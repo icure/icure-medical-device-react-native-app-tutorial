@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { StyleSheet, Image, Text, View, TouchableOpacity } from 'react-native'
 import { format, formatDistanceStrict, isEqual, eachDayOfInterval } from 'date-fns'
 
 import { globalStyles } from '../../../styles/GlobalStyles'
 import { useGetDataSampleBetween2DatesQuery } from '../../../services/dataSampleApi'
 import { getDayInDateFormat, getDayInNumberFormat, getNextDay } from '../../../utils/helpers'
-import { DataSample, IDataSample } from '@icure/medical-device-sdk'
+import { IDataSample } from '@icure/medical-device-sdk'
 import { complaintsData } from '../../../utils/constants'
 
 type CycleItemProps = {
@@ -17,7 +17,7 @@ type CycleItemProps = {
 }
 
 export const CycleItem: React.FC<CycleItemProps> = ({ cycle, expanded }) => {
-  const [showComplients, setShowComplients] = useState(false)
+  const [showComplaints, setShowComplaints] = useState(false)
   const getDropsComponent = (amount: number) => {
     return Array(amount)
       .fill(true)
@@ -26,40 +26,32 @@ export const CycleItem: React.FC<CycleItemProps> = ({ cycle, expanded }) => {
 
   const { startDate: currentCycleFirstDay, endDate: currentCycleLastDay } = cycle
 
-  const getFormatedDaysTitle = (date: number) => format(getDayInDateFormat(date), 'dd MMM')
+  const getFormattedDaysTitle = (date: number) => format(getDayInDateFormat(date), 'dd MMM')
 
   const nextCycleFirstDay = getDayInNumberFormat(getNextDay(getDayInDateFormat(currentCycleLastDay)))
+  const cycleFilter = useMemo(
+    () => ({
+      tagCodes: [
+        { tagType: 'LOINC', tagCode: '49033-4' },
+        { tagType: 'LOINC', tagCode: '75322-8' },
+        { tagType: 'LOINC', tagCode: '34109-9' },
+      ],
+      startDate: currentCycleFirstDay ?? 0,
+      endDate: nextCycleFirstDay ?? 0,
+    }),
+    [currentCycleFirstDay, nextCycleFirstDay],
+  )
 
-  const { data: flowLevelComplaintsAndNotesDataSamplesBetween2Dates, isLoading: flowLevelDataSampleBetween2DatesIsLoading } = useGetDataSampleBetween2DatesQuery({
-    tagCodes: [
-      {
-        tagType: 'LOINC',
-        tagCode: '49033-4',
-      },
-      {
-        tagType: 'LOINC',
-        tagCode: '75322-8',
-      },
-      {
-        tagType: 'LOINC',
-        tagCode: '34109-9',
-      },
-    ],
-    startDate: currentCycleFirstDay,
-    endDate: nextCycleFirstDay,
-  })
+  const { data: flowLevelComplaintsAndNotesDataSamplesBetween2Dates } = useGetDataSampleBetween2DatesQuery(cycleFilter)
 
   const [dataSamples, setDataSamples] = useState<{ flowLevel: IDataSample[]; complaints: IDataSample[]; notes: IDataSample[] } | undefined>()
 
   useEffect(() => {
     if (!!flowLevelComplaintsAndNotesDataSamplesBetween2Dates) {
       const dataSamplesToProcess = flowLevelComplaintsAndNotesDataSamplesBetween2Dates!.rows
-
-      const flowLevelDataSample = dataSamplesToProcess.filter((ds) => [...ds.labels].some((it) => it.type === 'LOINC' && it.code === '49033-4'))
-
-      const complainsDataSample = dataSamplesToProcess.filter((ds) => [...ds.labels].some((it) => it.type === 'LOINC' && it.code === '75322-8'))
-
-      const notesDataSample = dataSamplesToProcess.filter((ds) => [...ds.labels].some((it) => it.type === 'LOINC' && it.code === '34109-9'))
+      const flowLevelDataSample = dataSamplesToProcess.filter((ds) => ds.labels.some((it) => it.type === 'LOINC' && it.code === '49033-4'))
+      const complainsDataSample = dataSamplesToProcess.filter((ds) => ds.labels.some((it) => it.type === 'LOINC' && it.code === '75322-8'))
+      const notesDataSample = dataSamplesToProcess.filter((ds) => ds.labels.some((it) => it.type === 'LOINC' && it.code === '34109-9'))
 
       setDataSamples({ flowLevel: flowLevelDataSample, complaints: complainsDataSample, notes: notesDataSample })
     }
@@ -96,9 +88,9 @@ export const CycleItem: React.FC<CycleItemProps> = ({ cycle, expanded }) => {
         </Text>
         {isEqual(currentCycleLastDay, +format(new Date(), 'yyyyMMdd') * 1000000)
           ? 'Started ' +
-            getFormatedDaysTitle(currentCycleFirstDay) +
+            getFormattedDaysTitle(currentCycleFirstDay) +
             ` (${formatDistanceStrict(getDayInDateFormat(currentCycleFirstDay), getDayInDateFormat(currentCycleLastDay), { unit: 'day' })})`
-          : getFormatedDaysTitle(currentCycleFirstDay) + ' - ' + getFormatedDaysTitle(currentCycleLastDay)}
+          : getFormattedDaysTitle(currentCycleFirstDay) + ' - ' + getFormattedDaysTitle(currentCycleLastDay)}
       </Text>
       <Text style={cycleItemStyles.subtitle}>{dataSamples?.flowLevel?.filter((item) => (item?.content?.en?.measureValue?.value ?? 0) > 0).length}-day period</Text>
       <View style={cycleItemStyles.daysContainer}>
@@ -123,17 +115,17 @@ export const CycleItem: React.FC<CycleItemProps> = ({ cycle, expanded }) => {
       </View>
       {expanded && (
         <>
-          <TouchableOpacity style={[cycleItemStyles.cyclesHistoryLinkContainer, globalStyles.mt12]} onPress={() => setShowComplients(!showComplients)}>
-            <Text style={cycleItemStyles.cyclesHistoryLinkTitle}>{showComplients ? 'Hide complaints' : 'See complaints'}</Text>
+          <TouchableOpacity style={[cycleItemStyles.cyclesHistoryLinkContainer, globalStyles.mt12]} onPress={() => setShowComplaints(!showComplaints)}>
+            <Text style={cycleItemStyles.cyclesHistoryLinkTitle}>{showComplaints ? 'Hide complaints' : 'See complaints'}</Text>
             <View style={cycleItemStyles.arrowIcnContainer}>
-              {showComplients ? (
+              {showComplaints ? (
                 <Image style={cycleItemStyles.arrowIcn} source={require('../../../assets/images/smooth-close-purple.png')} />
               ) : (
                 <Image style={cycleItemStyles.arrowIcn} source={require('../../../assets/images/purple-arrow-right.png')} />
               )}
             </View>
           </TouchableOpacity>
-          {showComplients && (
+          {showComplaints && (
             <View style={globalStyles.mt8}>
               {daysOfTheCycle.map((dayWithTheData, dayWithTheDataIndex) => {
                 const day = format(new Date(dayWithTheData), 'dd MMM')
@@ -159,14 +151,14 @@ export const CycleItem: React.FC<CycleItemProps> = ({ cycle, expanded }) => {
                         <Image style={cycleItemStyles.symbolsIcn} source={require('../../../assets/images/triangle.png')} />
                       </View>
                       <Text style={[globalStyles.baseText, cycleItemStyles.symbolDayTitle]}>{day}:</Text>
-                      <View style={cycleItemStyles.complientsTitlesList}>
-                        {selectedComplaintsCodes?.map((complientCode, complientCodeIndex) => {
-                          const complaintsLabel = complaintsData.find((complientObj) => complientObj.SNOMED_CT_CODE === complientCode)?.label
+                      <View style={cycleItemStyles.complaintsTitlesList}>
+                        {selectedComplaintsCodes?.map((complaintCode, complaintCodeIndex) => {
+                          const complaintsLabel = complaintsData.find((complaintObj) => complaintObj.SNOMED_CT_CODE === complaintCode)?.label
                           return (
-                            <View key={complientCodeIndex}>
-                              <Text style={cycleItemStyles.complientsTitle}>
+                            <View key={complaintCodeIndex}>
+                              <Text style={cycleItemStyles.complaintsTitle}>
                                 {complaintsLabel}
-                                {complientCodeIndex !== selectedComplaintsCodes?.length - 1 && ', '}
+                                {complaintCodeIndex !== selectedComplaintsCodes?.length - 1 && ', '}
                               </Text>
                             </View>
                           )
@@ -181,8 +173,8 @@ export const CycleItem: React.FC<CycleItemProps> = ({ cycle, expanded }) => {
                         <Image style={cycleItemStyles.symbolsIcn} source={require('../../../assets/images/triangle.png')} />
                       </View>
                       <Text style={[globalStyles.baseText, cycleItemStyles.symbolDayTitle]}>{day}:</Text>
-                      <View style={cycleItemStyles.complientsTitlesList}>
-                        <Text style={cycleItemStyles.complientsTitle}>{userNotesData?.content.en?.stringValue ?? ''}</Text>
+                      <View style={cycleItemStyles.complaintsTitlesList}>
+                        <Text style={cycleItemStyles.complaintsTitle}>{userNotesData?.content.en?.stringValue ?? ''}</Text>
                       </View>
                     </View>
                   ),
@@ -295,12 +287,12 @@ const cycleItemStyles = StyleSheet.create({
     width: 12,
     height: 12,
   },
-  complientsTitlesList: {
+  complaintsTitlesList: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     flex: 1,
   },
-  complientsTitle: {
+  complaintsTitle: {
     color: '#A2A4BE',
     fontSize: 13,
     fontFamily: 'Nunito-Regular',

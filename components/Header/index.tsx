@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { View, Image, Text, StyleSheet, Modal, TouchableOpacity } from 'react-native'
 
-import { EditUserDataModal } from '../EditUserDataModal'
+import { EditUserDataModal } from '../ManageAccount'
 
 export type Props = {
   userName: string

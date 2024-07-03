@@ -2,29 +2,31 @@ import React from 'react'
 import { View, TextInput, Text, StyleSheet } from 'react-native'
 
 export type Props = {
-  label: string
-  value: string | undefined
-  onChange: () => void
-  onBlur: () => void
-  secureTextEntry?: boolean
+  label?: string
+  value: string | number | undefined
+  onChange: (value?: string) => void
+  onBlur?: () => void
   isRequired?: boolean
+  placeholder?: string
+  error?: boolean
 }
 
-export const RoundedInput: React.FC<Props> = ({ label, value, onChange, onBlur, secureTextEntry, isRequired }) => {
+export const CustomInput: React.FC<Props> = ({ label, value, onChange, onBlur, placeholder, isRequired, error }) => {
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>
-        {isRequired && <Text style={styles.star}>*</Text>} {label}
-      </Text>
+      {label && (
+        <Text style={styles.label}>
+          {isRequired && <Text style={styles.star}>*</Text>} {label}
+        </Text>
+      )}
       <TextInput
-        autoCapitalize="none"
-        autoComplete="off"
-        autoCorrect={false}
-        style={styles.input}
+        style={[styles.input, error && styles.error]}
         onBlur={onBlur}
         onChangeText={onChange}
-        value={value}
-        secureTextEntry={secureTextEntry}
+        value={value?.toString()}
+        autoCapitalize="none"
+        placeholder={placeholder ? placeholder : undefined}
+        placeholderTextColor="#A2A4BE"
       />
     </View>
   )
@@ -33,7 +35,6 @@ export const RoundedInput: React.FC<Props> = ({ label, value, onChange, onBlur, 
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    marginBottom: 8,
   },
   label: {
     marginBottom: 8,
@@ -53,5 +54,8 @@ const styles = StyleSheet.create({
     fontSize: 13,
     paddingLeft: 12,
     fontFamily: 'Nunito-Regular',
+  },
+  error: {
+    borderColor: '#EB3437',
   },
 })

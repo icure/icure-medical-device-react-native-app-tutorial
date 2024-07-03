@@ -2,7 +2,7 @@ import React from 'react'
 import { ScrollView, StyleSheet, View, Dimensions, Text, Image, TouchableOpacity } from 'react-native'
 
 import { globalStyles } from '../../styles/GlobalStyles'
-import { SquareButton } from '../FormElements'
+import { Button } from '../FormElements'
 
 const WIDTH_MODAL = Dimensions.get('window').width
 const HEIGHT_MODAL = Dimensions.get('window').height
@@ -51,12 +51,12 @@ export const SymbolsExplanationModal: React.FC<SymbolsExplanationModalProps> = (
               <View style={styles.symbolsIcnContainer}>
                 <Image style={styles.symbolsIcn} source={require('../../assets/images/triangle.png')} />
               </View>
-              <Text style={globalStyles.baseText}>Complients and notes</Text>
+              <Text style={globalStyles.baseText}>Complaints and notes</Text>
             </View>
           </View>
           {/* ButtonsGroup */}
           <View style={[globalStyles.mt24, styles.buttonsGroup]}>
-            <SquareButton title="Close" onClick={handleCancel} outlined />
+            <Button title="Close" onClick={handleCancel} outlined />
           </View>
         </ScrollView>
       </View>

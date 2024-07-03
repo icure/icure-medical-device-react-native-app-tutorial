@@ -4,7 +4,7 @@ import DatePicker from 'react-native-modern-datepicker'
 import { format } from 'date-fns'
 
 import { globalStyles } from '../../../styles/GlobalStyles'
-import { SquareButton } from '../SquareButton'
+import { Button } from '../Button'
 
 const WIDTH_MODAL = Dimensions.get('window').width
 const HEIGHT_MODAL = Dimensions.get('window').height
@@ -62,10 +62,8 @@ export const DatePickerModal: React.FC<DatePickerModalProps> = ({ onClose, patie
 
           {/* ButtonsGroup */}
           <View style={[globalStyles.mt24, styles.buttonsGroup]}>
-            <View style={globalStyles.mr16}>
-              <SquareButton title="Close" onClick={handleCancel} outlined />
-            </View>
-            <SquareButton title="Save" onClick={handleSave} />
+            <Button title="Close" onClick={handleCancel} outlined width={'50%'} />
+            <Button title="Save" onClick={handleSave} width={'50%'} />
           </View>
         </View>
       </View>
@@ -86,17 +84,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFDFE',
     borderTopRightRadius: 15,
     borderTopLeftRadius: 15,
-    paddingVertical: 32,
+    paddingVertical: 16,
   },
   scrollableContainer: {
     paddingHorizontal: 16,
-    paddingBottom: 40,
+    paddingBottom: 16,
     alignItems: 'center',
   },
   buttonsGroup: {
     width: '100%',
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
+    gap: 16,
   },
 })

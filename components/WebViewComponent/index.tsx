@@ -31,16 +31,18 @@ export const WebViewComponent = ({ sitekey, onFinish }: WebViewComponentProps): 
                         justify-content: center;
                         align-items: center;
                         height: 100%;
+                        width: 100%;
                         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
                       }
+                    .frc-captcha {
+                        width: 100%;
+                    }
                 </style>
               </head>
               <body>
                 <div class="frc-captcha" data-start="auto" data-sitekey="${sitekey}" data-callback="doneCallback" data-lang="en"></div>
                 <script>
-                console.log('script works')
                   function doneCallback(solution) {
-                    console.log('test')
                     ReactNativeWebView.postMessage(solution)
                   }
                 </script>
@@ -50,14 +52,10 @@ export const WebViewComponent = ({ sitekey, onFinish }: WebViewComponentProps): 
     `,
       }}
       onMessage={(event) => {
-        console.log('Received message from WebView:', event.nativeEvent.data)
         onFinish(event.nativeEvent.data)
       }}
       onError={(event) => {
         console.error('WebView error:', event.nativeEvent)
-      }}
-      onLoadEnd={() => {
-        console.log('WebView content loaded')
       }}
     />
   )

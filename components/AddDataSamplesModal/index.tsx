@@ -4,14 +4,14 @@ import { ScrollView, StyleSheet, View, Dimensions, Text, Image, TouchableOpacity
 import { format } from 'date-fns'
 
 import { globalStyles } from '../../styles/GlobalStyles'
-import { RadioButton, CheckBox, SquareInput, SquareButton } from '../FormElements'
+import { RadioButton, CheckBox, Button, CustomInput } from '../FormElements'
 import { periodFlowLevelsData, complaintsData } from '../../utils/constants'
 import { ISO639_1 } from '@icure/typescript-common'
 
 const WIDTH_MODAL = Dimensions.get('window').width
 const HEIGHT_MODAL = Dimensions.get('window').height
 
-type AddUserDataSampleModalProps = {
+type AddDataSamplesModalProps = {
   date: Date
   title: string
   createOrUpdateDataSamples: (dsArray: (DataSample | IDataSample)[]) => void
@@ -24,7 +24,7 @@ type AddUserDataSampleModalProps = {
   currentNotesData?: (date: Date) => IDataSample | undefined
 }
 
-export const AddUserDataSampleModal: React.FC<AddUserDataSampleModalProps> = ({
+export const AddDataSamplesModal: React.FC<AddDataSamplesModalProps> = ({
   date,
   title,
   createOrUpdateDataSamples,
@@ -54,8 +54,7 @@ export const AddUserDataSampleModal: React.FC<AddUserDataSampleModalProps> = ({
   const onlyCheckedComplaints = checkedComplaints?.filter((item) => item.isChecked)
   const [notes, setNotes] = useState(currentNotesDataSample?.content?.['en']?.stringValue ?? undefined)
 
-  // TODO: should be more precise
-  const valueDate = +format(new Date(), 'yyyyMMdd000000')
+  const valueDate = +format(new Date(date), 'yyyyMMdd000000')
   const handleClose = () => {
     onClose()
   }
@@ -144,60 +143,56 @@ export const AddUserDataSampleModal: React.FC<AddUserDataSampleModalProps> = ({
         </View>
 
         <ScrollView contentContainerStyle={styles.scrollableContainer}>
-          {/* Period */}
-          <View style={globalStyles.mt32}>
-            <Text style={[globalStyles.baseText, globalStyles.mb8]}>Menstruation</Text>
-            <View style={styles.dataItemSubtitle}>
-              <View style={styles.dataItemIconContainer}>
-                <Image style={styles.dataItemIcn} source={require('../../assets/images/circle.png')} />
+          <View style={styles.dataSamplesList}>
+            {/* Period */}
+            <View style={styles.flowDataSample}>
+              <Text style={globalStyles.baseText}>Menstruation</Text>
+              <View>
+                <View style={styles.dataItemSubtitle}>
+                  <View style={styles.dataItemIconContainer}>
+                    <Image style={styles.dataItemIcn} source={require('../../assets/images/circle.png')} />
+                  </View>
+                  <Text style={globalStyles.baseText}>Period</Text>
+                </View>
+                <View style={styles.dataItemContentContainer}>
+                  <Text style={globalStyles.baseText}>Flow level</Text>
+                  <View style={styles.dataItemContent}>
+                    <RadioButton initialData={radioButtonInitialValue} data={periodFlowLevelsData} onSelect={(value) => setSelectedFlowLevel(value)} />
+                  </View>
+                </View>
               </View>
-              <Text style={globalStyles.baseText}>Period</Text>
             </View>
-            <View style={styles.dataItemContentContainer}>
-              <Text style={[globalStyles.baseText, globalStyles.mb8]}>Flow level</Text>
-              <View style={styles.dataItemContent}>
-                <RadioButton initialData={radioButtonInitialValue} data={periodFlowLevelsData} onSelect={(value) => setSelectedFlowLevel(value)} />
+
+            {/* Complaints */}
+            <View style={styles.complaintsDataSample}>
+              <Text style={[globalStyles.baseText]}>How do you feel?</Text>
+              <View>
+                <View style={styles.dataItemSubtitle}>
+                  <View style={styles.dataItemIconContainer}>
+                    <Image style={styles.dataItemIcn} source={require('../../assets/images/triangle.png')} />
+                  </View>
+                  <Text style={globalStyles.baseText}>Complaints</Text>
+                </View>
+                <View style={styles.dataItemContentContainer}>
+                  <View style={styles.dataItemContent}>
+                    <CheckBox onPress={(value) => setCheckedComplaints(value)} data={checkedComplaints} />
+                  </View>
+                </View>
               </View>
+            </View>
+
+            {/* Notes */}
+            <View style={styles.notesDataSample}>
+              <Text style={globalStyles.baseText}>Notes</Text>
+              <CustomInput value={notes} onChange={(value) => value && setNotes(value)} placeholder="e.g. Medication " />
             </View>
           </View>
-
-          {/* Complaints */}
-          <View style={globalStyles.mt24}>
-            <Text style={[globalStyles.baseText, globalStyles.mb8]}>Other Data</Text>
-            <View style={styles.dataItemSubtitle}>
-              <View style={styles.dataItemIconContainer}>
-                <Image style={styles.dataItemIcn} source={require('../../assets/images/triangle.png')} />
-              </View>
-              <Text style={globalStyles.baseText}>Complaints</Text>
-            </View>
-            <View style={styles.dataItemContentContainer}>
-              <View style={styles.dataItemContent}>
-                <CheckBox onPress={(value) => setCheckedComplaints(value)} data={checkedComplaints} />
-              </View>
-            </View>
-          </View>
-
-          {/* Notes */}
-          <View style={globalStyles.mt24}>
-            <Text style={[globalStyles.baseText, globalStyles.mb8]}>Notes</Text>
-            <SquareInput
-              value={notes}
-              onChange={(value) => value && setNotes(value)}
-              onBlur={() => {
-                /* Do nothing */
-              }}
-              placeholder="e.g. Medication "
-            />
-          </View>
-
           {/* ButtonsGroup */}
-          <View style={[globalStyles.mt56, styles.buttonsGroup]}>
-            <SquareButton title="Delete" onClick={handleDelete} danger />
+          <View style={styles.buttonsGroup}>
+            <Button title="Delete" onClick={handleDelete} danger />
             <View style={styles.rightGroup}>
-              <View style={globalStyles.mr16}>
-                <SquareButton title="Cancel" onClick={handleClose} outlined />
-              </View>
-              <SquareButton title="Save" onClick={handleSave} />
+              <Button title="Cancel" onClick={handleClose} outlined />
+              <Button title="Save" onClick={handleSave} />
             </View>
           </View>
         </ScrollView>
@@ -219,10 +214,19 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 15,
     borderTopLeftRadius: 15,
     paddingVertical: 32,
+    marginBottom: 32,
+    gap: 24,
   },
   scrollableContainer: {
     paddingHorizontal: 16,
-    paddingBottom: 40,
+    paddingBottom: 32,
+    gap: 32,
+  },
+  dataSamplesList: {
+    gap: 16,
+  },
+  flowDataSample: {
+    gap: 8,
   },
   titleContainer: {
     flexDirection: 'row',
@@ -270,9 +274,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#F2F3FE',
     borderBottomRightRadius: 5,
     borderBottomLeftRadius: 5,
+    gap: 8,
   },
   dataItemContent: {
     paddingHorizontal: 8,
+  },
+  complaintsDataSample: {
+    gap: 8,
+  },
+  notesDataSample: {
+    gap: 8,
   },
   buttonsGroup: {
     flexDirection: 'row',
@@ -281,6 +292,6 @@ const styles = StyleSheet.create({
   },
   rightGroup: {
     flexDirection: 'row',
-    alignItems: 'center',
+    gap: 8,
   },
 })

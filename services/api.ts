@@ -1,17 +1,7 @@
-import {
-  AnonymousMedTechApi,
-  AuthenticationProcess,
-  MedTechApi,
-  ua2b64,
-  User,
-  NativeCryptoPrimitivesBridge,
-  Patient,
-  DataSample,
-  HealthcareProfessional,
-} from '@icure/medical-device-sdk'
+import { AnonymousMedTechApi, AuthenticationProcess, MedTechApi, User, NativeCryptoPrimitivesBridge } from '@icure/medical-device-sdk'
 import { SimpleMedTechCryptoStrategies } from '@icure/medical-device-sdk/src/services/MedTechCryptoStrategies'
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { revertAll, setSavedCredentials, setLoginProcessStarted } from '../config/PetraState'
+import { revertAll, setSavedCredentials } from '../config/PetraState'
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query'
 import storage from '../utils/storage'
 import * as ExpoKryptomModule from '@icure/expo-kryptom'
@@ -33,6 +23,7 @@ export interface MedTechApiState {
   dateOfBirth?: number
   mobilePhone?: string
   recaptcha?: string
+  loginProcessStarted?: boolean
 }
 
 const initialState: MedTechApiState = {
@@ -49,6 +40,7 @@ const initialState: MedTechApiState = {
   dateOfBirth: undefined,
   mobilePhone: undefined,
   recaptcha: undefined,
+  loginProcessStarted: false,
 }
 
 export const medTechApi = async (getState: () => unknown) => {
@@ -100,10 +92,10 @@ export const startAuthentication = createAsyncThunk('medTechApi/startAuthenticat
     medTechApi: { email, firstName, lastName, recaptcha: captcha },
   } = getState() as { medTechApi: MedTechApiState }
 
-  dispatch(setLoginProcessStarted(true))
+  dispatch(setLoginProcessStarted({ loginProcessStarted: true }))
 
   if (!email) {
-    dispatch(setLoginProcessStarted(false))
+    dispatch(setLoginProcessStarted({ loginProcessStarted: false }))
     throw new Error('No email provided')
   }
 
@@ -113,16 +105,14 @@ export const startAuthentication = createAsyncThunk('medTechApi/startAuthenticat
     .withMsgGwSpecId(process.env.EXPO_PUBLIC_EXTERNAL_SERVICES_SPEC_ID!)
     .withAuthProcessByEmailId(process.env.EXPO_PUBLIC_EMAIL_AUTHENTICATION_PROCESS_ID!)
     .withStorage(storage)
-    .withICureBaseUrl('https://krakenad.taktik.to')
+    .withICureBaseUrl('https://api.icure.cloud')
     .build()
-
   const captchaType = 'friendly-captcha'
 
   const authProcess = await anonymousApi.authenticationApi.startAuthentication({ recaptcha: captcha!, email, firstName, lastName, recaptchaType: captchaType })
 
   apiCache[`${authProcess.login}/${authProcess.requestId}`] = anonymousApi
-
-  dispatch(setLoginProcessStarted(false))
+  dispatch(setLoginProcessStarted({ loginProcessStarted: false }))
 
   return authProcess
 })
@@ -132,15 +122,15 @@ export const completeAuthentication = createAsyncThunk('medTechApi/completeAuthe
     medTechApi: { authProcess, token },
   } = getState() as { medTechApi: MedTechApiState }
 
-  dispatch(setLoginProcessStarted(true))
+  dispatch(setLoginProcessStarted({ loginProcessStarted: true }))
 
   if (!authProcess) {
-    dispatch(setLoginProcessStarted(false))
+    dispatch(setLoginProcessStarted({ loginProcessStarted: false }))
     throw new Error('No authProcess provided')
   }
 
   if (!token) {
-    dispatch(setLoginProcessStarted(false))
+    dispatch(setLoginProcessStarted({ loginProcessStarted: false }))
     throw new Error('No token provided')
   }
 
@@ -155,10 +145,10 @@ export const completeAuthentication = createAsyncThunk('medTechApi/completeAuthe
     delete apiCache[`${authProcess.login}/${authProcess.requestId}`]
 
     dispatch(setSavedCredentials({ login: `${result.groupId}/${result.userId}`, token: result.token, tokenTimestamp: +Date.now() }))
-    dispatch(setLoginProcessStarted(false))
+    dispatch(setLoginProcessStarted({ loginProcessStarted: false }))
     return user.toJSON()
   } catch (e) {
-    dispatch(setLoginProcessStarted(false))
+    dispatch(setLoginProcessStarted({ loginProcessStarted: false }))
     console.error(`Couldn't complete authentication: ${e}`)
     throw e
   }
@@ -169,15 +159,15 @@ export const login = createAsyncThunk('medTechApi/login', async (_, { getState, 
     medTechApi: { email, token },
   } = getState() as { medTechApi: MedTechApiState }
 
-  dispatch(setLoginProcessStarted(true))
+  dispatch(setLoginProcessStarted({ loginProcessStarted: true }))
 
   if (!email) {
-    dispatch(setLoginProcessStarted(false))
+    dispatch(setLoginProcessStarted({ loginProcessStarted: false }))
     throw new Error('No email provided')
   }
 
   if (!token) {
-    dispatch(setLoginProcessStarted(false))
+    dispatch(setLoginProcessStarted({ loginProcessStarted: false }))
     throw new Error('No token provided')
   }
 
@@ -189,13 +179,13 @@ export const login = createAsyncThunk('medTechApi/login', async (_, { getState, 
     .withAuthProcessByEmailId(process.env.EXPO_PUBLIC_EMAIL_AUTHENTICATION_PROCESS_ID!)
     .withUserName(email)
     .withPassword(token)
-    .withICureBaseUrl('https://krakenad.taktik.to')
+    .withICureBaseUrl('https://api.icure.cloud')
     .build()
   const user = await api.userApi.getLoggedUser()
 
   apiCache[`${user.groupId}/${user.id}`] = api
 
-  dispatch(setLoginProcessStarted(false))
+  dispatch(setLoginProcessStarted({ loginProcessStarted: false }))
 
   return user.toJSON()
 })
@@ -234,6 +224,10 @@ export const api = createSlice({
     setRecaptcha: (state, { payload: { recaptcha } }: PayloadAction<{ recaptcha: string }>) => {
       state.recaptcha = recaptcha
     },
+
+    setLoginProcessStarted: (state, { payload: { loginProcessStarted } }: PayloadAction<{ loginProcessStarted: boolean }>) => {
+      state.loginProcessStarted = loginProcessStarted
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(startAuthentication.fulfilled, (state, { payload: authProcess }) => {
@@ -260,4 +254,4 @@ export const api = createSlice({
   },
 })
 
-export const { setEmail, setToken, setAuthProcess, setUser, setRegistrationInformation, resetCredentials, setRecaptcha } = api.actions
+export const { setEmail, setToken, setAuthProcess, setUser, setRegistrationInformation, resetCredentials, setRecaptcha, setLoginProcessStarted } = api.actions

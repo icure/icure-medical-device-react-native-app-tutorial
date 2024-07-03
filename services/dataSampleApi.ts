@@ -79,7 +79,6 @@ export const dataSampleApiRtk = createApi({
         })
       },
       invalidatesTags: (res: IDataSample[] | undefined) => {
-        console.log('invalidatesTags', res)
         return res?.length
           ? [
               { type: 'DataSample', id: 'all' },
@@ -107,9 +106,7 @@ export const dataSampleApiRtk = createApi({
         if (!user) {
           throw new Error('No user set')
         }
-        console.log('Executing load')
         return guard([dataSampleApi, dataOwnerApi], async () => {
-          console.log('Executing load: guard passed')
           const dataOwner = dataOwnerApi.getDataOwnerIdOf(new User(user))
           const tagCodesFilters = await Promise.all(
             tagCodes.map(async ({ tagType, tagCode, codeType, codeCode }) =>
@@ -120,14 +117,6 @@ export const dataSampleApiRtk = createApi({
           const unionFilter = FilterComposition.union(...tagCodesFilters)
           try {
             const result = await dataSampleApi.filterDataSample(unionFilter, nextDataSampleId, limit)
-            console.log(
-              'result: ' +
-                JSON.stringify(
-                  result.rows.map((s) => s.id),
-                  null,
-                  ' ',
-                ),
-            )
             return PaginatedList.toJSON(result, (d) => d.toJSON())
           } catch (e) {
             console.error('Error in getDataSampleBetween2Dates:', e)

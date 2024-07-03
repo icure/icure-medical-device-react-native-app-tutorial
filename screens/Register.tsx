@@ -1,24 +1,23 @@
 import React, { JSX, useEffect, useState } from 'react'
-import { View, Image, Text, StyleSheet, ScrollView } from 'react-native'
+import { View, Image, Text, StyleSheet, Dimensions } from 'react-native'
 import { useForm, Controller } from 'react-hook-form'
 import { useNavigate } from 'react-router-native'
 
-import { RoundedInput, RoundedButton, TextHelper, ErrorMessage } from '../components/FormElements'
+import { CustomInput, Button, TextHelper, ErrorMessage } from '../components/FormElements'
 import { useAppDispatch, useAppSelector } from '../redux/hooks'
 import { setRegistrationInformation, setToken, startAuthentication, completeAuthentication, setRecaptcha, MedTechApiState } from '../services/api'
 import { WebViewComponent } from '../components/WebViewComponent'
 import { createSelector } from '@reduxjs/toolkit'
 import { routes } from '../navigation/Routes'
-import { PetraState } from '../config/PetraState'
 import { CustomActivityIndicator } from '../components/CustomActivityIndicator'
 
-const selectMedTechApiData = (state: { medTechApi: MedTechApiState }) => state.medTechApi
-const selectPetraData = (state: { petra: PetraState }) => state.petra
-
-const combinedSelector = createSelector([selectMedTechApiData, selectPetraData], (medTechApi: MedTechApiState, petra: PetraState) => ({
+const selectMedTechApiData = createSelector([(state: { medTechApi: MedTechApiState }) => state.medTechApi], (medTechApi: MedTechApiState) => ({
   online: medTechApi.online,
-  loginProcessStarted: petra?.loginProcessStarted,
+  loginProcessStarted: medTechApi.loginProcessStarted,
 }))
+
+const WIDTH_MODAL = Dimensions.get('window').width
+const HEIGHT_MODAL = Dimensions.get('window').height
 
 export const Register = (): JSX.Element => {
   const {
@@ -37,7 +36,7 @@ export const Register = (): JSX.Element => {
   const dispatch = useAppDispatch()
   const [isWaitingForCode, setWaitingForCode] = useState(false)
 
-  const { online, loginProcessStarted } = useAppSelector(combinedSelector)
+  const { online, loginProcessStarted } = useAppSelector(selectMedTechApiData)
 
   useEffect(() => {
     if (online) {
@@ -65,46 +64,72 @@ export const Register = (): JSX.Element => {
           <Image style={styles.logo} source={require('../assets/images/logo.png')} />
           <Text style={styles.heading}>Registration</Text>
           <View style={styles.inputsContainer}>
-            <Controller
-              control={control}
-              rules={{
-                required: true,
-              }}
-              render={({ field: { onChange, onBlur, value } }) => <RoundedInput label="First name" onBlur={onBlur} onChange={onChange} value={value} isRequired />}
-              name="userFirstName"
-            />
-            {errors.userFirstName && <ErrorMessage text="This field is required." />}
-            <Controller
-              control={control}
-              rules={{
-                required: true,
-              }}
-              render={({ field: { onChange, onBlur, value } }) => <RoundedInput label="Last name" onBlur={onBlur} onChange={onChange} value={value} isRequired />}
-              name="userLastName"
-            />
-            {errors.userLastName && <ErrorMessage text="This field is required." />}
-            <Controller
-              control={control}
-              rules={{
-                required: true,
-              }}
-              render={({ field: { onChange, onBlur, value } }) => <RoundedInput label="Email or phone number" onBlur={onBlur} onChange={onChange} value={value} isRequired />}
-              name="userEmail"
-            />
-            {errors.userEmail && <ErrorMessage text="This field is required." />}
+            <View style={styles.input}>
+              <Controller
+                control={control}
+                rules={{
+                  required: {
+                    value: true,
+                    message: 'First name is required.',
+                  },
+                }}
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <CustomInput label="First name" onBlur={onBlur} onChange={onChange} value={value} isRequired error={!!errors.userFirstName?.message} />
+                )}
+                name="userFirstName"
+              />
+              {errors.userFirstName?.message && <ErrorMessage text={errors.userFirstName.message?.toString()} />}
+            </View>
+            <View style={styles.input}>
+              <Controller
+                control={control}
+                rules={{
+                  required: {
+                    value: true,
+                    message: 'Last name is required.',
+                  },
+                }}
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <CustomInput label="Last name" onBlur={onBlur} onChange={onChange} value={value} isRequired error={!!errors.userLastName?.message} />
+                )}
+                name="userLastName"
+              />
+              {errors.userLastName?.message && <ErrorMessage text={errors.userLastName.message?.toString()} />}
+            </View>
+            <View style={styles.input}>
+              <Controller
+                control={control}
+                rules={{
+                  required: {
+                    value: true,
+                    message: 'Email or phone number is required.',
+                  },
+                }}
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <CustomInput label="Email or phone number" onBlur={onBlur} onChange={onChange} value={value} isRequired error={!!errors.userEmail?.message} />
+                )}
+                name="userEmail"
+              />
+              {errors.userEmail?.message && <ErrorMessage text={errors.userEmail.message?.toString()} />}
+            </View>
 
             {isWaitingForCode ? (
-              <>
+              <View style={styles.input}>
                 <Controller
                   control={control}
                   rules={{
-                    required: true,
+                    required: {
+                      value: true,
+                      message: 'Confirmation code is required.',
+                    },
                   }}
-                  render={({ field: { onChange, onBlur, value } }) => <RoundedInput label="Code" onBlur={onBlur} onChange={onChange} value={value} isRequired />}
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <CustomInput label="Code" onBlur={onBlur} onChange={onChange} value={value} isRequired error={!!errors.userCode?.message} />
+                  )}
                   name="userCode"
                 />
-                {errors.userCode && <ErrorMessage text="This field is required." />}
-              </>
+                {errors.userCode?.message && <ErrorMessage text={errors.userCode.message?.toString()} />}
+              </View>
             ) : null}
           </View>
 
@@ -113,9 +138,9 @@ export const Register = (): JSX.Element => {
           </View>
 
           {isWaitingForCode ? (
-            <RoundedButton title="Register" onClick={handleSubmit(onRegister)} />
+            <Button title="Register" onClick={handleSubmit(onRegister)} size="large" />
           ) : (
-            <RoundedButton title="Receive a one time code" onClick={handleSubmit(onAskCode)} />
+            <Button title="Receive a one time code" onClick={handleSubmit(onAskCode)} size="large" />
           )}
 
           <View style={styles.textHelperContainer}>
@@ -130,8 +155,9 @@ export const Register = (): JSX.Element => {
 const styles = StyleSheet.create({
   registerScreen: {
     flex: 1,
-    height: '100%',
-    paddingTop: 40,
+    width: WIDTH_MODAL,
+    height: HEIGHT_MODAL,
+    paddingTop: 24,
     backgroundColor: '#FFFDFE',
   },
   heading: {
@@ -147,13 +173,17 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   logo: {
-    width: 201,
-    height: 201,
+    width: 150,
+    height: 150,
     marginBottom: 32,
   },
   inputsContainer: {
     width: '100%',
+    gap: 16,
     marginBottom: 12,
+  },
+  input: {
+    gap: 4,
   },
   textHelperContainer: {
     marginTop: 24,

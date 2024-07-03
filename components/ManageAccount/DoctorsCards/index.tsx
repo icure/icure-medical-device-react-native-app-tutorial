@@ -1,15 +1,15 @@
 import React, { useState } from 'react'
 import { StyleSheet, View, Text, Image, Modal, Dimensions } from 'react-native'
+import { IHealthcareProfessional } from '@icure/medical-device-sdk'
 
-import { globalStyles } from '../../styles/GlobalStyles'
-import { IconButton } from '../FormElements'
-import { SquareButton } from '../FormElements'
-import { useGetHealthcareProfessionalQuery } from '../../services/healthcareProfessionalApi'
-import { useShareDataWithMutation, useStopSharingWithMutation } from '../../services/userApi'
+import { globalStyles } from '../../../styles/GlobalStyles'
+import { IconButton } from '../../FormElements'
+import { Button } from '../../FormElements'
+import { useGetHealthcareProfessionalQuery } from '../../../services/healthcareProfessionalApi'
+import { useShareDataWithMutation, useStopSharingWithMutation } from '../../../services/userApi'
 
 type DoctorCardAddProps = {
-  name: string
-  id: string
+  hcp: IHealthcareProfessional
 }
 
 type DoctorCardRemoveProps = {
@@ -33,33 +33,34 @@ const ConfirmationWindow: React.FC<ConfirmationWindowProps> = ({ title, descript
         <Text style={confirmationWindowStyles.title}>{title}</Text>
         <Text style={confirmationWindowStyles.subtitle}>{description}</Text>
         <View style={confirmationWindowStyles.buttonsGroup}>
-          <View style={confirmationWindowStyles.leftButton}>
-            <SquareButton title="Confirm" onClick={onPositiveButtonClick} />
-          </View>
-          <SquareButton title="Cancel" onClick={onNegativeButtonClick} outlined={true} />
+          <Button title="Confirm" onClick={onPositiveButtonClick} width={'50%'} />
+          <Button title="Cancel" onClick={onNegativeButtonClick} outlined={true} width={'50%'} />
         </View>
       </View>
     </View>
   )
 }
 
-export const DoctorCardAdd: React.FC<DoctorCardAddProps> = ({ name, id }) => {
+export const DoctorToBeAddedCard: React.FC<DoctorCardAddProps> = ({ hcp }) => {
   const [showConfirmationWindow, setShowConfirmationWindow] = useState(false)
   const [shareDataWithDoctor] = useShareDataWithMutation()
   const handleAdd = () => {
-    shareDataWithDoctor({ ids: [id] })
+    hcp.id && shareDataWithDoctor({ ids: [hcp.id] })
     setShowConfirmationWindow(false)
   }
   return (
     <>
-      <View style={styles.doctorCard}>
-        <View style={styles.doctorsTitle}>
-          <View style={styles.doctorIcnContainer}>
-            <Image style={styles.doctorIcn} source={require('../../assets/images/stethoscope.png')} />
+      <View style={styles.card}>
+        <View style={styles.cardInnerContainer}>
+          <View style={styles.icnContainer}>
+            <Image style={styles.doctorIcn} source={require('../../../assets/images/stethoscope.png')} />
           </View>
-          <Text style={globalStyles.baseText}>{name}</Text>
+          <View style={styles.cardContent}>
+            <Text style={globalStyles.baseText}>{hcp?.firstName + ' ' + hcp?.lastName}</Text>
+            <Text style={styles.email}>{hcp?.addresses[0]?.telecoms.find((item) => item.telecomType === 'email')?.telecomNumber}</Text>
+          </View>
         </View>
-        <View style={styles.doctorsAction}>
+        <View style={styles.actionBtn}>
           <IconButton icon="plus" onClick={() => setShowConfirmationWindow(true)} />
         </View>
       </View>
@@ -82,29 +83,31 @@ export const DoctorCardAdd: React.FC<DoctorCardAddProps> = ({ name, id }) => {
   )
 }
 
-export const DoctorCardRemove: React.FC<DoctorCardRemoveProps> = ({ id }) => {
+export const DoctorToBeRemovedCard: React.FC<DoctorCardRemoveProps> = ({ id }) => {
   const [showConfirmationWindow, setShowConfirmationWindow] = useState(false)
   const { data: hcp } = useGetHealthcareProfessionalQuery(id, { skip: !id })
-
   const [stopSharingDataWithDoctor] = useStopSharingWithMutation()
 
-  const handleRevome = () => {
+  const handleRemove = () => {
     stopSharingDataWithDoctor({ ids: [id] })
     setShowConfirmationWindow(false)
   }
 
   return (
     <>
-      <View style={styles.doctorCard}>
-        <View style={styles.doctorsTitle}>
-          <View style={styles.doctorIcnContainer}>
-            <Image style={styles.doctorIcn} source={require('../../assets/images/stethoscope.png')} />
+      <View style={styles.card}>
+        <View style={styles.cardInnerContainer}>
+          <View style={styles.icnContainer}>
+            <Image style={styles.doctorIcn} source={require('../../../assets/images/stethoscope.png')} />
           </View>
-          <Text style={globalStyles.baseText}>{hcp?.lastName + ' ' + hcp?.firstName}</Text>
+          <View style={styles.cardContent}>
+            <Text style={globalStyles.baseText}>{hcp?.firstName + ' ' + hcp?.lastName}</Text>
+            <Text style={styles.email}>{hcp?.addresses[0]?.telecoms.find((item) => item.telecomType === 'email')?.telecomNumber}</Text>
+          </View>
         </View>
-        <View style={styles.doctorsAction}>
+        <View style={styles.actionBtn}>
           <IconButton
-            icon="close"
+            icon="delete"
             onClick={() => {
               setShowConfirmationWindow(true)
             }}
@@ -121,9 +124,9 @@ export const DoctorCardRemove: React.FC<DoctorCardRemoveProps> = ({ id }) => {
         }}
       >
         <ConfirmationWindow
-          title="Remove doctor"
+          title="Stop sharing"
           description="Are you sure you want to stop sharing your Medical Data with this doctor?"
-          onPositiveButtonClick={handleRevome}
+          onPositiveButtonClick={handleRemove}
           onNegativeButtonClick={() => setShowConfirmationWindow(false)}
         />
       </Modal>
@@ -165,27 +168,32 @@ const confirmationWindowStyles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 32,
-  },
-  leftButton: {
-    marginRight: 24,
+    gap: 16,
   },
 })
 const styles = StyleSheet.create({
-  doctorCard: {
+  card: {
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     backgroundColor: '#F2F3FE',
-    borderRadius: 7,
-    padding: 4,
+    borderRadius: 15,
+    padding: 8,
     paddingRight: 8,
-    marginBottom: 8,
   },
-  doctorsTitle: {
+  cardInnerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  doctorIcnContainer: {
+  cardContent: {
+    gap: 4,
+  },
+  email: {
+    fontSize: 12,
+    color: '#A2A4BE',
+    fontFamily: 'Nunito-Regular',
+  },
+  icnContainer: {
     width: 36,
     height: 36,
     alignItems: 'center',
@@ -196,7 +204,7 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
   },
-  doctorsAction: {
+  actionBtn: {
     flexDirection: 'row',
     alignItems: 'center',
   },

@@ -7,7 +7,9 @@ const HEIGHT_MODAL = Dimensions.get('window').height
 export const CustomActivityIndicator: React.FC = () => {
   return (
     <View style={styles.activityIndicator}>
-      <ActivityIndicator size="large" color="white" />
+      <View style={styles.indicatorContainer}>
+        <ActivityIndicator size="large" color="#151b5d" />
+      </View>
     </View>
   )
 }
@@ -22,7 +24,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     position: 'absolute',
-    backgroundColor: 'rgba(21, 27, 93, 0.5)',
     zIndex: 100,
+  },
+  indicatorContainer: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 15,
+    backgroundColor: 'rgba(235, 237, 249, 0.4)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 })
