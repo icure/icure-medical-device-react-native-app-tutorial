@@ -23,6 +23,7 @@ export interface MedTechApiState {
   dateOfBirth?: number
   mobilePhone?: string
   recaptcha?: string
+  recaptchaReloadForced: boolean
   loginProcessStarted?: boolean
 }
 
@@ -40,6 +41,7 @@ const initialState: MedTechApiState = {
   dateOfBirth: undefined,
   mobilePhone: undefined,
   recaptcha: undefined,
+  recaptchaReloadForced: false,
   loginProcessStarted: false,
 }
 
@@ -94,27 +96,32 @@ export const startAuthentication = createAsyncThunk('medTechApi/startAuthenticat
 
   dispatch(setLoginProcessStarted({ loginProcessStarted: true }))
 
-  if (!email) {
+  try {
+    if (!email) {
+      throw new Error('No email provided')
+    }
+
+    const anonymousApi = await new AnonymousMedTechApi.Builder()
+      .withCrypto(new NativeCryptoPrimitivesBridge(ExpoKryptomModule))
+      .withCryptoStrategies(new SimpleMedTechCryptoStrategies())
+      .withMsgGwSpecId(process.env.EXPO_PUBLIC_EXTERNAL_SERVICES_SPEC_ID!)
+      .withAuthProcessByEmailId(process.env.EXPO_PUBLIC_EMAIL_AUTHENTICATION_PROCESS_ID!)
+      .withStorage(storage)
+      .withICureBaseUrl('https://api.icure.cloud')
+      .build()
+    const captchaType = 'friendly-captcha'
+
+    const authProcess = await anonymousApi.authenticationApi.startAuthentication({ recaptcha: captcha!, email, firstName, lastName, recaptchaType: captchaType })
+
+    apiCache[`${authProcess.login}/${authProcess.requestId}`] = anonymousApi
+    return authProcess
+  } catch (e) {
+    console.error(`Couldn't complete authentication: ${e}`)
+    dispatch(forceRecaptchaReload(true))
+    throw e
+  } finally {
     dispatch(setLoginProcessStarted({ loginProcessStarted: false }))
-    throw new Error('No email provided')
   }
-
-  const anonymousApi = await new AnonymousMedTechApi.Builder()
-    .withCrypto(new NativeCryptoPrimitivesBridge(ExpoKryptomModule))
-    .withCryptoStrategies(new SimpleMedTechCryptoStrategies())
-    .withMsgGwSpecId(process.env.EXPO_PUBLIC_EXTERNAL_SERVICES_SPEC_ID!)
-    .withAuthProcessByEmailId(process.env.EXPO_PUBLIC_EMAIL_AUTHENTICATION_PROCESS_ID!)
-    .withStorage(storage)
-    .withICureBaseUrl('https://api.icure.cloud')
-    .build()
-  const captchaType = 'friendly-captcha'
-
-  const authProcess = await anonymousApi.authenticationApi.startAuthentication({ recaptcha: captcha!, email, firstName, lastName, recaptchaType: captchaType })
-
-  apiCache[`${authProcess.login}/${authProcess.requestId}`] = anonymousApi
-  dispatch(setLoginProcessStarted({ loginProcessStarted: false }))
-
-  return authProcess
 })
 
 export const completeAuthentication = createAsyncThunk('medTechApi/completeAuthentication', async (_payload, { getState, dispatch }) => {
@@ -138,19 +145,22 @@ export const completeAuthentication = createAsyncThunk('medTechApi/completeAuthe
 
   try {
     const result = await anonymousApi.authenticationApi.completeAuthentication(authProcess, token)
+    console.log('REsukt: ', result.medTechApi)
     const api = result.medTechApi
     const user = await api.userApi.getLoggedUser()
+    console.log('User: ', user)
 
     apiCache[`${result.groupId}/${result.userId}`] = api
     delete apiCache[`${authProcess.login}/${authProcess.requestId}`]
 
     dispatch(setSavedCredentials({ login: `${result.groupId}/${result.userId}`, token: result.token, tokenTimestamp: +Date.now() }))
-    dispatch(setLoginProcessStarted({ loginProcessStarted: false }))
     return user.toJSON()
   } catch (e) {
-    dispatch(setLoginProcessStarted({ loginProcessStarted: false }))
     console.error(`Couldn't complete authentication: ${e}`)
+    dispatch(forceRecaptchaReload(true))
     throw e
+  } finally {
+    dispatch(setLoginProcessStarted({ loginProcessStarted: false }))
   }
 })
 
@@ -161,33 +171,36 @@ export const login = createAsyncThunk('medTechApi/login', async (_, { getState, 
 
   dispatch(setLoginProcessStarted({ loginProcessStarted: true }))
 
-  if (!email) {
+  try {
+    if (!email) {
+      throw new Error('No email provided')
+    }
+
+    if (!token) {
+      throw new Error('No token provided')
+    }
+
+    const api = await new MedTechApi.Builder()
+      .withCrypto(new NativeCryptoPrimitivesBridge(ExpoKryptomModule))
+      .withCryptoStrategies(new SimpleMedTechCryptoStrategies())
+      .withStorage(storage)
+      .withMsgGwSpecId(process.env.EXPO_PUBLIC_EXTERNAL_SERVICES_SPEC_ID!)
+      .withAuthProcessByEmailId(process.env.EXPO_PUBLIC_EMAIL_AUTHENTICATION_PROCESS_ID!)
+      .withUserName(email)
+      .withPassword(token)
+      .withICureBaseUrl('https://api.icure.cloud')
+      .build()
+    const user = await api.userApi.getLoggedUser()
+
+    apiCache[`${user.groupId}/${user.id}`] = api
+    return user.toJSON()
+  } catch (e) {
+    console.error(`Couldn't complete authentication: ${e}`)
+    dispatch(forceRecaptchaReload(true))
+    throw e
+  } finally {
     dispatch(setLoginProcessStarted({ loginProcessStarted: false }))
-    throw new Error('No email provided')
   }
-
-  if (!token) {
-    dispatch(setLoginProcessStarted({ loginProcessStarted: false }))
-    throw new Error('No token provided')
-  }
-
-  const api = await new MedTechApi.Builder()
-    .withCrypto(new NativeCryptoPrimitivesBridge(ExpoKryptomModule))
-    .withCryptoStrategies(new SimpleMedTechCryptoStrategies())
-    .withStorage(storage)
-    .withMsgGwSpecId(process.env.EXPO_PUBLIC_EXTERNAL_SERVICES_SPEC_ID!)
-    .withAuthProcessByEmailId(process.env.EXPO_PUBLIC_EMAIL_AUTHENTICATION_PROCESS_ID!)
-    .withUserName(email)
-    .withPassword(token)
-    .withICureBaseUrl('https://api.icure.cloud')
-    .build()
-  const user = await api.userApi.getLoggedUser()
-
-  apiCache[`${user.groupId}/${user.id}`] = api
-
-  dispatch(setLoginProcessStarted({ loginProcessStarted: false }))
-
-  return user.toJSON()
 })
 
 export const logout = createAsyncThunk('medTechApi/logout', async (payload, { dispatch }) => {
@@ -224,7 +237,9 @@ export const api = createSlice({
     setRecaptcha: (state, { payload: { recaptcha } }: PayloadAction<{ recaptcha: string }>) => {
       state.recaptcha = recaptcha
     },
-
+    forceRecaptchaReload: (state, { payload: status }: PayloadAction<boolean>) => {
+      state.recaptchaReloadForced = status
+    },
     setLoginProcessStarted: (state, { payload: { loginProcessStarted } }: PayloadAction<{ loginProcessStarted: boolean }>) => {
       state.loginProcessStarted = loginProcessStarted
     },
@@ -254,4 +269,4 @@ export const api = createSlice({
   },
 })
 
-export const { setEmail, setToken, setAuthProcess, setUser, setRegistrationInformation, resetCredentials, setRecaptcha, setLoginProcessStarted } = api.actions
+export const { setEmail, setToken, forceRecaptchaReload, setUser, setRegistrationInformation, resetCredentials, setRecaptcha, setLoginProcessStarted } = api.actions

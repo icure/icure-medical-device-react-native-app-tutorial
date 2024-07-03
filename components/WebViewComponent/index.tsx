@@ -1,14 +1,33 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { WebView } from 'react-native-webview'
+import { useAppDispatch, useAppSelector } from '../../redux/hooks'
+import { createSelector } from '@reduxjs/toolkit'
+import { forceRecaptchaReload, MedTechApiState } from '../../services/api'
 
 interface WebViewComponentProps {
   sitekey: string
   onFinish: (recaptcha: string) => void
 }
 
+const selectMedTechApiData = createSelector([(state: { medTechApi: MedTechApiState }) => state.medTechApi], (medTechApi: MedTechApiState) => ({
+  recaptchaReloadForced: medTechApi.recaptchaReloadForced,
+}))
+
 export const WebViewComponent = ({ sitekey, onFinish }: WebViewComponentProps): JSX.Element => {
+  const { recaptchaReloadForced } = useAppSelector(selectMedTechApiData)
+  const webViewRef = React.useRef<WebView>(null)
+  const dispatch = useAppDispatch()
+
+  useEffect(() => {
+    if (recaptchaReloadForced) {
+      webViewRef.current?.postMessage('reset')
+      dispatch(forceRecaptchaReload(false))
+    }
+  }, [recaptchaReloadForced])
+
   return (
     <WebView
+      ref={webViewRef}
       originWhitelist={['*']}
       style={{ width: '100%', height: 70 }}
       source={{
@@ -40,10 +59,19 @@ export const WebViewComponent = ({ sitekey, onFinish }: WebViewComponentProps): 
                 </style>
               </head>
               <body>
-                <div class="frc-captcha" data-start="auto" data-sitekey="${sitekey}" data-callback="doneCallback" data-lang="en"></div>
+                <div id="frc-captcha" class="frc-captcha" data-start="auto" data-sitekey="${sitekey}" data-callback="doneCallback" data-lang="en"></div>
                 <script>
+                    window.addEventListener('message', (nativeEvent) => {
+                        ReactNativeWebView.postMessage(JSON.stringify({log: nativeEvent?.data === 'reset'}));
+                        if (nativeEvent?.data === 'reset') {
+                          try {
+                            const captcha = friendlyChallenge.autoWidget
+                            captcha.reset()
+                          } catch (e) { ReactNativeWebView.postMessage(JSON.stringify({log: JSON.stringify(captcha)})); }
+                        }
+                    });
                   function doneCallback(solution) {
-                    ReactNativeWebView.postMessage(solution)
+                    ReactNativeWebView.postMessage(JSON.stringify({solution}));
                   }
                 </script>
 
@@ -52,7 +80,13 @@ export const WebViewComponent = ({ sitekey, onFinish }: WebViewComponentProps): 
     `,
       }}
       onMessage={(event) => {
-        onFinish(event.nativeEvent.data)
+        const data = JSON.parse(event.nativeEvent.data)
+
+        if (data.solution) {
+          onFinish(data.solution)
+        } else if (data.log) {
+          console.log(data.log)
+        }
       }}
       onError={(event) => {
         console.error('WebView error:', event.nativeEvent)

@@ -31,7 +31,6 @@ export const AdvancedCalendar: React.FC = () => {
   }, [currentMonth])
 
   const [createOrUpdateDataSamples, { isLoading: isCreateOrUpdateDataSamplesLoading }] = useCreateOrUpdateDataSamplesMutation()
-
   const [deleteDataSamples, { isLoading: isDeleteDataSamplesLoading }] = useDeleteDataSamplesMutation()
   const periodFilter = useMemo(
     () => ({
