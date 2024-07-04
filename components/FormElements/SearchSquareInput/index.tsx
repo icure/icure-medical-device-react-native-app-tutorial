@@ -8,15 +8,16 @@ export type SearchSquareInputProps = {
   onClose?: () => void
   onOpen?: () => void
   placeholder?: string
+  onSearchQueryChange: (value?: string) => void
+  searchQuery: string | undefined
 }
 
-export const SearchSquareInput: React.FC<SearchSquareInputProps> = ({ onSubmit, placeholder, onClose, onOpen }) => {
+export const SearchSquareInput: React.FC<SearchSquareInputProps> = ({ onSubmit, placeholder, onClose, onOpen, searchQuery, onSearchQueryChange }) => {
   const [isInputTouched, setInputTouched] = useState(false)
-  const [searchValue, setSearchValue] = useState('')
   const textInputReference = useRef(null as TextInput | null)
-  const handleChange = (value: string) => {
-    setSearchValue(value)
-  }
+  // const handleChange = (value: string) => {
+  //   setSearchValue(value)
+  // }
 
   const handleClear = () => {
     const current = textInputReference.current
@@ -43,8 +44,8 @@ export const SearchSquareInput: React.FC<SearchSquareInputProps> = ({ onSubmit, 
         )}
         <TextInput
           style={styles.input}
-          onChangeText={(value: string) => handleChange(value)}
-          value={searchValue}
+          onChangeText={(value: string) => onSearchQueryChange(value)}
+          value={searchQuery}
           autoCapitalize="none"
           placeholder={placeholder ?? ''}
           placeholderTextColor="#A2A4BE"
@@ -57,7 +58,7 @@ export const SearchSquareInput: React.FC<SearchSquareInputProps> = ({ onSubmit, 
       </View>
       {isInputTouched && (
         <View style={styles.buttonGroup}>
-          <IconButton icon="arrow" onClick={() => handleSubmit(searchValue)} />
+          <IconButton icon="arrow" onClick={() => searchQuery && handleSubmit(searchQuery)} />
           <IconButton icon="close" onClick={handleClear} />
         </View>
       )}

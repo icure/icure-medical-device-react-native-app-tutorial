@@ -17,8 +17,8 @@ const reduxSelector = createSelector(
 )
 export const MyDoctorsTab = () => {
   const [isSearchOpen, setSearchOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
-  const { data: hcpListSearchResult, isFetching: isHcpSearchFetching } = useFilterHealthcareProfessionalsQuery({ name: searchQuery }, { skip: !searchQuery?.length })
+  const [searchQuery, setSearchQuery] = useState<string | undefined>(undefined)
+  const { data: hcpListSearchResult, isFetching: isHcpSearchFetching } = useFilterHealthcareProfessionalsQuery({ name: searchQuery ?? '' }, { skip: !searchQuery })
   const { user } = useAppSelector(reduxSelector)
 
   const hcpListWithAccess = user?.sharingDataWith?.['medicalInformation']
@@ -35,14 +35,16 @@ export const MyDoctorsTab = () => {
         <View style={styles.searchContainer}>
           <SearchSquareInput
             onSubmit={(value?: string) => {
-              setSearchQuery(value ?? '')
+              setSearchQuery(value)
             }}
             onClose={() => {
-              setSearchQuery('')
               setSearchOpen(false)
+              setSearchQuery(undefined)
             }}
             onOpen={() => setSearchOpen(true)}
             placeholder="Search for the doctor by name"
+            searchQuery={searchQuery}
+            onSearchQueryChange={(newValue) => setSearchQuery(newValue)}
           />
           {!isHcpSearchFetching && searchQuery && filteredHcpList?.length === 0 && (
             <View style={styles.noSearchResultContainer}>
@@ -52,7 +54,20 @@ export const MyDoctorsTab = () => {
               <Text style={[styles.noSearchResultText, globalStyles.mt4]}>Please, change the search query and try again.</Text>
             </View>
           )}
-          {searchQuery && filteredHcpList?.map((item, index) => item.id && <DoctorToBeAddedCard key={index} hcp={item} />)}
+          {searchQuery &&
+            filteredHcpList?.map(
+              (item, index) =>
+                item.id && (
+                  <DoctorToBeAddedCard
+                    onAdd={() => {
+                      setSearchQuery(undefined)
+                      setSearchOpen(false)
+                    }}
+                    key={index}
+                    hcp={item}
+                  />
+                ),
+            )}
         </View>
         {!isSearchOpen && (
           <View style={styles.doctorsList}>

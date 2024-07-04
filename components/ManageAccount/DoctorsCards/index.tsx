@@ -10,6 +10,7 @@ import { useShareDataWithMutation, useStopSharingWithMutation } from '../../../s
 
 type DoctorCardAddProps = {
   hcp: IHealthcareProfessional
+  onAdd: () => void
 }
 
 type DoctorCardRemoveProps = {
@@ -41,11 +42,12 @@ const ConfirmationWindow: React.FC<ConfirmationWindowProps> = ({ title, descript
   )
 }
 
-export const DoctorToBeAddedCard: React.FC<DoctorCardAddProps> = ({ hcp }) => {
+export const DoctorToBeAddedCard: React.FC<DoctorCardAddProps> = ({ hcp, onAdd }) => {
   const [showConfirmationWindow, setShowConfirmationWindow] = useState(false)
   const [shareDataWithDoctor] = useShareDataWithMutation()
   const handleAdd = () => {
     hcp.id && shareDataWithDoctor({ ids: [hcp.id] })
+    onAdd()
     setShowConfirmationWindow(false)
   }
   return (
