@@ -87,7 +87,7 @@ export const AdvancedCalendar: React.FC = () => {
           const duration = formatDistanceStrict(getDayInDateFormat(currentCycleFirstDay), getDayInDateFormat(currentCycleLastDay), { unit: 'day' }).split(' ')[0]
           return +duration
         }
-        const totalDurationOfLastThreeCycles = lastThreeCycles.reduce((accamulator, item) => accamulator + getCycleDuration(item.startDate ?? 0, item.endDate), 0)
+        const totalDurationOfLastThreeCycles = lastThreeCycles.reduce((accumulator, item) => accumulator + getCycleDuration(item.startDate ?? 0, item.endDate), 0)
         const averageCycleDuration = lastThreeCycles.length !== 0 ? Math.floor(totalDurationOfLastThreeCycles / lastThreeCycles.length) : 28
 
         const firstDayOfThePredictedPeriod = add(lastPeriodDataSampleDate, { days: averageCycleDuration })

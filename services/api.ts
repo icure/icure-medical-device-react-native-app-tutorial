@@ -145,10 +145,8 @@ export const completeAuthentication = createAsyncThunk('medTechApi/completeAuthe
 
   try {
     const result = await anonymousApi.authenticationApi.completeAuthentication(authProcess, token)
-    console.log('REsukt: ', result.medTechApi)
     const api = result.medTechApi
     const user = await api.userApi.getLoggedUser()
-    console.log('User: ', user)
 
     apiCache[`${result.groupId}/${result.userId}`] = api
     delete apiCache[`${authProcess.login}/${authProcess.requestId}`]
