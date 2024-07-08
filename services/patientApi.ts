@@ -1,44 +1,67 @@
-import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
-import {Patient} from '@icure/medical-device-sdk';
-import {currentUser, guard, medTechApi} from './api';
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { IPatient, Patient, User } from '@icure/medical-device-sdk'
+import { currentUser, guard, medTechApi } from './api'
 
 export const patientApiRtk = createApi({
   reducerPath: 'patientApi',
   tagTypes: ['Patient'],
   baseQuery: fetchBaseQuery({
-    baseUrl: '/rest/v1/patient',
+    baseUrl: '/rest/v2/patient',
   }),
-  endpoints: builder => ({
-    getPatient: builder.query<Patient, string>({
-      async queryFn(id, {getState}) {
-        const {patientApi} = await medTechApi(getState);
-        return guard([patientApi], () => {
-          return patientApi.getPatient(id);
-        });
-      },
-      providesTags: ({id}) => [{type: 'Patient', id}],
-    }),
-    currentPatient: builder.query<Patient, void>({
-      async queryFn(_, {getState}) {
-        const {patientApi, dataOwnerApi} = await medTechApi(getState);
-        const user = currentUser(getState);
-        return guard([patientApi, dataOwnerApi], () => {
-          const dataOwner = dataOwnerApi.getDataOwnerIdOf(user);
-          return patientApi.getPatient(dataOwner);
-        });
-      },
-      providesTags: ({id}) => [{type: 'Patient', id}],
-    }),
-    createOrUpdatePatient: builder.mutation<Patient, Patient>({
-      async queryFn(patient, {getState}) {
-        const {patientApi} = await medTechApi(getState);
-        return guard([patientApi], () => {
-          return patientApi.createOrModifyPatient(patient);
-        });
-      },
-      invalidatesTags: ({id}) => [{type: 'Patient', id}],
-    }),
-  }),
-});
+  endpoints: (builder) => ({
+    getPatient: builder.query<IPatient, string>({
+      async queryFn(id, { getState }) {
+        const api = await medTechApi(getState)
+        if (api === undefined) {
+          throw new Error('No medTechApi available')
+        }
 
-export const {useGetPatientQuery, useCurrentPatientQuery, useCreateOrUpdatePatientMutation} = patientApiRtk;
+        const { patientApi } = api
+
+        return guard([patientApi], async () => {
+          return (await patientApi.get(id)).toJSON()
+        })
+      },
+      providesTags: (patient) => {
+        return patient ? [{ type: 'Patient', id: patient.id }] : []
+      },
+    }),
+    currentPatient: builder.query<IPatient, void>({
+      async queryFn(_, { getState }) {
+        const api = await medTechApi(getState)
+        if (api === undefined) {
+          throw new Error('No medTechApi available')
+        }
+        const { patientApi, dataOwnerApi } = api
+        const user = currentUser(getState)
+
+        if (user === undefined) {
+          throw new Error('No user available')
+        }
+
+        return guard([patientApi, dataOwnerApi], async () => {
+          const dataOwner = dataOwnerApi.getDataOwnerIdOf(new User(user))
+          return (await patientApi.get(dataOwner)).toJSON()
+        })
+      },
+      providesTags: (patient) => (!!patient ? [{ type: 'Patient', id: patient.id }] : []),
+    }),
+    createOrUpdatePatient: builder.mutation<IPatient, IPatient>({
+      async queryFn(patient, { getState }) {
+        const api = await medTechApi(getState)
+
+        if (api === undefined) {
+          throw new Error('No medTechApi available')
+        }
+
+        const { patientApi } = api
+        return guard([patientApi], async () => {
+          return (await patientApi.createOrModifyPatient(new Patient(patient))).toJSON()
+        })
+      },
+      invalidatesTags: (patient) => (!!patient ? [{ type: 'Patient', id: patient.id }] : []),
+    }),
+  }),
+})
+
+export const { useGetPatientQuery, useCurrentPatientQuery, useCreateOrUpdatePatientMutation } = patientApiRtk

@@ -1,46 +1,46 @@
-import React, {useState} from 'react';
-import {StyleSheet, View, Dimensions} from 'react-native';
-import DatePicker from 'react-native-modern-datepicker';
-import {format} from 'date-fns';
+import React, { useState } from 'react'
+import { StyleSheet, View, Dimensions } from 'react-native'
+import DatePicker from 'react-native-modern-datepicker'
+import { format } from 'date-fns'
 
-import {globalStyles} from '../../../styles/GlobalStyles';
-import {SquareButton} from '../index';
+import { globalStyles } from '../../../styles/GlobalStyles'
+import { Button } from '../Button'
 
-const WIDTH_MODAL = Dimensions.get('window').width;
-const HEIGHT_MODAL = Dimensions.get('window').height;
+const WIDTH_MODAL = Dimensions.get('window').width
+const HEIGHT_MODAL = Dimensions.get('window').height
 
 type DatePickerModalProps = {
-  onClose: () => void;
-  onSave: (date: number) => void;
-  patientBirthDay: number;
-};
+  onClose: () => void
+  onSave: (date?: number) => void
+  patientBirthDay?: number
+}
 
-export const DatePickerModal: React.FC<DatePickerModalProps> = ({onClose, patientBirthDay, onSave}) => {
-  const [date, setDate] = useState(patientBirthDay ?? +format(new Date(), 'yyyyMMdd'));
+export const DatePickerModal: React.FC<DatePickerModalProps> = ({ onClose, patientBirthDay, onSave }) => {
+  const [date, setDate] = useState(patientBirthDay ?? +format(new Date(), 'yyyyMMdd'))
 
   const onDateChange = (selectedDate: number) => {
-    setDate(selectedDate);
-  };
+    setDate(selectedDate)
+  }
 
   const handleCancel = () => {
-    onClose();
-  };
+    onClose()
+  }
 
   const handleSave = () => {
-    onSave(date);
-    onClose();
-  };
+    onSave(date)
+    onClose()
+  }
 
   const getDateFormat = (value: number) => {
     if (!value) {
-      return undefined;
+      return undefined
     }
-    const year = Math.floor(value / 10000);
-    const month = Math.floor(value / 100) % 100;
-    const day = value % 100;
+    const year = Math.floor(value / 10000)
+    const month = Math.floor(value / 100) % 100
+    const day = value % 100
 
-    return `${year}/${month}/${day}`;
-  };
+    return `${year}/${month}/${day}`
+  }
 
   return (
     <View style={styles.container}>
@@ -48,7 +48,7 @@ export const DatePickerModal: React.FC<DatePickerModalProps> = ({onClose, patien
         <View style={styles.scrollableContainer}>
           <DatePicker
             onSelectedChange={(newData: string) => {
-              onDateChange(+newData.replace(/[/]/g, ''));
+              onDateChange(+newData.replace(/[/]/g, ''))
             }}
             selected={getDateFormat(date)}
             mode="calendar"
@@ -62,16 +62,14 @@ export const DatePickerModal: React.FC<DatePickerModalProps> = ({onClose, patien
 
           {/* ButtonsGroup */}
           <View style={[globalStyles.mt24, styles.buttonsGroup]}>
-            <View style={globalStyles.mr16}>
-              <SquareButton title="Close" onClick={handleCancel} outlined />
-            </View>
-            <SquareButton title="Save" onClick={handleSave} />
+            <Button title="Close" onClick={handleCancel} outlined width={'50%'} />
+            <Button title="Save" onClick={handleSave} width={'50%'} />
           </View>
         </View>
       </View>
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -86,17 +84,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFDFE',
     borderTopRightRadius: 15,
     borderTopLeftRadius: 15,
-    paddingVertical: 32,
+    paddingVertical: 16,
   },
   scrollableContainer: {
     paddingHorizontal: 16,
-    paddingBottom: 40,
+    paddingBottom: 16,
     alignItems: 'center',
   },
   buttonsGroup: {
     width: '100%',
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
+    gap: 16,
   },
-});
+})

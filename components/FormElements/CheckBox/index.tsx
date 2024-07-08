@@ -1,28 +1,28 @@
-import React from 'react';
-import {View, Text, Pressable, StyleSheet, Image} from 'react-native';
+import React from 'react'
+import { View, Text, Pressable, StyleSheet, Image } from 'react-native'
 
 type dataItem = {
-  label: string;
-  isChecked: boolean;
-  SNOMED_CT_CODE: string;
-};
+  label: string
+  isChecked: boolean
+  SNOMED_CT_CODE: string
+}
 
 export type CheckBoxProps = {
-  onPress: (value: dataItem[]) => void;
-  data: dataItem[];
-};
+  onPress: (value: dataItem[]) => void
+  data: dataItem[]
+}
 
-export const CheckBox: React.FC<CheckBoxProps> = ({onPress, data}) => {
+export const CheckBox: React.FC<CheckBoxProps> = ({ onPress, data }) => {
   const toggleCheckbox = (index: number) => {
-    const checkboxData = [...data];
-    checkboxData[index].isChecked = !checkboxData[index].isChecked;
-    onPress(checkboxData);
-  };
+    const checkboxData = [...data]
+    checkboxData[index].isChecked = !checkboxData[index].isChecked
+    onPress(checkboxData)
+  }
 
   return (
     <View>
       {data.map((item, index) => {
-        const {isChecked, label} = item;
+        const { isChecked, label } = item
         return (
           <Pressable key={index} onPress={() => toggleCheckbox(index)} style={styles.container}>
             <View style={[styles.checkBox, isChecked && styles.checked]}>
@@ -30,11 +30,11 @@ export const CheckBox: React.FC<CheckBoxProps> = ({onPress, data}) => {
             </View>
             <Text style={styles.label}>{label}</Text>
           </Pressable>
-        );
+        )
       })}
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -67,4 +67,4 @@ const styles = StyleSheet.create({
     width: 10,
     height: 7,
   },
-});
+})

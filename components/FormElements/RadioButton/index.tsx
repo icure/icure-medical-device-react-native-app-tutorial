@@ -1,28 +1,28 @@
-import React, {useState} from 'react';
-import {View, Text, Pressable, StyleSheet, Image} from 'react-native';
+import React, { useState } from 'react'
+import { View, Text, Pressable, StyleSheet, Image } from 'react-native'
 
 type dataItem = {
-  value: string;
-  flowLevel: number;
-};
+  value: string
+  flowLevel: number
+}
 
 export type RadioButtonProps = {
-  data: dataItem[];
-  initialData: dataItem;
-  onSelect: (selectedItem: dataItem) => void;
-};
+  data: dataItem[]
+  initialData: dataItem
+  onSelect: (selectedItem: dataItem) => void
+}
 
-export const RadioButton: React.FC<RadioButtonProps> = ({data, initialData, onSelect}) => {
-  const [userOption, setUserOption] = useState(initialData);
+export const RadioButton: React.FC<RadioButtonProps> = ({ data, initialData, onSelect }) => {
+  const [userOption, setUserOption] = useState(initialData)
   const selectHandler = (value: dataItem) => {
-    onSelect(value);
-    setUserOption(value);
-  };
+    onSelect(value)
+    setUserOption(value)
+  }
   const getDropsComponent = (amount: number) => {
     return Array(amount)
       .fill(true)
-      .map((_, i) => <Image key={i} style={styles.drop} source={require('../../../assets/images/drop.png')} />);
-  };
+      .map((_, i) => <Image key={i} style={styles.drop} source={require('../../../assets/images/drop.png')} />)
+  }
   return (
     <View>
       {data.map((item, index) => {
@@ -30,13 +30,13 @@ export const RadioButton: React.FC<RadioButtonProps> = ({data, initialData, onSe
           <Pressable key={index} style={styles.container} onPress={() => selectHandler(item)}>
             <View style={[styles.unselected, item.value === userOption.value && styles.selected]}>{item.value === userOption.value && <View style={styles.selectedCircle} />}</View>
             <Text style={styles.option}> {item.value}</Text>
-            <View style={styles.merkersContainer}>{item.flowLevel > 0 && getDropsComponent(item.flowLevel)}</View>
+            <View style={styles.markersContainer}>{item.flowLevel > 0 && getDropsComponent(item.flowLevel)}</View>
           </Pressable>
-        );
+        )
       })}
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -70,8 +70,8 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     backgroundColor: '#D06676',
   },
-  merkersContainer: {
+  markersContainer: {
     flexDirection: 'row',
   },
-  drop: {width: 8, height: 8},
-});
+  drop: { width: 8, height: 8 },
+})

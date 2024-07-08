@@ -1,15 +1,11 @@
-import React from 'react';
-import {NativeRouter, Route, Routes} from 'react-router-native';
-import {Layout} from '../components/layout/Layout';
-import {Register} from '../screens/Register';
-import {Login} from '../screens/Login';
-import {Home} from '../screens/Home';
-
-export const routes = {
-  home: '/home',
-  login: '/',
-  register: '/register',
-};
+import React from 'react'
+import { NativeRouter, Route, Routes } from 'react-router-native'
+import { Layout } from '../components/layout/Layout'
+import { Register } from '../screens/Register'
+import { Login } from '../screens/Login'
+import { Home } from '../screens/Home'
+import { routes } from './Routes'
+import { CustomActivityIndicator } from '../components/CustomActivityIndicator'
 
 export const Router = () => (
   <NativeRouter>
@@ -21,4 +17,4 @@ export const Router = () => (
       </Route>
     </Routes>
   </NativeRouter>
-);
+)
