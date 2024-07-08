@@ -1,14 +1,14 @@
-import React from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import React from 'react'
+import { View, Text, StyleSheet } from 'react-native'
 
 export type FakeSquareInputProps = {
-  label?: string;
-  value: string | number | undefined;
-  isRequired?: boolean;
-  placeholder?: string;
-};
+  label?: string
+  value: string | number | undefined
+  isRequired?: boolean
+  placeholder?: string
+}
 
-export const FakeSquareInput: React.FC<FakeSquareInputProps> = ({label, value, placeholder, isRequired}) => {
+export const FakeSquareInput: React.FC<FakeSquareInputProps> = ({ label, value, placeholder, isRequired }) => {
   return (
     <View style={styles.container}>
       {label && (
@@ -17,11 +17,11 @@ export const FakeSquareInput: React.FC<FakeSquareInputProps> = ({label, value, p
         </Text>
       )}
       <View style={styles.textWrap}>
-        <Text style={[styles.input, !value && placeholder && styles.inputPlaceholder]}>{value ? value : placeholder ? placeholder : ''}</Text>
+        <Text style={[styles.input, !value && placeholder ? styles.inputPlaceholder : undefined]}>{value ? value : placeholder ? placeholder : ''}</Text>
       </View>
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
     height: 42,
     borderWidth: 1,
     borderColor: '#A2A4BE',
-    borderRadius: 10,
+    borderRadius: 25,
     paddingLeft: 12,
     justifyContent: 'center',
   },
@@ -53,4 +53,4 @@ const styles = StyleSheet.create({
   inputPlaceholder: {
     color: '#A2A4BE',
   },
-});
+})

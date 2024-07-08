@@ -1,20 +1,29 @@
-import React, {useEffect, useState} from 'react';
-import {View, Image, Text, StyleSheet, ScrollView} from 'react-native';
-import {useForm, Controller} from 'react-hook-form';
-import {useNavigate} from 'react-router-native';
-import Config from 'react-native-config';
+import React, { JSX, useEffect, useState } from 'react'
+import { View, Image, Text, StyleSheet, Dimensions } from 'react-native'
+import { useForm, Controller } from 'react-hook-form'
+import { useNavigate } from 'react-router-native'
 
-import {RoundedInput, RoundedButton, TextHelper, ErrorMessage} from '../components/FormElements';
-import {useAppDispatch, useAppSelector} from '../redux/hooks';
-import {setRegistrationInformation, setToken, startAuthentication, completeAuthentication, setRecaptcha} from '../services/api';
-import {routes} from '../navigation/Router';
-import {WebViewComponent} from '../components/WebViewComponent';
+import { CustomInput, Button, TextHelper, ErrorMessage } from '../components/FormElements'
+import { useAppDispatch, useAppSelector } from '../redux/hooks'
+import { setRegistrationInformation, setToken, startAuthentication, completeAuthentication, setRecaptcha, MedTechApiState } from '../services/api'
+import { WebViewComponent } from '../components/WebViewComponent'
+import { createSelector } from '@reduxjs/toolkit'
+import { routes } from '../navigation/Routes'
+import { CustomActivityIndicator } from '../components/CustomActivityIndicator'
+
+const selectMedTechApiData = createSelector([(state: { medTechApi: MedTechApiState }) => state.medTechApi], (medTechApi: MedTechApiState) => ({
+  online: medTechApi.online,
+  loginProcessStarted: medTechApi.loginProcessStarted,
+}))
+
+const WIDTH_MODAL = Dimensions.get('window').width
+const HEIGHT_MODAL = Dimensions.get('window').height
 
 export const Register = (): JSX.Element => {
   const {
     control,
     handleSubmit,
-    formState: {errors},
+    formState: { errors },
   } = useForm({
     defaultValues: {
       userFirstName: '',
@@ -22,105 +31,133 @@ export const Register = (): JSX.Element => {
       userEmail: '',
       userCode: '',
     },
-  });
-  const navigate = useNavigate();
-  const dispatch = useAppDispatch();
-  const [isWaitingForCode, setWaitingForCode] = useState(false);
+  })
+  const navigate = useNavigate()
+  const dispatch = useAppDispatch()
+  const [isWaitingForCode, setWaitingForCode] = useState(false)
 
-  const {online} = useAppSelector(state => ({
-    ...state.medTechApi,
-  }));
+  const { online, loginProcessStarted } = useAppSelector(selectMedTechApiData)
 
   useEffect(() => {
     if (online) {
-      navigate(routes.home);
+      navigate(routes.home)
     }
-  }, [online, navigate]);
+  }, [online, navigate])
 
-  const onAskCode = (data: {userEmail: string; userFirstName: string; userLastName: string}) => {
-    setWaitingForCode(true);
-    dispatch(setRegistrationInformation({email: data.userEmail, firstName: data.userFirstName, lastName: data.userLastName}));
-    dispatch(startAuthentication());
-  };
+  const onAskCode = (data: { userEmail: string; userFirstName: string; userLastName: string }) => {
+    setWaitingForCode(true)
+    dispatch(setRegistrationInformation({ email: data.userEmail, firstName: data.userFirstName, lastName: data.userLastName }))
+    dispatch(startAuthentication())
+  }
 
-  const onRegister = (data: {userCode: string}) => {
-    setWaitingForCode(false);
-    dispatch(setToken({token: data.userCode}));
-    dispatch(completeAuthentication());
-  };
+  const onRegister = (data: { userCode: string }) => {
+    setWaitingForCode(false)
+    dispatch(setToken({ token: data.userCode }))
+    dispatch(completeAuthentication())
+  }
 
   return (
-    <ScrollView style={styles.registerScreen}>
-      <View style={styles.contentHolder}>
-        <Image style={styles.logo} source={require('../assets/images/logo.png')} />
-        <Text style={styles.heading}>Registration</Text>
-        <View style={styles.inputsContainer}>
-          <Controller
-            control={control}
-            rules={{
-              required: true,
-            }}
-            render={({field: {onChange, onBlur, value}}) => <RoundedInput label="First name" onBlur={onBlur} onChange={onChange} value={value} isRequired />}
-            name="userFirstName"
-          />
-          {errors.userFirstName && <ErrorMessage text="This field is required." />}
-          <Controller
-            control={control}
-            rules={{
-              required: true,
-            }}
-            render={({field: {onChange, onBlur, value}}) => <RoundedInput label="Last name" onBlur={onBlur} onChange={onChange} value={value} isRequired />}
-            name="userLastName"
-          />
-          {errors.userLastName && <ErrorMessage text="This field is required." />}
-          <Controller
-            control={control}
-            rules={{
-              required: true,
-            }}
-            render={({field: {onChange, onBlur, value}}) => <RoundedInput label="Email or phone number" onBlur={onBlur} onChange={onChange} value={value} isRequired />}
-            name="userEmail"
-          />
-          {errors.userEmail && <ErrorMessage text="This field is required." />}
-
-          {isWaitingForCode ? (
-            <>
+    <>
+      {loginProcessStarted && <CustomActivityIndicator />}
+      <View style={styles.registerScreen}>
+        <View style={styles.contentHolder}>
+          <Image style={styles.logo} source={require('../assets/images/logo.png')} />
+          <Text style={styles.heading}>Registration</Text>
+          <View style={styles.inputsContainer}>
+            <View style={styles.input}>
               <Controller
                 control={control}
                 rules={{
-                  required: true,
+                  required: {
+                    value: true,
+                    message: 'First name is required.',
+                  },
                 }}
-                render={({field: {onChange, onBlur, value}}) => <RoundedInput label="Code" onBlur={onBlur} onChange={onChange} value={value} isRequired />}
-                name="userCode"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <CustomInput label="First name" onBlur={onBlur} onChange={onChange} value={value} isRequired error={!!errors.userFirstName?.message} />
+                )}
+                name="userFirstName"
               />
-              {errors.userCode && <ErrorMessage text="This field is required." />}
-            </>
-          ) : null}
-        </View>
+              {errors.userFirstName?.message && <ErrorMessage text={errors.userFirstName.message?.toString()} />}
+            </View>
+            <View style={styles.input}>
+              <Controller
+                control={control}
+                rules={{
+                  required: {
+                    value: true,
+                    message: 'Last name is required.',
+                  },
+                }}
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <CustomInput label="Last name" onBlur={onBlur} onChange={onChange} value={value} isRequired error={!!errors.userLastName?.message} />
+                )}
+                name="userLastName"
+              />
+              {errors.userLastName?.message && <ErrorMessage text={errors.userLastName.message?.toString()} />}
+            </View>
+            <View style={styles.input}>
+              <Controller
+                control={control}
+                rules={{
+                  required: {
+                    value: true,
+                    message: 'Email or phone number is required.',
+                  },
+                }}
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <CustomInput label="Email or phone number" onBlur={onBlur} onChange={onChange} value={value} isRequired error={!!errors.userEmail?.message} />
+                )}
+                name="userEmail"
+              />
+              {errors.userEmail?.message && <ErrorMessage text={errors.userEmail.message?.toString()} />}
+            </View>
 
-        <View style={styles.webviewContainer}>
-          <WebViewComponent sitekey={Config.FRIENDLY_CAPTCHA_SITE_KEY} onFinish={value => dispatch(setRecaptcha({recaptcha: value}))} />
-        </View>
+            {isWaitingForCode ? (
+              <View style={styles.input}>
+                <Controller
+                  control={control}
+                  rules={{
+                    required: {
+                      value: true,
+                      message: 'Confirmation code is required.',
+                    },
+                  }}
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <CustomInput label="Code" onBlur={onBlur} onChange={onChange} value={value} isRequired error={!!errors.userCode?.message} />
+                  )}
+                  name="userCode"
+                />
+                {errors.userCode?.message && <ErrorMessage text={errors.userCode.message?.toString()} />}
+              </View>
+            ) : null}
+          </View>
 
-        {isWaitingForCode ? (
-          <RoundedButton title="Register" onClick={handleSubmit(onRegister)} />
-        ) : (
-          <RoundedButton title="Receive a one time code" onClick={handleSubmit(onAskCode)} />
-        )}
+          <View style={styles.webviewContainer}>
+            <WebViewComponent sitekey={process.env.EXPO_PUBLIC_FRIENDLY_CAPTCHA_SITE_KEY!} onFinish={(value) => dispatch(setRecaptcha({ recaptcha: value }))} />
+          </View>
 
-        <View style={styles.textHelperContainer}>
-          <TextHelper text="Already have an account?" url="/" title="Log in" />
+          {isWaitingForCode ? (
+            <Button title="Register" onClick={handleSubmit(onRegister)} size="large" />
+          ) : (
+            <Button title="Receive a one time code" onClick={handleSubmit(onAskCode)} size="large" />
+          )}
+
+          <View style={styles.textHelperContainer}>
+            <TextHelper text="Already have an account?" url="/" title="Log in" />
+          </View>
         </View>
       </View>
-    </ScrollView>
-  );
-};
+    </>
+  )
+}
 
 const styles = StyleSheet.create({
   registerScreen: {
     flex: 1,
-    height: '100%',
-    paddingTop: 40,
+    width: WIDTH_MODAL,
+    height: HEIGHT_MODAL,
+    paddingTop: 24,
     backgroundColor: '#FFFDFE',
   },
   heading: {
@@ -136,13 +173,17 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   logo: {
-    width: 201,
-    height: 201,
+    width: 150,
+    height: 150,
     marginBottom: 32,
   },
   inputsContainer: {
     width: '100%',
+    gap: 16,
     marginBottom: 12,
+  },
+  input: {
+    gap: 4,
   },
   textHelperContainer: {
     marginTop: 24,
@@ -151,4 +192,4 @@ const styles = StyleSheet.create({
     width: '100%',
     marginBottom: 24,
   },
-});
+})
