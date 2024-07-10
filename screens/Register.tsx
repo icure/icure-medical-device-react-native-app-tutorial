@@ -61,7 +61,7 @@ export const Register = (): JSX.Element => {
       {loginProcessStarted && <CustomActivityIndicator />}
       <View style={styles.registerScreen}>
         <View style={styles.contentHolder}>
-          <Image style={styles.logo} source={require('../assets/images/logo.png')} />
+          <Image style={styles.logo} source={require('../assets/images/icure-logo.png')} />
           <Text style={styles.heading}>Registration</Text>
           <View style={styles.inputsContainer}>
             <View style={styles.input}>
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
   },
   heading: {
     fontSize: 24,
-    color: '#151B5D',
+    color: '#303443',
     textAlign: 'center',
     marginBottom: 32,
     marginTop: 24,
@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
   },
   logo: {
     width: 150,
-    height: 150,
+    height: 60,
     marginBottom: 32,
   },
   inputsContainer: {

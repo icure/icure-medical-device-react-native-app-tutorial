@@ -9,23 +9,6 @@ export const patientApiRtk = createApi({
     baseUrl: '/rest/v2/patient',
   }),
   endpoints: (builder) => ({
-    getPatient: builder.query<IPatient, string>({
-      async queryFn(id, { getState }) {
-        const api = await medTechApi(getState)
-        if (api === undefined) {
-          throw new Error('No medTechApi available')
-        }
-
-        const { patientApi } = api
-
-        return guard([patientApi], async () => {
-          return (await patientApi.get(id)).toJSON()
-        })
-      },
-      providesTags: (patient) => {
-        return patient ? [{ type: 'Patient', id: patient.id }] : []
-      },
-    }),
     currentPatient: builder.query<IPatient, void>({
       async queryFn(_, { getState }) {
         const api = await medTechApi(getState)
@@ -64,4 +47,4 @@ export const patientApiRtk = createApi({
   }),
 })
 
-export const { useGetPatientQuery, useCurrentPatientQuery, useCreateOrUpdatePatientMutation } = patientApiRtk
+export const { useCurrentPatientQuery, useCreateOrUpdatePatientMutation } = patientApiRtk

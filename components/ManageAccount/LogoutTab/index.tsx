@@ -17,7 +17,7 @@ export const LogoutTab = () => {
     <View style={[styles.tab]}>
       <Text style={[styles.description]}>If you are absolutely sure that you want to logout, please click the button below:</Text>
       <TouchableOpacity onPress={handleLogout} style={iconButton.container}>
-        <Image style={iconButton.icon} source={require('../../../assets/images/logout-pink.png')} />
+        <Image style={iconButton.icon} source={require('../../../assets/images/logout.png')} />
         <Text style={iconButton.text}>Logout</Text>
       </TouchableOpacity>
     </View>
@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
     width: '100%',
     fontSize: 12,
     fontFamily: 'Nunito-Regular',
-    color: '#151B5D',
+    color: '#303443',
   },
 })
 
@@ -46,16 +46,16 @@ const iconButton = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 18,
     paddingVertical: 10,
-    borderRadius: 25,
+    borderRadius: 15,
     borderWidth: 1,
-    borderColor: '#D06676',
+    borderColor: '#009290',
   },
   icon: {
     width: 18,
     height: 18,
   },
   text: {
-    color: '#D06676',
+    color: '#303443',
     fontSize: 14,
     fontFamily: 'Nunito-Regular',
   },

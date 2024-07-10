@@ -8,7 +8,7 @@ export const CustomActivityIndicator: React.FC = () => {
   return (
     <View style={styles.activityIndicator}>
       <View style={styles.indicatorContainer}>
-        <ActivityIndicator size="large" color="#151b5d" />
+        <ActivityIndicator size="large" color="#303443" />
       </View>
     </View>
   )

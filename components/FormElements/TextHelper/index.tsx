@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   link: {
-    color: '#D06676',
+    color: '#009290',
     marginLeft: 8,
   },
 })

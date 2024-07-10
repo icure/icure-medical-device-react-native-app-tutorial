@@ -26,7 +26,7 @@ export const CustomInput: React.FC<Props> = ({ label, value, onChange, onBlur, p
         value={value?.toString()}
         autoCapitalize="none"
         placeholder={placeholder ? placeholder : undefined}
-        placeholderTextColor="#A2A4BE"
+        placeholderTextColor="#DDE3E7"
       />
     </View>
   )
@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
   label: {
     marginBottom: 8,
     fontSize: 14,
-    color: '#151B5D',
+    color: '#303443',
     fontFamily: 'Nunito-Regular',
   },
   star: {
@@ -49,8 +49,8 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 42,
     borderWidth: 1,
-    borderColor: '#A2A4BE',
-    borderRadius: 25,
+    borderColor: '#DDE3E7',
+    borderRadius: 15,
     fontSize: 13,
     paddingLeft: 12,
     fontFamily: 'Nunito-Regular',

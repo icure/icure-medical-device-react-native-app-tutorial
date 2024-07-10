@@ -8,14 +8,14 @@ import { CustomInput, Button, TextHelper, ErrorMessage } from '../components/For
 import { completeAuthentication, login, setEmail, setToken, startAuthentication, setRecaptcha, MedTechApiState } from '../services/api'
 import { useAppDispatch, useAppSelector } from '../redux/hooks'
 import { WebViewComponent } from '../components/WebViewComponent'
-import { PetraState } from '../config/PetraState'
+import { YourAppState } from '../config/YourAppState'
 import { routes } from '../navigation/Routes'
 import { CustomActivityIndicator } from '../components/CustomActivityIndicator'
 
 const selectMedTechApiData = (state: { medTechApi: MedTechApiState }) => state.medTechApi
-const selectPetraData = (state: { petra: PetraState }) => state.petra
+const selectPetraData = (state: { petra: YourAppState }) => state.petra
 
-const combinedSelector = createSelector([selectMedTechApiData, selectPetraData], (medTechApi: MedTechApiState, petra: PetraState) => ({
+const combinedSelector = createSelector([selectMedTechApiData, selectPetraData], (medTechApi: MedTechApiState, petra: YourAppState) => ({
   online: medTechApi.online,
   lsUsername: petra?.savedCredentials?.login,
   lsToken: petra?.savedCredentials?.token,
@@ -71,7 +71,7 @@ export const Login = () => {
       {loginProcessStarted && <CustomActivityIndicator />}
       <View style={styles.registerScreen}>
         <View style={styles.contentHolder}>
-          <Image style={styles.logo} source={require('../assets/images/logo.png')} />
+          <Image style={styles.logo} source={require('../assets/images/icure-logo.png')} />
           <Text style={styles.heading}>Login</Text>
           <View style={styles.inputsContainer}>
             <View style={styles.input}>
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
   },
   heading: {
     fontSize: 24,
-    color: '#151B5D',
+    color: '#303443',
     textAlign: 'center',
     marginBottom: 32,
     marginTop: 24,
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
   },
   logo: {
     width: 150,
-    height: 150,
+    height: 60,
     marginBottom: 32,
   },
   inputsContainer: {

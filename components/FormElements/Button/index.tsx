@@ -24,12 +24,12 @@ export const Button: React.FC<ButtonProps> = ({ title, onClick, outlined, danger
 
 const styles = StyleSheet.create({
   appButtonContainer: {
-    backgroundColor: '#D06676',
+    backgroundColor: '#009290',
     paddingHorizontal: 24,
     height: 42,
-    borderRadius: 25,
+    borderRadius: 15,
     borderWidth: 1,
-    borderColor: '#D06676',
+    borderColor: '#009290',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
     color: '#FFFDFE',
   },
   outlinedCaseText: {
-    color: '#151B5D',
+    color: '#303443',
   },
   dangerCaseText: {
     color: '#F05B5D',

@@ -3,7 +3,6 @@ import { ScrollView, StyleSheet, View, Dimensions, Text, Image, TouchableOpacity
 
 import { globalStyles } from '../../styles/GlobalStyles'
 import { MyInformationTab } from './MyInformationTab'
-import { MyDoctorsTab } from './MyDoctorsTab'
 import { LogoutTab } from './LogoutTab'
 
 const WIDTH_MODAL = Dimensions.get('window').width
@@ -32,14 +31,9 @@ export const EditUserDataModal: React.FC<EditUserDataModalProps> = ({ onCancel, 
         <ScrollView contentContainerStyle={styles.scrollableContainer}>
           <View style={[styles.tabsHeader]}>
             <View style={styles.tabsInnerContainer}>
-              <View style={styles.leftTabs}>
-                <TouchableOpacity style={[activeTab === 'my-information' && styles.activeTab]} onPress={() => setActiveTab('my-information')}>
-                  <Text style={[globalStyles.baseText, styles.tabTitle, activeTab === 'my-information' && styles.activeTabTitle]}>My information</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.centerTab, activeTab === 'my-doctors' && styles.activeTab]} onPress={() => setActiveTab('my-doctors')}>
-                  <Text style={[globalStyles.baseText, styles.tabTitle, activeTab === 'my-doctors' && styles.activeTabTitle]}>My doctors</Text>
-                </TouchableOpacity>
-              </View>
+              <TouchableOpacity style={[activeTab === 'my-information' && styles.activeTab]} onPress={() => setActiveTab('my-information')}>
+                <Text style={[globalStyles.baseText, styles.tabTitle, activeTab === 'my-information' && styles.activeTabTitle]}>My information</Text>
+              </TouchableOpacity>
               <TouchableOpacity style={[activeTab === 'logout' && styles.activeTab]} onPress={() => setActiveTab('logout')}>
                 <Text style={[globalStyles.baseText, styles.tabTitle, activeTab === 'logout' && styles.activeTabTitle]}>Logout</Text>
               </TouchableOpacity>
@@ -47,7 +41,6 @@ export const EditUserDataModal: React.FC<EditUserDataModalProps> = ({ onCancel, 
           </View>
 
           {activeTab === 'my-information' && <MyInformationTab onSave={onSave} onCancel={onCancel} />}
-          {activeTab === 'my-doctors' && <MyDoctorsTab />}
           {activeTab === 'logout' && <LogoutTab />}
         </ScrollView>
       </View>
@@ -85,7 +78,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontFamily: 'Nunito-Medium',
-    color: '#151B5D',
+    color: '#303443',
   },
   closeIcnContainer: {
     width: 32,
@@ -112,12 +105,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     width: '100%',
   },
-  leftTabs: {
-    flexDirection: 'row',
-  },
-  centerTab: {
-    marginHorizontal: 24,
-  },
   tabTitle: {
     paddingVertical: 8,
     fontSize: 14,
@@ -125,11 +112,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   activeTab: {
-    borderBottomColor: '#D06676',
+    borderBottomColor: '#009290',
     borderBottomWidth: 1,
   },
   activeTabTitle: {
-    color: '#D06676',
+    color: '#009290',
     fontFamily: 'Nunito-Bold',
   },
 })

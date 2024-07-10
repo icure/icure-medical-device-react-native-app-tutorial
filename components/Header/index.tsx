@@ -13,7 +13,7 @@ export const Header: React.FC<Props> = ({ userName }) => {
   return (
     <>
       <View style={styles.header}>
-        <Text style={styles.userName}>Hi, {userName}!</Text>
+        <Text style={styles.userName}>Hello, {userName}!</Text>
         <TouchableOpacity onPress={() => setEditUserDataModalVisible(true)}>
           <Image style={styles.userAvatar} source={require('../../assets/images/user-avatar.png')} />
         </TouchableOpacity>
@@ -43,11 +43,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: 16,
     paddingVertical: 8,
+    backgroundColor: '#F0F4F9',
   },
   userName: {
-    fontSize: 20,
-    color: '#151B5D',
+    fontSize: 16,
+    color: '#303443',
     fontFamily: 'Nunito-Bold',
   },
   userAvatar: {

@@ -1,41 +1,34 @@
-import React, { useState } from 'react'
-import { ScrollView, StyleSheet, Image, View, Dimensions, Modal, TouchableOpacity } from 'react-native'
+import React from 'react'
+import { ScrollView, StyleSheet, Image, View, Dimensions, Linking, Text } from 'react-native'
 
 import { Header } from '../components/Header'
-import { AdvancedCalendar } from '../components/AdvancedCalendar'
-import { SymbolsExplanationModal } from '../components/SymbolsExplanationModal'
 import { useCurrentPatientQuery } from '../services/patientApi'
-import { CyclesHistory } from '../components/CyclesHistory'
+import { globalStyles } from '../styles/GlobalStyles'
 
 const WIDTH_MODAL = Dimensions.get('window').width
 const HEIGHT_MODAL = Dimensions.get('window').height
 
 export const Home = () => {
-  const [symbolsExplanationModalVisible, setSymbolsExplanationModalVisible] = useState(false)
-
   const { data: patient } = useCurrentPatientQuery()
-
+  const openDoc = () => {
+    Linking.openURL('https://docs.icure.com/sdks/how-to/index')
+  }
   return (
     <ScrollView contentContainerStyle={styles.homeScreen}>
-      <View style={styles.contentTopBlock}>
+      <View style={styles.content}>
         <Header userName={patient?.firstName || patient?.lastName ? `${patient.firstName} ${patient.lastName}` : 'Dear User'} />
-        <Image style={styles.logo} source={require('../assets/images/logo-with-pod.png')} />
-        <TouchableOpacity style={styles.infoIcnContainer} onPress={() => setSymbolsExplanationModalVisible(true)}>
-          <Image style={styles.infoIcn} source={require('../assets/images/info.png')} />
-        </TouchableOpacity>
+        <Image style={styles.logo} source={require('../assets/images/icure-logo.png')} />
+        <View style={styles.description}>
+          <Text style={styles.heading}>Well done!</Text>
+          <Text style={[globalStyles.baseText, styles.subtitle]}>
+            If you arrived here, it means you completed your registration / login successfully. Time to head to{' '}
+            <Text style={styles.link} onPress={openDoc}>
+              iCure Documentation{' '}
+            </Text>
+            to add some data!
+          </Text>
+        </View>
       </View>
-      <AdvancedCalendar />
-      <CyclesHistory />
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={symbolsExplanationModalVisible}
-        onRequestClose={() => {
-          setSymbolsExplanationModalVisible(!symbolsExplanationModalVisible)
-        }}
-      >
-        <SymbolsExplanationModal onClose={() => setSymbolsExplanationModalVisible(!symbolsExplanationModalVisible)} />
-      </Modal>
     </ScrollView>
   )
 }
@@ -47,21 +40,28 @@ const styles = StyleSheet.create({
     width: WIDTH_MODAL,
     backgroundColor: '#FFFDFE',
   },
-  contentTopBlock: {
-    paddingHorizontal: 16,
+  content: {
     alignItems: 'center',
+    gap: 42,
   },
   logo: {
-    width: 100,
+    width: 250,
     height: 100,
-    marginTop: 16,
   },
-  infoIcnContainer: {
-    width: '100%',
-    alignItems: 'flex-end',
+  description: {
+    gap: 8,
   },
-  infoIcn: {
-    width: 24,
-    height: 24,
+  heading: {
+    fontSize: 24,
+    fontFamily: 'Nunito-Bold',
+    color: '#009290',
+    textAlign: 'center',
+  },
+  subtitle: {
+    textAlign: 'center',
+  },
+  link: {
+    textDecorationLine: 'underline',
+    color: '#009290',
   },
 })

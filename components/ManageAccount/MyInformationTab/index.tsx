@@ -1,10 +1,9 @@
-import { Modal, StyleSheet, TouchableOpacity, View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 
 import { Controller, useForm } from 'react-hook-form'
-import { DatePickerModal, ErrorMessage, FakeSquareInput, CustomInput } from '../../FormElements'
+import { ErrorMessage, CustomInput } from '../../FormElements'
 import React, { useEffect, useState } from 'react'
 import { Address, Patient, Telecom } from '@icure/medical-device-sdk'
-import { format, parse } from 'date-fns'
 import { useCreateOrUpdatePatientMutation, useCurrentPatientQuery } from '../../../services/patientApi'
 import { Button } from '../../FormElements'
 import { CustomActivityIndicator } from '../../CustomActivityIndicator'
@@ -19,13 +18,11 @@ interface UpdatePatientForm {
   lastName?: string
   email?: string
   mobilePhone?: string
-  dateOfBirth?: number
 }
 
 export const MyInformationTab: React.FC<MyInformationTabProps> = ({ onCancel, onSave }) => {
   const { data: patient, isFetching } = useCurrentPatientQuery()
   const [createOrUpdatePatient, { isLoading: patientUpdatingIsLoading }] = useCreateOrUpdatePatientMutation()
-  const [showDatePicker, setShowDatePicker] = useState(false)
   const [initialValues, setInitialValues] = useState<UpdatePatientForm>({})
   useEffect(() => {
     if (!isFetching && patient) {
@@ -34,7 +31,6 @@ export const MyInformationTab: React.FC<MyInformationTabProps> = ({ onCancel, on
         lastName: patient.lastName,
         email: patient?.addresses[0]?.telecoms.find((item) => item.telecomType === 'email')?.telecomNumber,
         mobilePhone: patient?.addresses[0]?.telecoms.find((item) => item.telecomType === 'mobile')?.telecomNumber,
-        dateOfBirth: patient.dateOfBirth,
       })
     }
   }, [patient, isFetching])
@@ -43,13 +39,12 @@ export const MyInformationTab: React.FC<MyInformationTabProps> = ({ onCancel, on
     control,
     handleSubmit,
     formState: { errors },
-    setValue,
   } = useForm({
     values: initialValues,
   })
 
   const handleSave = (data: UpdatePatientForm) => {
-    const { firstName, lastName, email, mobilePhone, dateOfBirth } = data
+    const { firstName, lastName, email, mobilePhone } = data
 
     const address = new Address({
       addressType: 'home',
@@ -65,13 +60,8 @@ export const MyInformationTab: React.FC<MyInformationTabProps> = ({ onCancel, on
       ],
     })
 
-    createOrUpdatePatient(new Patient({ ...patient, firstName, lastName, dateOfBirth, addresses: [address] }))
+    createOrUpdatePatient(new Patient({ ...patient, firstName, lastName, addresses: [address] }))
     onSave()
-  }
-
-  const showFormattedDay = (date: number) => {
-    const numberToData = parse(`${date}`, 'yyyyMMdd', new Date())
-    return format(new Date(numberToData), 'dd MMMM yyyy')
   }
 
   return (
@@ -136,17 +126,6 @@ export const MyInformationTab: React.FC<MyInformationTabProps> = ({ onCancel, on
             )}
             name="mobilePhone"
           />
-          <Controller
-            control={control}
-            render={({ field: { value } }) => (
-              <TouchableOpacity onPress={() => setShowDatePicker(!showDatePicker)}>
-                <View>
-                  <FakeSquareInput value={value ? showFormattedDay(value) : ''} label="Date of birth" />
-                </View>
-              </TouchableOpacity>
-            )}
-            name="dateOfBirth"
-          />
         </View>
 
         {/* ButtonsGroup */}
@@ -155,22 +134,6 @@ export const MyInformationTab: React.FC<MyInformationTabProps> = ({ onCancel, on
           <Button title="Save" onClick={handleSubmit(handleSave)} width={'50%'} />
         </View>
       </View>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={showDatePicker}
-        onRequestClose={() => {
-          setShowDatePicker(!showDatePicker)
-        }}
-      >
-        <DatePickerModal
-          patientBirthDay={patient?.dateOfBirth}
-          onClose={() => setShowDatePicker(!showDatePicker)}
-          onSave={(selectedDate) => {
-            setValue('dateOfBirth', selectedDate)
-          }}
-        />
-      </Modal>
     </>
   )
 }

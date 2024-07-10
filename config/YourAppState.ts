@@ -7,7 +7,7 @@ export const persistConfig = {
   whitelist: ['petra'],
 }
 
-export interface PetraState {
+export interface YourAppState {
   cache: string
   savedCredentials?: {
     tokenTimestamp: number
@@ -16,13 +16,13 @@ export interface PetraState {
   }
 }
 
-const initialState = {} as PetraState
+const initialState = {} as YourAppState
 
-export const petra = createSlice({
+export const yourApp = createSlice({
   name: 'app',
   initialState,
   reducers: {
-    setSavedCredentials(state, { payload: savedCredentials }: PayloadAction<{ login: string; token: string; tokenTimestamp: number; } | undefined>) {
+    setSavedCredentials(state, { payload: savedCredentials }: PayloadAction<{ login: string; token: string; tokenTimestamp: number } | undefined>) {
       state.savedCredentials = savedCredentials
     },
     revertAll() {
@@ -31,4 +31,4 @@ export const petra = createSlice({
   },
 })
 
-export const { setSavedCredentials, revertAll } = petra.actions
+export const { setSavedCredentials, revertAll } = yourApp.actions

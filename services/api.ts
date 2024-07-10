@@ -1,7 +1,7 @@
 import { AnonymousMedTechApi, AuthenticationProcess, MedTechApi, User, NativeCryptoPrimitivesBridge } from '@icure/medical-device-sdk'
 import { SimpleMedTechCryptoStrategies } from '@icure/medical-device-sdk/src/services/MedTechCryptoStrategies'
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { revertAll, setSavedCredentials } from '../config/PetraState'
+import { revertAll, setSavedCredentials } from '../config/YourAppState'
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query'
 import storage from '../utils/storage'
 import * as ExpoKryptomModule from '@icure/expo-kryptom'
@@ -84,9 +84,7 @@ export const getApiFromState = async (getState: () => MedTechApiState | { medTec
     return undefined
   }
 
-  const cachedApi = apiCache[`${user.groupId}/${user.id}`] as MedTechApi
-
-  return cachedApi
+  return apiCache[`${user.groupId}/${user.id}`] as MedTechApi
 }
 
 export const startAuthentication = createAsyncThunk('medTechApi/startAuthentication', async (_payload, { getState, dispatch }) => {
@@ -96,11 +94,9 @@ export const startAuthentication = createAsyncThunk('medTechApi/startAuthenticat
 
   dispatch(setLoginProcessStarted({ loginProcessStarted: true }))
 
-  try {
-    if (!email) {
-      throw new Error('No email provided')
-    }
+  if (!email) throw new Error('No email provided')
 
+  try {
     const anonymousApi = await new AnonymousMedTechApi.Builder()
       .withCrypto(new NativeCryptoPrimitivesBridge(ExpoKryptomModule))
       .withCryptoStrategies(new SimpleMedTechCryptoStrategies())
@@ -168,16 +164,9 @@ export const login = createAsyncThunk('medTechApi/login', async (_, { getState, 
   } = getState() as { medTechApi: MedTechApiState }
 
   dispatch(setLoginProcessStarted({ loginProcessStarted: true }))
-
+  if (!email) throw new Error('No email provided')
+  if (!token) throw new Error('No token provided')
   try {
-    if (!email) {
-      throw new Error('No email provided')
-    }
-
-    if (!token) {
-      throw new Error('No token provided')
-    }
-
     const api = await new MedTechApi.Builder()
       .withCrypto(new NativeCryptoPrimitivesBridge(ExpoKryptomModule))
       .withCryptoStrategies(new SimpleMedTechCryptoStrategies())
@@ -201,7 +190,7 @@ export const login = createAsyncThunk('medTechApi/login', async (_, { getState, 
   }
 })
 
-export const logout = createAsyncThunk('medTechApi/logout', async (payload, { dispatch }) => {
+export const logout = createAsyncThunk('medTechApi/logout', async (_, { dispatch }) => {
   dispatch(revertAll())
   dispatch(resetCredentials())
 })
@@ -220,9 +209,6 @@ export const api = createSlice({
     },
     setAuthProcess: (state, { payload: { authProcess } }: PayloadAction<{ authProcess: AuthenticationProcess }>) => {
       state.authProcess = authProcess
-    },
-    setUser: (state, { payload: { user } }: PayloadAction<{ user: IUser }>) => {
-      state.user = user
     },
     setRegistrationInformation: (state, { payload: { firstName, lastName, email } }: PayloadAction<{ firstName: string; lastName: string; email: string }>) => {
       state.firstName = firstName
@@ -267,4 +253,4 @@ export const api = createSlice({
   },
 })
 
-export const { setEmail, setToken, forceRecaptchaReload, setUser, setRegistrationInformation, resetCredentials, setRecaptcha, setLoginProcessStarted } = api.actions
+export const { setEmail, setToken, forceRecaptchaReload, setRegistrationInformation, resetCredentials, setRecaptcha, setLoginProcessStarted } = api.actions
