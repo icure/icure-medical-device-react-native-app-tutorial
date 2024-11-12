@@ -55,9 +55,7 @@ Go to our [tutorial](https://docs.icure.com/sdks/tutorial/petra/foreword) for mo
 
 
 ## Do you have a doctor-oriented medical app example ? 
-We don't have any doctor-oriented medical sample app including iCure yet. 
-However, you can have a look at our [dedicated tutorial](https://docs.icure.com/sdks/tutorial/), that will guide you through the creation of your own doctor-centric medical app with iCure. 
-
+Yes, we offer a sample EHR system application called [PetraCare](https://github.com/icure/icure-ehr-lite-doctor-app) designed specifically for doctors. Additionally, you can leverage our [React boilerplate app](https://github.com/icure/cardinal-sdk-react-js-template) to easily build your own customized application for medical professionals.
 
 ## What's next ? 
 Check out our [MedTech Documentation](https://docs.icure.com/sdks/tutorial/petra/foreword) and more particularly our [Quick Starts](https://docs.icure.com/sdks/quick-start/), in order to create your own iCure solution in a few minutes! 
